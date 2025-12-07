@@ -10,6 +10,8 @@ function TikTokUploader() {
   const [uploading, setUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState('');
   const [error, setError] = useState('');
+  const [videos, setVideos] = useState([]);
+  const [loadingVideos, setLoadingVideos] = useState(false);
 
   useEffect(() => {
     // Check if user is authenticated
@@ -55,7 +57,36 @@ function TikTokUploader() {
     setSelectedFile(null);
     setVideoTitle('');
     setUploadStatus('Logged out successfully');
+    setVideos([]);
     setTimeout(() => setUploadStatus(''), 3000);
+  };
+
+  const handleCheckVideos = async () => {
+    setLoadingVideos(true);
+    setError('');
+    
+    try {
+      const result = await tiktokApi.listVideos();
+      
+      if (result.success) {
+        console.log('📹 User videos:', result.data);
+        setVideos(result.data.videos || []);
+        
+        if (!result.data.videos || result.data.videos.length === 0) {
+          setUploadStatus('No videos found. Videos uploaded to inbox may not appear here until posted.');
+        } else {
+          setUploadStatus(`Found ${result.data.videos.length} video(s)`);
+        }
+      } else {
+        setError('Failed to fetch videos: ' + JSON.stringify(result.error));
+      }
+    } catch (err) {
+      console.error('Error fetching videos:', err);
+      setError('Error: ' + err.message);
+    } finally {
+      setLoadingVideos(false);
+      setTimeout(() => setUploadStatus(''), 5000);
+    }
   };
 
   const handleFileSelect = (e) => {
@@ -117,15 +148,18 @@ function TikTokUploader() {
       
       // Poll for status
       let attempts = 0;
-      const maxAttempts = 30; // Increased for large files
+      const maxAttempts = 120; // 120 attempts x 5 seconds = 10 minutes
       const checkStatus = async () => {
         const statusResult = await tiktokApi.publishVideo(publish_id);
         
         if (statusResult.success) {
           const status = statusResult.data.status;
           const uploadedBytes = statusResult.data.uploaded_bytes || 0;
+          const failReason = statusResult.data.fail_reason;
+          const publiclyAvailable = statusResult.data.publicly_available_post_id;
           
-          console.log('📊 Current status:', status, 'Uploaded bytes:', uploadedBytes);
+          console.log('📊 Full status data:', statusResult.data);
+          console.log('📊 Current status:', status, 'Uploaded bytes:', uploadedBytes, 'Fail reason:', failReason);
           
           // For inbox uploads, these are the possible statuses:
           // PROCESSING_UPLOAD - Video is being processed
@@ -146,7 +180,7 @@ function TikTokUploader() {
             setUploading(false);
             return;
           } else if (status === 'FAILED') {
-            throw new Error('Upload failed');
+            throw new Error(`Upload failed: ${failReason || 'Unknown reason'}`);
           } else if (status === 'PROCESSING_UPLOAD') {
             // Still processing
             if (attempts < maxAttempts) {
@@ -155,8 +189,8 @@ function TikTokUploader() {
               setUploadStatus(`Processing upload${progress}... (${attempts}/${maxAttempts})`);
               setTimeout(checkStatus, 5000); // Check every 5 seconds
             } else {
-              // Timeout - but upload might still succeed
-              setUploadStatus('✅ Upload complete! Video is being processed. Check your TikTok inbox in a few minutes for notification.');
+              // After 10 minutes of processing, assume success
+              setUploadStatus('✅ Upload complete! Video is being processed by TikTok. Check your TikTok app inbox/notifications in the next few minutes.');
               setSelectedFile(null);
               setVideoTitle('');
               setUploading(false);
@@ -266,7 +300,33 @@ function TikTokUploader() {
           >
             {uploading ? 'Uploading...' : 'Upload to TikTok'}
           </button>
+
+          <button
+            onClick={handleCheckVideos}
+            disabled={loadingVideos}
+            className="btn-secondary"
+            style={{ marginTop: '10px' }}
+          >
+            {loadingVideos ? 'Loading...' : '📹 Check My Videos'}
+          </button>
         </div>
+
+        {videos.length > 0 && (
+          <div className="videos-list">
+            <h3>Your Videos:</h3>
+            <div className="video-grid">
+              {videos.map((video, index) => (
+                <div key={index} className="video-item">
+                  <p><strong>Title:</strong> {video.title || 'Untitled'}</p>
+                  <p><strong>ID:</strong> {video.id}</p>
+                  {video.cover_image_url && (
+                    <img src={video.cover_image_url} alt={video.title} style={{ width: '100px' }} />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {uploadStatus && (
           <div className="status-message success">

@@ -53,7 +53,8 @@
 
 .btn-primary,
 .btn-logout,
-.btn-upload {
+.btn-upload,
+.btn-secondary {
   padding: 12px 30px;
   border: none;
   border-radius: 25px;
@@ -71,6 +72,23 @@
 .btn-primary:hover {
   transform: translateY(-2px);
   box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn-secondary {
+  width: 100%;
+  background: #48dbfb;
+  color: white;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: #0abde3;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(72, 219, 251, 0.4);
+}
+
+.btn-secondary:disabled {
+  background: #ccc;
+  cursor: not-allowed;
 }
 
 .btn-logout {
@@ -201,6 +219,50 @@
   font-size: 14px;
 }
 
+.videos-list {
+  background: #f8f9ff;
+  padding: 20px;
+  border-radius: 10px;
+  margin-top: 20px;
+}
+
+.videos-list h3 {
+  color: #333;
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 18px;
+}
+
+.video-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.video-item {
+  background: white;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.video-item p {
+  margin: 8px 0;
+  font-size: 13px;
+  color: #555;
+  word-break: break-word;
+}
+
+.video-item strong {
+  color: #333;
+}
+
+.video-item img {
+  width: 100%;
+  border-radius: 5px;
+  margin-top: 10px;
+}
+
 @media (max-width: 600px) {
   .auth-card,
   .upload-card {
@@ -213,5 +275,9 @@
 
   .auth-card h1 {
     font-size: 28px;
+  }
+  
+  .video-grid {
+    grid-template-columns: 1fr;
   }
 }

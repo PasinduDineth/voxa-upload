@@ -17,25 +17,24 @@ module.exports = async (req, res) => {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { accessToken, publishId } = req.body;
+  const { accessToken } = req.body;
 
-  console.log('📊 Check status request:', {
-    hasAccessToken: !!accessToken,
-    publishId: publishId
+  console.log('📋 List videos request:', {
+    hasAccessToken: !!accessToken
   });
 
-  if (!accessToken || !publishId) {
-    console.log('❌ Missing required params');
-    return res.status(400).json({ error: 'Access token and publish ID required' });
+  if (!accessToken) {
+    console.log('❌ Missing access token');
+    return res.status(400).json({ error: 'Access token required' });
   }
 
   try {
-    console.log('📤 Checking publish status for:', publishId);
+    console.log('📤 Fetching user videos...');
     
     const response = await axios.post(
-      'https://open.tiktokapis.com/v2/post/publish/status/fetch/',
+      'https://open.tiktokapis.com/v2/video/list/',
       {
-        publish_id: publishId
+        max_count: 20
       },
       {
         headers: {
@@ -45,17 +44,10 @@ module.exports = async (req, res) => {
       }
     );
 
-    console.log('✅ Full Status response:', JSON.stringify(response.data, null, 2));
-    console.log('📊 Status details:', {
-      status: response.data?.data?.status,
-      uploadedBytes: response.data?.data?.uploaded_bytes,
-      failReason: response.data?.data?.fail_reason,
-      publiclyAvailable: response.data?.data?.publicly_available_post_id
-    });
-    
+    console.log('✅ Video list response:', JSON.stringify(response.data, null, 2));
     res.status(200).json(response.data);
   } catch (error) {
-    console.error('❌ Status check error:', {
+    console.error('❌ List videos error:', {
       status: error.response?.status,
       statusText: error.response?.statusText,
       data: error.response?.data,
