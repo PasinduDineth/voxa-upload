@@ -13,61 +13,51 @@ module.exports = async (req, res) => {
   }
 
   if (req.method !== 'POST') {
+    console.log('❌ Invalid method:', req.method);
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   const { accessToken, videoFile } = req.body;
 
+  console.log('📥 Init upload request:', {
+    hasAccessToken: !!accessToken,
+    videoFileSize: videoFile?.size,
+    videoTitle: videoFile?.title,
+    privacyLevel: videoFile?.privacyLevel
+  });
+
   if (!accessToken) {
+    console.log('❌ Missing access token');
     return res.status(400).json({ error: 'Access token required' });
   }
 
   try {
-    // TikTok requires chunk_size in bytes
-    // According to TikTok docs: chunk_size should be between 5MB and 64MB
-    // And must be aligned to 5MB boundaries for optimal performance
-    const MIN_CHUNK_SIZE = 5 * 1024 * 1024; // 5MB
-    const MAX_CHUNK_SIZE = 64 * 1024 * 1024; // 64MB
+    // For TikTok's FILE_UPLOAD source, we must use total_chunk_count: 1
+    // and chunk_size must equal video_size (upload entire file at once)
+    const videoSize = videoFile.size;
     
-    let chunkSize = videoFile.size;
+    const requestPayload = {
+      post_info: {
+        title: videoFile.title || 'Uploaded via TikTok API',
+        privacy_level: videoFile.privacyLevel || 'SELF_ONLY',
+        disable_duet: false,
+        disable_comment: false,
+        disable_stitch: false,
+        video_cover_timestamp_ms: 1000
+      },
+      source_info: {
+        source: 'FILE_UPLOAD',
+        video_size: videoSize,
+        chunk_size: videoSize,
+        total_chunk_count: 1
+      }
+    };
     
-    // If file is larger than max chunk, use max chunk
-    if (chunkSize > MAX_CHUNK_SIZE) {
-      chunkSize = MAX_CHUNK_SIZE;
-    }
-    
-    // If file is smaller than min chunk but not tiny, round up to min
-    if (chunkSize < MIN_CHUNK_SIZE && chunkSize > 0) {
-      chunkSize = MIN_CHUNK_SIZE;
-    }
-    
-    // Calculate total chunks needed
-    const totalChunks = Math.ceil(videoFile.size / chunkSize);
-    
-    console.log('Upload params:', {
-      video_size: videoFile.size,
-      chunk_size: chunkSize,
-      total_chunk_count: totalChunks
-    });
+    console.log('📤 Sending to TikTok API:', JSON.stringify(requestPayload, null, 2));
     
     const response = await axios.post(
       'https://open.tiktokapis.com/v2/post/publish/video/init/',
-      {
-        post_info: {
-          title: videoFile.title || 'Uploaded via TikTok API',
-          privacy_level: videoFile.privacyLevel || 'SELF_ONLY',
-          disable_duet: false,
-          disable_comment: false,
-          disable_stitch: false,
-          video_cover_timestamp_ms: 1000
-        },
-        source_info: {
-          source: 'FILE_UPLOAD',
-          video_size: videoFile.size,
-          chunk_size: chunkSize,
-          total_chunk_count: totalChunks
-        }
-      },
+      requestPayload,
       {
         headers: {
           'Authorization': `Bearer ${accessToken}`,
@@ -76,9 +66,15 @@ module.exports = async (req, res) => {
       }
     );
 
+    console.log('✅ TikTok API response:', JSON.stringify(response.data, null, 2));
     res.status(200).json(response.data);
   } catch (error) {
-    console.error('Error:', error.response?.data || error.message);
+    console.error('❌ TikTok API Error:', {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      message: error.message
+    });
     res.status(error.response?.status || 500).json({
       error: error.response?.data || error.message
     });

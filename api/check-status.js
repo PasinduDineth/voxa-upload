@@ -13,16 +13,25 @@ module.exports = async (req, res) => {
   }
 
   if (req.method !== 'POST') {
+    console.log('❌ Invalid method:', req.method);
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   const { accessToken, publishId } = req.body;
 
+  console.log('📊 Check status request:', {
+    hasAccessToken: !!accessToken,
+    publishId: publishId
+  });
+
   if (!accessToken || !publishId) {
+    console.log('❌ Missing required params');
     return res.status(400).json({ error: 'Access token and publish ID required' });
   }
 
   try {
+    console.log('📤 Checking publish status for:', publishId);
+    
     const response = await axios.post(
       'https://open.tiktokapis.com/v2/post/publish/status/fetch/',
       {
@@ -36,9 +45,15 @@ module.exports = async (req, res) => {
       }
     );
 
+    console.log('✅ Status response:', JSON.stringify(response.data, null, 2));
     res.status(200).json(response.data);
   } catch (error) {
-    console.error('Error:', error.response?.data || error.message);
+    console.error('❌ Status check error:', {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      message: error.message
+    });
     res.status(error.response?.status || 500).json({
       error: error.response?.data || error.message
     });
