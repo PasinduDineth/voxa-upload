@@ -23,9 +23,32 @@ module.exports = async (req, res) => {
   }
 
   try {
-    // TikTok requires chunk_size to be a multiple of their minimum (usually 5MB or 10MB)
-    // For simplicity, we'll send the whole file in one chunk
-    const chunkSize = Math.min(videoFile.size, 64 * 1024 * 1024); // Max 64MB per chunk
+    // TikTok requires chunk_size in bytes
+    // According to TikTok docs: chunk_size should be between 5MB and 64MB
+    // And must be aligned to 5MB boundaries for optimal performance
+    const MIN_CHUNK_SIZE = 5 * 1024 * 1024; // 5MB
+    const MAX_CHUNK_SIZE = 64 * 1024 * 1024; // 64MB
+    
+    let chunkSize = videoFile.size;
+    
+    // If file is larger than max chunk, use max chunk
+    if (chunkSize > MAX_CHUNK_SIZE) {
+      chunkSize = MAX_CHUNK_SIZE;
+    }
+    
+    // If file is smaller than min chunk but not tiny, round up to min
+    if (chunkSize < MIN_CHUNK_SIZE && chunkSize > 0) {
+      chunkSize = MIN_CHUNK_SIZE;
+    }
+    
+    // Calculate total chunks needed
+    const totalChunks = Math.ceil(videoFile.size / chunkSize);
+    
+    console.log('Upload params:', {
+      video_size: videoFile.size,
+      chunk_size: chunkSize,
+      total_chunk_count: totalChunks
+    });
     
     const response = await axios.post(
       'https://open.tiktokapis.com/v2/post/publish/video/init/',
@@ -42,7 +65,7 @@ module.exports = async (req, res) => {
           source: 'FILE_UPLOAD',
           video_size: videoFile.size,
           chunk_size: chunkSize,
-          total_chunk_count: 1
+          total_chunk_count: totalChunks
         }
       },
       {
