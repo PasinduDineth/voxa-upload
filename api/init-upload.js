@@ -71,10 +71,10 @@ module.exports = async (req, res) => {
     const requestPayload = {
       post_info: {
         title: videoFile.title || 'Uploaded via TikTok API',
-        privacy_level: videoFile.privacyLevel || 'SELF_ONLY',
-        disable_duet: false,
-        disable_comment: false,
-        disable_stitch: false,
+        privacy_level: 'SELF_ONLY', // Force private for sandbox
+        disable_duet: true,
+        disable_comment: true,
+        disable_stitch: true,
         video_cover_timestamp_ms: 1000
       },
       source_info: {
