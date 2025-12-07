@@ -69,14 +69,6 @@ module.exports = async (req, res) => {
     }
     
     const requestPayload = {
-      post_info: {
-        title: videoFile.title || 'Uploaded via TikTok API',
-        privacy_level: 'SELF_ONLY', // Force private for sandbox
-        disable_duet: true,
-        disable_comment: true,
-        disable_stitch: true,
-        video_cover_timestamp_ms: 1000
-      },
       source_info: {
         source: 'FILE_UPLOAD',
         video_size: videoSize,
@@ -88,7 +80,7 @@ module.exports = async (req, res) => {
     console.log('📤 Sending to TikTok API:', JSON.stringify(requestPayload, null, 2));
     
     const response = await axios.post(
-      'https://open.tiktokapis.com/v2/post/publish/video/init/',
+      'https://open.tiktokapis.com/v2/post/publish/inbox/video/init/',
       requestPayload,
       {
         headers: {
