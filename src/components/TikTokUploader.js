@@ -67,9 +67,10 @@ function TikTokUploader() {
         return;
       }
       
-      // Validate file size (max 4GB for TikTok)
-      if (file.size > 4 * 1024 * 1024 * 1024) {
-        setError('File size must be less than 4GB');
+      // Validate file size (max 4GB for TikTok API)
+      const maxSize = 4 * 1024 * 1024 * 1024; // 4GB
+      if (file.size > maxSize) {
+        setError(`File size must be less than 4GB (current: ${Math.round(file.size / 1024 / 1024)}MB)`);
         return;
       }
       
@@ -101,11 +102,11 @@ function TikTokUploader() {
         throw new Error(JSON.stringify(initResult.error));
       }
 
-      const { publish_id, upload_url } = initResult.data;
+      const { publish_id, upload_url, chunk_size, total_chunk_count } = initResult.data;
       
-      // Step 2: Upload video
+      // Step 2: Upload video (with chunking support)
       setUploadStatus('Uploading video...');
-      const uploadResult = await tiktokApi.uploadVideo(upload_url, selectedFile);
+      const uploadResult = await tiktokApi.uploadVideo(upload_url, selectedFile, chunk_size, total_chunk_count);
       
       if (!uploadResult.success) {
         throw new Error(JSON.stringify(uploadResult.error));

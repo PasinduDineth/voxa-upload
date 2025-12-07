@@ -138,22 +138,64 @@ class TikTokAPI {
     }
   }
 
-  // Upload video chunk
-  async uploadVideo(uploadUrl, videoFile) {
+  // Upload video chunk(s)
+  async uploadVideo(uploadUrl, videoFile, chunkSize, totalChunks) {
     try {
-      const formData = new FormData();
-      formData.append('video', videoFile);
-
-      const response = await axios.put(uploadUrl, videoFile, {
-        headers: {
-          'Content-Type': 'video/mp4',
-          'Content-Length': videoFile.size
+      const videoSize = videoFile.size;
+      console.log(`📤 Uploading ${totalChunks} chunk(s)...`);
+      
+      if (totalChunks === 1) {
+        // Single chunk upload (whole file)
+        console.log('📦 Uploading entire file in one chunk');
+        const response = await axios.put(uploadUrl, videoFile, {
+          headers: {
+            'Content-Type': 'video/mp4',
+            'Content-Length': videoSize,
+            'Content-Range': `bytes 0-${videoSize - 1}/${videoSize}`
+          }
+        });
+        
+        console.log('✅ Upload complete:', response.status);
+        return { success: true, data: response.data };
+      } else {
+        // Multiple chunk upload
+        for (let i = 0; i < totalChunks; i++) {
+          const start = i * chunkSize;
+          let end = Math.min(start + chunkSize, videoSize) - 1;
+          
+          // Last chunk can include trailing bytes
+          if (i === totalChunks - 1) {
+            end = videoSize - 1;
+          }
+          
+          const chunkBlob = videoFile.slice(start, end + 1);
+          const chunkByteSize = end - start + 1;
+          
+          console.log(`📦 Uploading chunk ${i + 1}/${totalChunks}: bytes ${start}-${end}/${videoSize}`);
+          
+          const response = await axios.put(uploadUrl, chunkBlob, {
+            headers: {
+              'Content-Type': 'video/mp4',
+              'Content-Length': chunkByteSize,
+              'Content-Range': `bytes ${start}-${end}/${videoSize}`
+            }
+          });
+          
+          console.log(`✅ Chunk ${i + 1} uploaded:`, response.status);
+          
+          // 206 = Partial Content (more chunks to upload)
+          // 201 = Created (all chunks uploaded)
+          if (response.status !== 206 && response.status !== 201) {
+            throw new Error(`Unexpected response status: ${response.status}`);
+          }
         }
-      });
-
-      return { success: true, data: response.data };
+        
+        console.log('✅ All chunks uploaded successfully');
+        return { success: true };
+      }
     } catch (error) {
-      console.error('Error uploading video:', error);
+      console.error('❌ Error uploading video:', error);
+      console.error('Response:', error.response?.data);
       return { success: false, error: error.response?.data || error.message };
     }
   }
