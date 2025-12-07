@@ -10,8 +10,6 @@ function TikTokUploader() {
   const [uploading, setUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState('');
   const [error, setError] = useState('');
-  const [videos, setVideos] = useState([]);
-  const [loadingVideos, setLoadingVideos] = useState(false);
 
   useEffect(() => {
     // Check if user is authenticated
@@ -57,37 +55,10 @@ function TikTokUploader() {
     setSelectedFile(null);
     setVideoTitle('');
     setUploadStatus('Logged out successfully');
-    setVideos([]);
     setTimeout(() => setUploadStatus(''), 3000);
   };
 
-  const handleCheckVideos = async () => {
-    setLoadingVideos(true);
-    setError('');
-    
-    try {
-      const result = await tiktokApi.listVideos();
-      
-      if (result.success) {
-        console.log('📹 User videos:', result.data);
-        setVideos(result.data.videos || []);
-        
-        if (!result.data.videos || result.data.videos.length === 0) {
-          setUploadStatus('No videos found. Videos uploaded to inbox may not appear here until posted.');
-        } else {
-          setUploadStatus(`Found ${result.data.videos.length} video(s)`);
-        }
-      } else {
-        setError('Failed to fetch videos: ' + JSON.stringify(result.error));
-      }
-    } catch (err) {
-      console.error('Error fetching videos:', err);
-      setError('Error: ' + err.message);
-    } finally {
-      setLoadingVideos(false);
-      setTimeout(() => setUploadStatus(''), 5000);
-    }
-  };
+
 
   const handleFileSelect = (e) => {
     const file = e.target.files[0];
@@ -300,33 +271,7 @@ function TikTokUploader() {
           >
             {uploading ? 'Uploading...' : 'Upload to TikTok'}
           </button>
-
-          <button
-            onClick={handleCheckVideos}
-            disabled={loadingVideos}
-            className="btn-secondary"
-            style={{ marginTop: '10px' }}
-          >
-            {loadingVideos ? 'Loading...' : '📹 Check My Videos'}
-          </button>
         </div>
-
-        {videos.length > 0 && (
-          <div className="videos-list">
-            <h3>Your Videos:</h3>
-            <div className="video-grid">
-              {videos.map((video, index) => (
-                <div key={index} className="video-item">
-                  <p><strong>Title:</strong> {video.title || 'Untitled'}</p>
-                  <p><strong>ID:</strong> {video.id}</p>
-                  {video.cover_image_url && (
-                    <img src={video.cover_image_url} alt={video.title} style={{ width: '100px' }} />
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
         {uploadStatus && (
           <div className="status-message success">
@@ -341,7 +286,19 @@ function TikTokUploader() {
         )}
 
         <div className="info-section">
-          <h3>Upload Requirements:</h3>
+          <h3>📱 How to Find Your Uploaded Videos:</h3>
+          <ol style={{ textAlign: 'left', lineHeight: '1.8' }}>
+            <li><strong>Open the TikTok mobile app</strong> on your phone</li>
+            <li>Tap on <strong>"Profile"</strong> (bottom right icon)</li>
+            <li>Look for <strong>"Drafts"</strong> section (usually below your bio)</li>
+            <li>Your uploaded video will appear there!</li>
+            <li>Tap to edit, add effects, or post it</li>
+          </ol>
+          <p style={{ marginTop: '15px', padding: '10px', background: '#fff3cd', borderRadius: '5px', fontSize: '0.9em' }}>
+            <strong>⚠️ Important:</strong> Videos uploaded via this tool are saved as <strong>drafts</strong> in your TikTok account. 
+            They won't appear in your public profile until you open them in the TikTok app and post them.
+          </p>
+          <h3 style={{ marginTop: '25px' }}>Upload Requirements:</h3>
           <ul>
             <li>Video format: MP4, MOV, or other common video formats</li>
             <li>Maximum file size: 4GB</li>

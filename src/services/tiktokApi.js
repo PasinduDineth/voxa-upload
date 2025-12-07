@@ -223,28 +223,6 @@ class TikTokAPI {
     }
   }
 
-  // List user's videos
-  async listVideos() {
-    if (!this.accessToken) {
-      return { success: false, error: 'Not authenticated' };
-    }
-
-    try {
-      console.log('📋 Fetching user videos via backend...');
-      
-      const response = await axios.post('/api/list-videos', {
-        accessToken: this.accessToken
-      });
-
-      console.log('✅ Videos response:', response.data);
-      return { success: true, data: response.data.data };
-    } catch (error) {
-      console.error('❌ Error fetching videos:', error);
-      console.error('Response data:', error.response?.data);
-      return { success: false, error: error.response?.data || error.message };
-    }
-  }
-
   // Check if user is authenticated
   isAuthenticated() {
     return !!this.accessToken;
