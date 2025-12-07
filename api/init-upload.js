@@ -80,21 +80,35 @@ module.exports = async (req, res) => {
     // - Body: application/x-www-form-urlencoded (http_build_query of params)
     // - Headers: Authorization: Bearer XXX
     
-    // But TikTok actually expects JSON body, so let's match that
-    const url = 'https://open.tiktokapis.com/v2/post/publish/video/init/';
+    // Create URL-encoded form data EXACTLY like PHP's http_build_query
+    const formData = new URLSearchParams();
+    formData.append('post_info[title]', params.post_info.title);
+    formData.append('post_info[privacy_level]', params.post_info.privacy_level);
+    formData.append('post_info[disable_duet]', params.post_info.disable_duet);
+    formData.append('post_info[disable_comment]', params.post_info.disable_comment);
+    formData.append('post_info[disable_stitch]', params.post_info.disable_stitch);
+    formData.append('source_info[source]', params.source_info.source);
+    formData.append('source_info[video_size]', params.source_info.video_size);
+    
+    const formDataString = formData.toString();
+    
+    console.log('📝 Form-encoded body (like PHP):', formDataString);
+    
+    const url = `https://open.tiktokapis.com/v2/post/publish/video/init/?access_token=${accessToken}`;
     const headers = {
       'Authorization': `Bearer ${accessToken}`,
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/x-www-form-urlencoded'
     };
     
     console.log('🌐 Request details:', {
-      url: url,
+      url: url.substring(0, 80) + '...',
       method: 'POST',
       headers: headers,
-      bodyPreview: JSON.stringify(params).substring(0, 200)
+      bodyLength: formDataString.length,
+      bodyPreview: formDataString.substring(0, 200)
     });
 
-    const response = await axios.post(url, params, { headers });
+    const response = await axios.post(url, formDataString, { headers });
 
     console.log('✅ TikTok API SUCCESS:', {
       status: response.status,
