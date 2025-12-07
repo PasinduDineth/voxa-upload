@@ -95,7 +95,7 @@ function TikTokUploader() {
 
     try {
       // Step 1: Initialize upload
-      const initResult = await tiktokApi.initializeUpload(selectedFile);
+      const initResult = await tiktokApi.initializeUpload(selectedFile, videoTitle, privacyLevel);
       
       if (!initResult.success) {
         throw new Error(JSON.stringify(initResult.error));

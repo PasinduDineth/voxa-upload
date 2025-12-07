@@ -112,41 +112,28 @@ class TikTokAPI {
   }
 
   // Initialize video upload
-  async initializeUpload(videoFile) {
+  async initializeUpload(videoFile, videoTitle, privacyLevel) {
     if (!this.accessToken) {
       return { success: false, error: 'Not authenticated' };
     }
 
     try {
-      const response = await axios.post(
-        'https://open.tiktokapis.com/v2/post/publish/video/init/',
-        {
-          post_info: {
-            title: 'Uploaded via TikTok API',
-            privacy_level: 'SELF_ONLY', // Options: PUBLIC_TO_EVERYONE, MUTUAL_FOLLOW_FRIENDS, SELF_ONLY
-            disable_duet: false,
-            disable_comment: false,
-            disable_stitch: false,
-            video_cover_timestamp_ms: 1000
-          },
-          source_info: {
-            source: 'FILE_UPLOAD',
-            video_size: videoFile.size,
-            chunk_size: videoFile.size,
-            total_chunk_count: 1
-          }
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${this.accessToken}`,
-            'Content-Type': 'application/json; charset=UTF-8'
-          }
+      console.log('🚀 Initializing upload via backend...');
+      
+      const response = await axios.post('/api/init-upload', {
+        accessToken: this.accessToken,
+        videoFile: {
+          size: videoFile.size,
+          title: videoTitle,
+          privacyLevel: privacyLevel
         }
-      );
+      });
 
+      console.log('✅ Upload initialized:', response.data);
       return { success: true, data: response.data.data };
     } catch (error) {
-      console.error('Error initializing upload:', error);
+      console.error('❌ Error initializing upload:', error);
+      console.error('Response data:', error.response?.data);
       return { success: false, error: error.response?.data || error.message };
     }
   }
@@ -178,22 +165,18 @@ class TikTokAPI {
     }
 
     try {
-      const response = await axios.post(
-        'https://open.tiktokapis.com/v2/post/publish/status/fetch/',
-        {
-          publish_id: publishId
-        },
-        {
-          headers: {
-            'Authorization': `Bearer ${this.accessToken}`,
-            'Content-Type': 'application/json; charset=UTF-8'
-          }
-        }
-      );
+      console.log('📊 Checking publish status via backend...');
+      
+      const response = await axios.post('/api/check-status', {
+        accessToken: this.accessToken,
+        publishId: publishId
+      });
 
+      console.log('✅ Status response:', response.data);
       return { success: true, data: response.data.data };
     } catch (error) {
-      console.error('Error checking publish status:', error);
+      console.error('❌ Error checking publish status:', error);
+      console.error('Response data:', error.response?.data);
       return { success: false, error: error.response?.data || error.message };
     }
   }
