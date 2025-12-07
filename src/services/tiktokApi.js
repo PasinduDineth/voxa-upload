@@ -1,8 +1,14 @@
 import axios from 'axios';
 
-const CLIENT_KEY = process.env.REACT_APP_TIKTOK_CLIENT_KEY;
-const CLIENT_SECRET = process.env.REACT_APP_TIKTOK_CLIENT_SECRET;
-const REDIRECT_URI = process.env.REACT_APP_REDIRECT_URI;
+const CLIENT_KEY = 'sbaw0lz3d1a0f32yv3';
+const CLIENT_SECRET = 'd3UvL0TgwNkuDVfirIT4UuI2wnCrXUMY';
+const REDIRECT_URI = process.env.REACT_APP_REDIRECT_URI || 'https://www.pasindu.website/callback';
+
+console.log('🔑 TikTok API Config:', {
+  CLIENT_KEY,
+  CLIENT_SECRET: CLIENT_SECRET ? '***' + CLIENT_SECRET.slice(-4) : 'MISSING',
+  REDIRECT_URI
+});
 
 class TikTokAPI {
   constructor() {
@@ -44,6 +50,14 @@ class TikTokAPI {
     const scope = 'video.upload,user.info.basic';
     const authUrl = `https://www.tiktok.com/v2/auth/authorize?client_key=${CLIENT_KEY}&scope=${scope}&response_type=code&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&state=${csrfState}&code_challenge=${codeChallenge}&code_challenge_method=plain`;
     
+    console.log('🔗 Generated Auth URL:', authUrl);
+    console.log('📋 Auth params:', {
+      client_key: CLIENT_KEY,
+      redirect_uri: REDIRECT_URI,
+      state: csrfState,
+      code_challenge: codeChallenge
+    });
+    
     return authUrl;
   }
 
@@ -51,6 +65,12 @@ class TikTokAPI {
   async getAccessToken(code) {
     try {
       const codeVerifier = localStorage.getItem('code_verifier');
+      
+      console.log('🔄 Getting access token with:', {
+        code: code.substring(0, 10) + '...',
+        code_verifier: codeVerifier?.substring(0, 10) + '...',
+        redirect_uri: REDIRECT_URI
+      });
       
       // Note: In production, this should be done on backend to protect client secret
       const params = new URLSearchParams({
@@ -68,6 +88,8 @@ class TikTokAPI {
         }
       });
 
+      console.log('✅ Token response:', response.data);
+
       if (response.data.access_token) {
         this.accessToken = response.data.access_token;
         this.openId = response.data.open_id;
@@ -75,12 +97,16 @@ class TikTokAPI {
         localStorage.setItem('tiktok_access_token', this.accessToken);
         localStorage.setItem('tiktok_open_id', this.openId);
         
+        console.log('💾 Token saved successfully');
+        
         return { success: true, data: response.data };
       }
       
+      console.error('❌ No access token in response');
       return { success: false, error: 'No access token received' };
     } catch (error) {
-      console.error('Error getting access token:', error);
+      console.error('❌ Error getting access token:', error);
+      console.error('Response data:', error.response?.data);
       return { success: false, error: error.response?.data || error.message };
     }
   }
