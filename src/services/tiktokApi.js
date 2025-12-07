@@ -47,7 +47,7 @@ class TikTokAPI {
     
     const codeChallenge = this.generateCodeChallenge();
     
-    const scope = 'video.upload,user.info.basic';
+    const scope = 'user.info.basic,video.upload,video.publish';
     const authUrl = `https://www.tiktok.com/v2/auth/authorize?client_key=${CLIENT_KEY}&scope=${scope}&response_type=code&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&state=${csrfState}&code_challenge=${codeChallenge}&code_challenge_method=plain`;
     
     console.log('🔗 Generated Auth URL:', authUrl);
