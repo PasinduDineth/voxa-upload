@@ -60,14 +60,15 @@ module.exports = async (req, res) => {
       isChunked: totalChunkCount > 1
     });
     
-    // Build request exactly like TikTok docs
+    // Build request exactly per official API docs
     const requestPayload = {
       post_info: {
-        title: videoFile.title || 'Video Upload',
         privacy_level: videoFile.privacyLevel || 'SELF_ONLY',
+        title: videoFile.title || 'Video Upload',
         disable_duet: false,
         disable_comment: false,
-        disable_stitch: false
+        disable_stitch: false,
+        brand_content_toggle: false
       },
       source_info: {
         source: 'FILE_UPLOAD',
