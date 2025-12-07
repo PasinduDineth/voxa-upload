@@ -23,6 +23,10 @@ module.exports = async (req, res) => {
   }
 
   try {
+    // TikTok requires chunk_size to be a multiple of their minimum (usually 5MB or 10MB)
+    // For simplicity, we'll send the whole file in one chunk
+    const chunkSize = Math.min(videoFile.size, 64 * 1024 * 1024); // Max 64MB per chunk
+    
     const response = await axios.post(
       'https://open.tiktokapis.com/v2/post/publish/video/init/',
       {
@@ -37,7 +41,7 @@ module.exports = async (req, res) => {
         source_info: {
           source: 'FILE_UPLOAD',
           video_size: videoFile.size,
-          chunk_size: videoFile.size,
+          chunk_size: chunkSize,
           total_chunk_count: 1
         }
       },
