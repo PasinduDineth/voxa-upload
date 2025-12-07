@@ -56,59 +56,45 @@ module.exports = async (req, res) => {
       return res.status(400).json({ error: 'Invalid video size' });
     }
     
-    // Build request EXACTLY like PHP SDK does
-    // PHP: $post->publish(['post_info' => [...], 'source_info' => [...]])
+    // Build request EXACTLY matching official TikTok documentation
+    // https://developers.tiktok.com/doc/content-posting-api-get-started/
+    // For FILE_UPLOAD, they show: video_size, chunk_size, total_chunk_count
     const params = {
       post_info: {
-        title: videoFile.title || 'Video Upload',
-        privacy_level: videoFile.privacyLevel || 'SELF_ONLY',
+        title: String(videoFile.title || 'Video Upload'),
+        privacy_level: String(videoFile.privacyLevel || 'SELF_ONLY'),
         disable_duet: false,
         disable_comment: false,
         disable_stitch: false
       },
       source_info: {
         source: 'FILE_UPLOAD',
-        video_size: videoSize
+        video_size: Number(videoSize),
+        chunk_size: Number(videoSize),  // Upload entire file as 1 chunk
+        total_chunk_count: 1
       }
     };
     
-    console.log('📦 Request params object:', JSON.stringify(params, null, 2));
+    console.log('📦 Request params (matching TikTok docs):', JSON.stringify(params, null, 2));
     
-    // PHP SDK sends:
-    // - URL: https://open.tiktokapis.com/v2/post/publish/video/init/?access_token=XXX
-    // - Method: POST
-    // - Body: application/x-www-form-urlencoded (http_build_query of params)
-    // - Headers: Authorization: Bearer XXX
+    console.log('📦 Request params (matching TikTok docs):', JSON.stringify(params, null, 2));
     
-    // Create URL-encoded form data EXACTLY like PHP's http_build_query
-    const formData = new URLSearchParams();
-    formData.append('post_info[title]', params.post_info.title);
-    formData.append('post_info[privacy_level]', params.post_info.privacy_level);
-    formData.append('post_info[disable_duet]', params.post_info.disable_duet);
-    formData.append('post_info[disable_comment]', params.post_info.disable_comment);
-    formData.append('post_info[disable_stitch]', params.post_info.disable_stitch);
-    formData.append('source_info[source]', params.source_info.source);
-    formData.append('source_info[video_size]', params.source_info.video_size);
-    
-    const formDataString = formData.toString();
-    
-    console.log('📝 Form-encoded body (like PHP):', formDataString);
-    
-    const url = `https://open.tiktokapis.com/v2/post/publish/video/init/?access_token=${accessToken}`;
+    // Official TikTok docs example:
+    // https://developers.tiktok.com/doc/content-posting-api-get-started/
+    const url = 'https://open.tiktokapis.com/v2/post/publish/video/init/';
     const headers = {
       'Authorization': `Bearer ${accessToken}`,
-      'Content-Type': 'application/x-www-form-urlencoded'
+      'Content-Type': 'application/json; charset=UTF-8'
     };
     
-    console.log('🌐 Request details:', {
-      url: url.substring(0, 80) + '...',
+    console.log('🌐 Final request to TikTok API:', {
+      url: url,
       method: 'POST',
       headers: headers,
-      bodyLength: formDataString.length,
-      bodyPreview: formDataString.substring(0, 200)
+      bodyJSON: JSON.stringify(params, null, 2)
     });
 
-    const response = await axios.post(url, formDataString, { headers });
+    const response = await axios.post(url, params, { headers });
 
     console.log('✅ TikTok API SUCCESS:', {
       status: response.status,
