@@ -32,8 +32,6 @@ module.exports = async (req, res) => {
   }
 
   try {
-    // Upload entire file at once (matching PHP SDK approach)
-    // TikTok accepts files up to 4GB uploaded as a single upload
     const videoSize = videoFile.size;
     
     const requestPayload = {
@@ -47,8 +45,6 @@ module.exports = async (req, res) => {
       source_info: {
         source: 'FILE_UPLOAD',
         video_size: videoSize
-        // Do NOT include chunk_size and total_chunk_count for single file upload
-        // These are only needed for actual chunked uploads (not our use case)
       }
     };
     
