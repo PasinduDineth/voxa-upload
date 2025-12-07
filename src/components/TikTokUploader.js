@@ -112,32 +112,60 @@ function TikTokUploader() {
         throw new Error(JSON.stringify(uploadResult.error));
       }
 
-      // Step 3: Check publish status
-      setUploadStatus('Publishing video...');
+      // Step 3: Check upload status
+      setUploadStatus('Processing upload...');
       
       // Poll for status
       let attempts = 0;
-      const maxAttempts = 30;
+      const maxAttempts = 15; // Reduced attempts since inbox uploads complete faster
       const checkStatus = async () => {
         const statusResult = await tiktokApi.publishVideo(publish_id);
         
         if (statusResult.success) {
           const status = statusResult.data.status;
+          const uploadedBytes = statusResult.data.uploaded_bytes || 0;
           
-          if (status === 'PUBLISH_COMPLETE') {
+          // For inbox uploads, these are the possible statuses:
+          // PROCESSING_UPLOAD - Video is being processed
+          // SEND_TO_USER_INBOX - Video sent to user's inbox (success!)
+          // FAILED - Upload failed
+          
+          if (status === 'SEND_TO_USER_INBOX') {
+            setUploadStatus('✅ Video sent to your TikTok inbox! Check your TikTok app notifications to review and post.');
+            setSelectedFile(null);
+            setVideoTitle('');
+            setUploading(false);
+            return;
+          } else if (status === 'PUBLISH_COMPLETE') {
+            // This shouldn't happen with inbox endpoint, but handle it anyway
             setUploadStatus('✅ Video uploaded successfully!');
             setSelectedFile(null);
             setVideoTitle('');
             setUploading(false);
             return;
           } else if (status === 'FAILED') {
-            throw new Error('Publishing failed');
-          } else if (attempts < maxAttempts) {
-            attempts++;
-            setUploadStatus(`Publishing... (${attempts}/${maxAttempts})`);
-            setTimeout(checkStatus, 2000);
+            throw new Error('Upload failed');
+          } else if (status === 'PROCESSING_UPLOAD') {
+            // Still processing
+            if (attempts < maxAttempts) {
+              attempts++;
+              const progress = uploadedBytes > 0 ? ` (${Math.round(uploadedBytes / selectedFile.size * 100)}%)` : '';
+              setUploadStatus(`Processing upload${progress}... (${attempts}/${maxAttempts})`);
+              setTimeout(checkStatus, 3000);
+            } else {
+              // Timeout - but upload might still succeed
+              setUploadStatus('⚠️ Upload is taking longer than expected. Check your TikTok inbox in a few minutes.');
+              setUploading(false);
+            }
           } else {
-            throw new Error('Publishing timeout');
+            // Unknown status, keep checking
+            if (attempts < maxAttempts) {
+              attempts++;
+              setUploadStatus(`Status: ${status}... (${attempts}/${maxAttempts})`);
+              setTimeout(checkStatus, 3000);
+            } else {
+              throw new Error('Unknown status: ' + status);
+            }
           }
         } else {
           throw new Error(JSON.stringify(statusResult.error));
