@@ -137,15 +137,13 @@ function TikTokUploader() {
           // SEND_TO_USER_INBOX - Video sent to user's inbox (success!)
           // FAILED - Upload failed
           
-          if (status === 'SEND_TO_USER_INBOX') {
-            setUploadStatus('✅ Video sent to your TikTok inbox! Check your TikTok app notifications to review and post.');
+          if (status === 'PUBLISH_COMPLETE') {
+            setUploadStatus('✅ Video posted successfully! It\'s set to Private (only you can see it). Go to your TikTok profile to view it.');
             setSelectedFile(null);
             setVideoTitle('');
             setUploading(false);
             return;
-          } else if (status === 'PUBLISH_COMPLETE') {
-            // This shouldn't happen with inbox endpoint, but handle it anyway
-            setUploadStatus('✅ Video uploaded successfully!');
+          } else if (status === 'SEND_TO_USER_INBOX') {
             setSelectedFile(null);
             setVideoTitle('');
             setUploading(false);
@@ -286,17 +284,17 @@ function TikTokUploader() {
         )}
 
         <div className="info-section">
-          <h3>📱 How to Find Your Uploaded Videos:</h3>
+          <h3>📱 Where to Find Your Uploaded Videos:</h3>
           <ol style={{ textAlign: 'left', lineHeight: '1.8' }}>
             <li><strong>Open the TikTok mobile app</strong> on your phone</li>
             <li>Tap on <strong>"Profile"</strong> (bottom right icon)</li>
-            <li>Look for <strong>"Drafts"</strong> section (usually below your bio)</li>
-            <li>Your uploaded video will appear there!</li>
-            <li>Tap to edit, add effects, or post it</li>
+            <li>Look at your profile videos (they'll show a 🔒 lock icon)</li>
+            <li>Your videos are automatically set to <strong>PRIVATE</strong> (only you can see them)</li>
+            <li>Tap on a video → Three dots (...) → Privacy settings to change visibility</li>
           </ol>
           <p style={{ marginTop: '15px', padding: '10px', background: '#fff3cd', borderRadius: '5px', fontSize: '0.9em' }}>
-            <strong>⚠️ Important:</strong> Videos uploaded via this tool are saved as <strong>drafts</strong> in your TikTok account. 
-            They won't appear in your public profile until you open them in the TikTok app and post them.
+            <strong>⚠️ Sandbox Mode:</strong> All videos uploaded via this sandbox app are <strong>automatically set to PRIVATE</strong> (only visible to you). 
+            This is a TikTok restriction for unapproved apps. To make videos public, your app needs to complete TikTok's audit process.
           </p>
           <h3 style={{ marginTop: '25px' }}>Upload Requirements:</h3>
           <ul>
