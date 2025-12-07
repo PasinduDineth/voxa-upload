@@ -31,8 +31,20 @@ module.exports = async (req, res) => {
     return res.status(400).json({ error: 'Access token required' });
   }
 
+  if (!videoFile || !videoFile.size) {
+    console.log('❌ Missing video file or size:', videoFile);
+    return res.status(400).json({ error: 'Video file and size required' });
+  }
+
   try {
-    const videoSize = videoFile.size;
+    const videoSize = parseInt(videoFile.size, 10);
+    
+    console.log('📊 Video size:', videoSize, 'Type:', typeof videoSize);
+    
+    if (!videoSize || videoSize <= 0) {
+      console.log('❌ Invalid video size:', videoSize);
+      return res.status(400).json({ error: 'Invalid video size' });
+    }
     
     const requestPayload = {
       post_info: {
