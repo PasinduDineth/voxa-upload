@@ -138,61 +138,25 @@ class TikTokAPI {
     }
   }
 
-  // Upload video chunk(s)
-  async uploadVideo(uploadUrl, videoFile, chunkSize, totalChunks) {
+  // Upload entire video file (matching PHP SDK approach)
+  async uploadVideo(uploadUrl, videoFile) {
     try {
       const videoSize = videoFile.size;
-      console.log(`📤 Uploading ${totalChunks} chunk(s)...`);
+      console.log(`📤 Uploading entire file (${(videoSize / 1024 / 1024).toFixed(2)} MB)...`);
       
-      if (totalChunks === 1) {
-        // Single chunk upload (whole file)
-        console.log('📦 Uploading entire file in one chunk');
-        const response = await axios.put(uploadUrl, videoFile, {
-          headers: {
-            'Content-Type': 'video/mp4',
-            'Content-Length': videoSize,
-            'Content-Range': `bytes 0-${videoSize - 1}/${videoSize}`
-          }
-        });
-        
-        console.log('✅ Upload complete:', response.status);
-        return { success: true, data: response.data };
-      } else {
-        // Multiple chunk upload
-        for (let i = 0; i < totalChunks; i++) {
-          const start = i * chunkSize;
-          let end = Math.min(start + chunkSize, videoSize) - 1;
-          
-          // Last chunk can include trailing bytes
-          if (i === totalChunks - 1) {
-            end = videoSize - 1;
-          }
-          
-          const chunkBlob = videoFile.slice(start, end + 1);
-          const chunkByteSize = end - start + 1;
-          
-          console.log(`📦 Uploading chunk ${i + 1}/${totalChunks}: bytes ${start}-${end}/${videoSize}`);
-          
-          const response = await axios.put(uploadUrl, chunkBlob, {
-            headers: {
-              'Content-Type': 'video/mp4',
-              'Content-Length': chunkByteSize,
-              'Content-Range': `bytes ${start}-${end}/${videoSize}`
-            }
-          });
-          
-          console.log(`✅ Chunk ${i + 1} uploaded:`, response.status);
-          
-          // 206 = Partial Content (more chunks to upload)
-          // 201 = Created (all chunks uploaded)
-          if (response.status !== 206 && response.status !== 201) {
-            throw new Error(`Unexpected response status: ${response.status}`);
-          }
-        }
-        
-        console.log('✅ All chunks uploaded successfully');
-        return { success: true };
-      }
+      // Upload entire file in one PUT request (like PHP SDK does)
+      const response = await axios.put(uploadUrl, videoFile, {
+        headers: {
+          'Content-Type': 'video/mp4',
+          'Content-Length': videoSize,
+          'Content-Range': `bytes 0-${videoSize - 1}/${videoSize}`
+        },
+        maxContentLength: Infinity,
+        maxBodyLength: Infinity
+      });
+      
+      console.log('✅ Upload complete:', response.status);
+      return { success: true, data: response.data }
     } catch (error) {
       console.error('❌ Error uploading video:', error);
       console.error('Response:', error.response?.data);

@@ -104,11 +104,11 @@ function TikTokUploader() {
         throw new Error(JSON.stringify(initResult.error));
       }
 
-      const { publish_id, upload_url, chunk_size, total_chunk_count } = initResult.data;
+      const { publish_id, upload_url } = initResult.data;
       
-      // Step 2: Upload video (with chunking support)
+      // Step 2: Upload entire video file
       setUploadStatus('Uploading video...');
-      const uploadResult = await tiktokApi.uploadVideo(upload_url, selectedFile, chunk_size, total_chunk_count);
+      const uploadResult = await tiktokApi.uploadVideo(upload_url, selectedFile);
       
       if (!uploadResult.success) {
         throw new Error(JSON.stringify(uploadResult.error));

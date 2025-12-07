@@ -32,41 +32,11 @@ module.exports = async (req, res) => {
   }
 
   try {
-    // TikTok chunk restrictions:
-    // - Files < 5MB: upload as whole (chunk_size = video_size)
-    // - Files 5MB-64MB: can upload as whole OR in chunks (5MB-64MB each)
-    // - Files > 64MB: MUST split into chunks (5MB-64MB each, last chunk can be up to 128MB)
-    // - Min chunks: 1, Max chunks: 1000
+    // Upload entire file at once (matching PHP SDK approach)
+    // TikTok accepts files up to 4GB uploaded as a single chunk
     const videoSize = videoFile.size;
-    const MIN_CHUNK_SIZE = 5 * 1024 * 1024; // 5MB
-    const MAX_CHUNK_SIZE = 64 * 1024 * 1024; // 64MB
-    const STANDARD_CHUNK_SIZE = 10 * 1024 * 1024; // 10MB - safe middle ground
-    
-    let chunkSize;
-    let totalChunks;
-    
-    if (videoSize < MIN_CHUNK_SIZE) {
-      // Very small files: must upload as whole
-      chunkSize = videoSize;
-      totalChunks = 1;
-    } else if (videoSize <= MAX_CHUNK_SIZE) {
-      // Medium files: can upload as whole
-      chunkSize = videoSize;
-      totalChunks = 1;
-    } else {
-      // Large files: split into chunks
-      chunkSize = STANDARD_CHUNK_SIZE;
-      // Calculate chunks: total_chunk_count = floor(video_size / chunk_size)
-      totalChunks = Math.floor(videoSize / chunkSize);
-      
-      // Check if there's a remainder
-      const remainder = videoSize % chunkSize;
-      if (remainder > 0) {
-        // If remainder exists, it will be merged with the last chunk
-        // So we still count it as part of the chunks
-        totalChunks = totalChunks > 0 ? totalChunks : 1;
-      }
-    }
+    const chunkSize = videoSize; // Always upload entire file
+    const totalChunks = 1; // Always 1 chunk
     
     const requestPayload = {
       post_info: {
