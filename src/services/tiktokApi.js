@@ -114,26 +114,47 @@ class TikTokAPI {
   // Initialize video upload
   async initializeUpload(videoFile, videoTitle, privacyLevel) {
     if (!this.accessToken) {
+      console.error('❌ No access token available');
       return { success: false, error: 'Not authenticated' };
     }
 
     try {
       console.log('🚀 Initializing upload via backend...');
       
-      const response = await axios.post('/api/init-upload', {
+      const requestData = {
         accessToken: this.accessToken,
         videoFile: {
           size: videoFile.size,
           title: videoTitle,
           privacyLevel: privacyLevel
         }
+      };
+      
+      console.log('📤 Frontend sending to /api/init-upload:', {
+        accessTokenLength: this.accessToken.length,
+        accessTokenPreview: `${this.accessToken.substring(0, 20)}...`,
+        videoFileSize: videoFile.size,
+        videoFileSizeType: typeof videoFile.size,
+        videoTitle: videoTitle,
+        privacyLevel: privacyLevel,
+        fullPayload: JSON.stringify(requestData)
       });
+      
+      const response = await axios.post('/api/init-upload', requestData);
 
-      console.log('✅ Upload initialized:', response.data);
+      console.log('✅ Backend response received:', {
+        status: response.status,
+        data: response.data
+      });
+      
       return { success: true, data: response.data.data };
     } catch (error) {
-      console.error('❌ Error initializing upload:', error);
-      console.error('Response data:', error.response?.data);
+      console.error('❌ Error initializing upload:', {
+        message: error.message,
+        status: error.response?.status,
+        responseData: error.response?.data,
+        fullError: error
+      });
       return { success: false, error: error.response?.data || error.message };
     }
   }
