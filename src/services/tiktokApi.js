@@ -114,70 +114,84 @@ class TikTokAPI {
   // Initialize video upload
   async initializeUpload(videoFile, videoTitle, privacyLevel) {
     if (!this.accessToken) {
-      console.error('❌ No access token available');
       return { success: false, error: 'Not authenticated' };
     }
 
     try {
       console.log('🚀 Initializing upload via backend...');
       
-      const requestData = {
+      const response = await axios.post('/api/init-upload', {
         accessToken: this.accessToken,
         videoFile: {
           size: videoFile.size,
           title: videoTitle,
           privacyLevel: privacyLevel
         }
-      };
-      
-      console.log('📤 Frontend sending to /api/init-upload:', {
-        accessTokenLength: this.accessToken.length,
-        accessTokenPreview: `${this.accessToken.substring(0, 20)}...`,
-        videoFileSize: videoFile.size,
-        videoFileSizeType: typeof videoFile.size,
-        videoTitle: videoTitle,
-        privacyLevel: privacyLevel,
-        fullPayload: JSON.stringify(requestData)
       });
-      
-      const response = await axios.post('/api/init-upload', requestData);
 
-      console.log('✅ Backend response received:', {
-        status: response.status,
-        data: response.data
-      });
-      
+      console.log('✅ Upload initialized:', response.data);
       return { success: true, data: response.data.data };
     } catch (error) {
-      console.error('❌ Error initializing upload:', {
-        message: error.message,
-        status: error.response?.status,
-        responseData: error.response?.data,
-        fullError: error
-      });
+      console.error('❌ Error initializing upload:', error);
+      console.error('Response data:', error.response?.data);
       return { success: false, error: error.response?.data || error.message };
     }
   }
 
-  // Upload entire video file (matching PHP SDK approach)
+  // Upload video in chunks (TikTok Media Transfer Guide - required for files >64MB)
   async uploadVideo(uploadUrl, videoFile) {
     try {
-      const videoSize = videoFile.size;
-      console.log(`📤 Uploading entire file (${(videoSize / 1024 / 1024).toFixed(2)} MB)...`);
+      const CHUNK_SIZE = 64 * 1024 * 1024; // 64MB - matches backend calculation
+      const totalSize = videoFile.size;
+      const totalChunks = Math.ceil(totalSize / CHUNK_SIZE);
       
-      // Upload entire file in one PUT request (like PHP SDK does)
-      const response = await axios.put(uploadUrl, videoFile, {
-        headers: {
-          'Content-Type': 'video/mp4',
-          'Content-Length': videoSize,
-          'Content-Range': `bytes 0-${videoSize - 1}/${videoSize}`
-        },
-        maxContentLength: Infinity,
-        maxBodyLength: Infinity
+      console.log('📤 Starting chunk upload:', {
+        totalSizeMB: (totalSize / 1024 / 1024).toFixed(2),
+        chunkSizeMB: (CHUNK_SIZE / 1024 / 1024).toFixed(2),
+        totalChunks
       });
       
-      console.log('✅ Upload complete:', response.status);
-      return { success: true, data: response.data }
+      // Upload chunks sequentially
+      for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+        const start = chunkIndex * CHUNK_SIZE;
+        const end = Math.min(start + CHUNK_SIZE, totalSize);
+        const chunk = videoFile.slice(start, end);
+        const chunkSize = end - start;
+        
+        console.log(`📦 Uploading chunk ${chunkIndex + 1}/${totalChunks}:`, {
+          start,
+          end: end - 1,
+          chunkSizeMB: (chunkSize / 1024 / 1024).toFixed(2),
+          contentRange: `bytes ${start}-${end - 1}/${totalSize}`
+        });
+        
+        const response = await axios.put(uploadUrl, chunk, {
+          headers: {
+            'Content-Type': videoFile.type || 'video/mp4',
+            'Content-Length': chunkSize,
+            'Content-Range': `bytes ${start}-${end - 1}/${totalSize}`
+          },
+          maxContentLength: Infinity,
+          maxBodyLength: Infinity
+        });
+        
+        console.log(`✅ Chunk ${chunkIndex + 1} response:`, {
+          status: response.status,
+          statusText: response.statusText,
+          contentRange: response.headers['content-range']
+        });
+        
+        // 206 = Partial Content (more chunks to come)
+        // 201 = Created (all chunks uploaded successfully)
+        if (response.status === 201) {
+          console.log('✅ All chunks uploaded successfully!');
+          return { success: true, data: response.data };
+        } else if (response.status !== 206) {
+          throw new Error(`Unexpected response status: ${response.status}`);
+        }
+      }
+      
+      throw new Error('Upload completed but did not receive 201 status');
     } catch (error) {
       console.error('❌ Error uploading video:', error);
       console.error('Response:', error.response?.data);

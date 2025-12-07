@@ -17,17 +17,13 @@ module.exports = async (req, res) => {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  console.log('🔍 RAW REQUEST BODY:', JSON.stringify(req.body, null, 2));
-
   const { accessToken, videoFile } = req.body;
 
-  console.log('📥 Parsed request data:', {
+  console.log('📥 Init upload request:', {
     hasAccessToken: !!accessToken,
-    accessTokenLength: accessToken?.length,
-    accessTokenPreview: accessToken ? `${accessToken.substring(0, 20)}...` : null,
-    videoFile: videoFile,
-    videoFileType: typeof videoFile,
-    videoFileKeys: videoFile ? Object.keys(videoFile) : null
+    videoFileSize: videoFile?.size,
+    videoTitle: videoFile?.title,
+    privacyLevel: videoFile?.privacyLevel
   });
 
   if (!accessToken) {
@@ -43,79 +39,69 @@ module.exports = async (req, res) => {
   try {
     const videoSize = parseInt(videoFile.size, 10);
     
-    console.log('📊 Video size validation:', {
-      originalSize: videoFile.size,
-      originalType: typeof videoFile.size,
-      parsedSize: videoSize,
-      parsedType: typeof videoSize,
-      isValid: videoSize > 0
-    });
+    console.log('📊 Video size:', videoSize, 'Type:', typeof videoSize);
     
     if (!videoSize || videoSize <= 0) {
       console.log('❌ Invalid video size:', videoSize);
       return res.status(400).json({ error: 'Invalid video size' });
     }
     
-    // Build request EXACTLY matching official TikTok documentation
-    // https://developers.tiktok.com/doc/content-posting-api-get-started/
-    // For FILE_UPLOAD, they show: video_size, chunk_size, total_chunk_count
-    const params = {
+    // Calculate chunks according to TikTok Media Transfer Guide:
+    // - Videos >64MB MUST use chunks
+    // - Each chunk: 5MB min, 64MB max (final chunk can be up to 128MB)
+    // - total_chunk_count = floor(video_size / chunk_size)
+    const CHUNK_SIZE = 64 * 1024 * 1024; // 64MB in bytes
+    const chunkSize = Math.min(CHUNK_SIZE, videoSize);
+    const totalChunkCount = Math.max(1, Math.ceil(videoSize / CHUNK_SIZE));
+    
+    console.log('📦 Chunk calculation:', {
+      chunkSize,
+      totalChunkCount,
+      isChunked: totalChunkCount > 1
+    });
+    
+    // Build request exactly like TikTok docs
+    const requestPayload = {
       post_info: {
-        title: String(videoFile.title || 'Video Upload'),
-        privacy_level: String(videoFile.privacyLevel || 'SELF_ONLY'),
+        title: videoFile.title || 'Video Upload',
+        privacy_level: videoFile.privacyLevel || 'SELF_ONLY',
         disable_duet: false,
         disable_comment: false,
         disable_stitch: false
       },
       source_info: {
         source: 'FILE_UPLOAD',
-        video_size: Number(videoSize),
-        chunk_size: Number(videoSize),  // Upload entire file as 1 chunk
-        total_chunk_count: 1
+        video_size: videoSize,
+        chunk_size: chunkSize,
+        total_chunk_count: totalChunkCount
       }
     };
     
-    console.log('📦 Request params (matching TikTok docs):', JSON.stringify(params, null, 2));
+    console.log('📤 Request payload:', JSON.stringify(requestPayload, null, 2));
     
-    console.log('📦 Request params (matching TikTok docs):', JSON.stringify(params, null, 2));
-    
-    // Official TikTok docs example:
-    // https://developers.tiktok.com/doc/content-posting-api-get-started/
-    const url = 'https://open.tiktokapis.com/v2/post/publish/video/init/';
-    const headers = {
-      'Authorization': `Bearer ${accessToken}`,
-      'Content-Type': 'application/json; charset=UTF-8'
-    };
-    
-    console.log('🌐 Final request to TikTok API:', {
-      url: url,
-      method: 'POST',
-      headers: headers,
-      bodyJSON: JSON.stringify(params, null, 2)
-    });
+    // TikTok API expects JSON body with access_token as query param (PHP SDK does this)
+    const response = await axios.post(
+      `https://open.tiktokapis.com/v2/post/publish/video/init/`,
+      requestPayload,
+      {
+        params: {
+          access_token: accessToken
+        },
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    );
 
-    const response = await axios.post(url, params, { headers });
-
-    console.log('✅ TikTok API SUCCESS:', {
-      status: response.status,
-      statusText: response.statusText,
-      data: response.data
-    });
-    
+    console.log('✅ TikTok API response:', JSON.stringify(response.data, null, 2));
     res.status(200).json(response.data);
   } catch (error) {
-    console.error('❌ TikTok API ERROR - Full details:', {
-      message: error.message,
+    console.error('❌ TikTok API Error:', {
       status: error.response?.status,
       statusText: error.response?.statusText,
-      responseData: error.response?.data,
-      responseHeaders: error.response?.headers,
-      requestUrl: error.config?.url,
-      requestMethod: error.config?.method,
-      requestHeaders: error.config?.headers,
-      requestData: error.config?.data
+      data: error.response?.data,
+      message: error.message
     });
-    
     res.status(error.response?.status || 500).json({
       error: error.response?.data || error.message
     });
