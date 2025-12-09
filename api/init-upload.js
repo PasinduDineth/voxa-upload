@@ -47,11 +47,12 @@ module.exports = async (req, res) => {
     }
     
     // Calculate chunks exactly like working curl example:
-    // video_size: 117206338, chunk_size: 10000000, total_chunk_count: 12
-    // (117206338 / 10000000 = 11.7206338 → ceil = 12)
+    // video_size: 117206338, chunk_size: 10000000, total_chunk_count: 11
+    // chunk_count = ONLY FULL CHUNKS (not including partial)
+    // 117206338 / 10000000 = 11.7206338 → floor = 11 full chunks
     const CHUNK_SIZE = 10000000; // 10MB in bytes
     const chunkSize = CHUNK_SIZE;
-    const totalChunkCount = Math.ceil(videoSize / CHUNK_SIZE);
+    const totalChunkCount = Math.floor(videoSize / CHUNK_SIZE);
     
     console.log('📦 Chunk calculation:', {
       videoSize,

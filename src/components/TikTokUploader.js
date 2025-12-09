@@ -6,7 +6,6 @@ function TikTokUploader() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [videoTitle, setVideoTitle] = useState('');
-  const [privacyLevel, setPrivacyLevel] = useState('SELF_ONLY');
   const [uploading, setUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState('');
   const [error, setError] = useState('');
@@ -98,7 +97,7 @@ function TikTokUploader() {
 
     try {
       // Step 1: Initialize upload
-      const initResult = await tiktokApi.initializeUpload(selectedFile, videoTitle, privacyLevel);
+      const initResult = await tiktokApi.initializeUpload(selectedFile, videoTitle, "SELF_ONLY");
       
       if (!initResult.success) {
         throw new Error(JSON.stringify(initResult.error));
@@ -246,20 +245,6 @@ function TikTokUploader() {
               maxLength={150}
               disabled={uploading}
             />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="privacy">Privacy Level</label>
-            <select
-              id="privacy"
-              value={privacyLevel}
-              onChange={(e) => setPrivacyLevel(e.target.value)}
-              disabled={uploading}
-            >
-              <option value="SELF_ONLY">Private (Only Me)</option>
-              <option value="MUTUAL_FOLLOW_FRIENDS">Friends</option>
-              <option value="PUBLIC_TO_EVERYONE">Public</option>
-            </select>
           </div>
 
           <button
