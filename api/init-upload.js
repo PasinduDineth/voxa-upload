@@ -46,29 +46,29 @@ module.exports = async (req, res) => {
       return res.status(400).json({ error: 'Invalid video size' });
     }
     
-    // Calculate chunks according to TikTok Media Transfer Guide:
-    // - Videos >64MB MUST use chunks
-    // - Each chunk: 5MB min, 64MB max (final chunk can be up to 128MB)
-    // - total_chunk_count = floor(video_size / chunk_size)
-    const CHUNK_SIZE = 64 * 1024 * 1024; // 64MB in bytes
-    const chunkSize = Math.min(CHUNK_SIZE, videoSize);
-    const totalChunkCount = Math.max(1, Math.ceil(videoSize / CHUNK_SIZE));
+    // Calculate chunks exactly like working curl example:
+    // video_size: 117206338, chunk_size: 10000000, total_chunk_count: 12
+    // (117206338 / 10000000 = 11.7206338 → ceil = 12)
+    const CHUNK_SIZE = 10000000; // 10MB in bytes
+    const chunkSize = CHUNK_SIZE;
+    const totalChunkCount = Math.ceil(videoSize / CHUNK_SIZE);
     
     console.log('📦 Chunk calculation:', {
+      videoSize,
       chunkSize,
       totalChunkCount,
-      isChunked: totalChunkCount > 1
+      calculation: `${videoSize} / ${CHUNK_SIZE} = ${videoSize / CHUNK_SIZE} → ceil = ${totalChunkCount}`
     });
     
-    // Build request exactly per official API docs
+    // Build request exactly like working curl example
     const requestPayload = {
       post_info: {
-        privacy_level: videoFile.privacyLevel || 'SELF_ONLY',
-        title: videoFile.title || 'Video Upload',
+        title: videoFile.title || 'Sandbox test video #fyp',
+        privacy_level: 'SELF_ONLY',
         disable_duet: false,
-        disable_comment: false,
+        disable_comment: true,
         disable_stitch: false,
-        brand_content_toggle: false
+        video_cover_timestamp_ms: 1000
       },
       source_info: {
         source: 'FILE_UPLOAD',

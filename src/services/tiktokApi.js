@@ -141,7 +141,7 @@ class TikTokAPI {
   // Upload video in chunks (TikTok Media Transfer Guide - required for files >64MB)
   async uploadVideo(uploadUrl, videoFile) {
     try {
-      const CHUNK_SIZE = 64 * 1024 * 1024; // 64MB - matches backend calculation
+      const CHUNK_SIZE = 10000000; // 10MB - matches backend calculation and working curl example
       const totalSize = videoFile.size;
       const totalChunks = Math.ceil(totalSize / CHUNK_SIZE);
       
