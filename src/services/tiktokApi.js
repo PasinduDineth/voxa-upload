@@ -1,8 +1,10 @@
+// src/tiktokApi.js
 import axios from 'axios';
 
 const CLIENT_KEY = 'sbaw0lz3d1a0f32yv3';
 const CLIENT_SECRET = 'd3UvL0TgwNkuDVfirIT4UuI2wnCrXUMY';
-const REDIRECT_URI = process.env.REACT_APP_REDIRECT_URI || 'https://www.pasindu.website/callback';
+const REDIRECT_URI =
+  process.env.REACT_APP_REDIRECT_URI || 'https://www.pasindu.website/callback';
 
 console.log('🔑 TikTok API Config:', {
   CLIENT_KEY,
@@ -18,12 +20,9 @@ class TikTokAPI {
 
   // Generate code verifier and challenge for PKCE
   generateCodeChallenge() {
-    // Generate random code verifier
     const codeVerifier = this.generateRandomString(43);
     localStorage.setItem('code_verifier', codeVerifier);
-    
-    // Create code challenge (for simplicity, using plain method)
-    // In production, use SHA256 hash
+    // Using "plain" for code_challenge_method
     return codeVerifier;
   }
 
@@ -32,11 +31,11 @@ class TikTokAPI {
     let result = '';
     const randomValues = new Uint8Array(length);
     crypto.getRandomValues(randomValues);
-    
+
     for (let i = 0; i < length; i++) {
       result += charset[randomValues[i] % charset.length];
     }
-    
+
     return result;
   }
 
@@ -44,12 +43,14 @@ class TikTokAPI {
   getAuthUrl() {
     const csrfState = Math.random().toString(36).substring(2);
     localStorage.setItem('csrf_state', csrfState);
-    
+
     const codeChallenge = this.generateCodeChallenge();
-    
     const scope = 'user.info.basic,video.upload,video.publish';
-    const authUrl = `https://www.tiktok.com/v2/auth/authorize?client_key=${CLIENT_KEY}&scope=${scope}&response_type=code&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&state=${csrfState}&code_challenge=${codeChallenge}&code_challenge_method=plain`;
-    
+
+    const authUrl = `https://www.tiktok.com/v2/auth/authorize?client_key=${CLIENT_KEY}&scope=${scope}&response_type=code&redirect_uri=${encodeURIComponent(
+      REDIRECT_URI
+    )}&state=${csrfState}&code_challenge=${codeChallenge}&code_challenge_method=plain`;
+
     console.log('🔗 Generated Auth URL:', authUrl);
     console.log('📋 Auth params:', {
       client_key: CLIENT_KEY,
@@ -57,7 +58,7 @@ class TikTokAPI {
       state: csrfState,
       code_challenge: codeChallenge
     });
-    
+
     return authUrl;
   }
 
@@ -65,14 +66,13 @@ class TikTokAPI {
   async getAccessToken(code) {
     try {
       const codeVerifier = localStorage.getItem('code_verifier');
-      
+
       console.log('🔄 Getting access token with:', {
-        code: code.substring(0, 10) + '...',
+        code: code?.substring(0, 10) + '...',
         code_verifier: codeVerifier?.substring(0, 10) + '...',
         redirect_uri: REDIRECT_URI
       });
-      
-      // Note: In production, this should be done on backend to protect client secret
+
       const params = new URLSearchParams({
         client_key: CLIENT_KEY,
         client_secret: CLIENT_SECRET,
@@ -82,26 +82,30 @@ class TikTokAPI {
         code_verifier: codeVerifier
       });
 
-      const response = await axios.post('https://open.tiktokapis.com/v2/oauth/token/', params, {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
+      const response = await axios.post(
+        'https://open.tiktokapis.com/v2/oauth/token/',
+        params,
+        {
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
         }
-      });
+      );
 
       console.log('✅ Token response:', response.data);
 
       if (response.data.access_token) {
         this.accessToken = response.data.access_token;
         this.openId = response.data.open_id;
-        
+
         localStorage.setItem('tiktok_access_token', this.accessToken);
         localStorage.setItem('tiktok_open_id', this.openId);
-        
+
         console.log('💾 Token saved successfully');
-        
+
         return { success: true, data: response.data };
       }
-      
+
       console.error('❌ No access token in response');
       return { success: false, error: 'No access token received' };
     } catch (error) {
@@ -111,7 +115,7 @@ class TikTokAPI {
     }
   }
 
-  // Initialize video upload
+  // Initialize video upload (call backend)
   async initializeUpload(videoFile, videoTitle, privacyLevel) {
     if (!this.accessToken) {
       return { success: false, error: 'Not authenticated' };
@@ -119,7 +123,7 @@ class TikTokAPI {
 
     try {
       console.log('🚀 Initializing upload via backend...');
-      
+
       const response = await axios.post('/api/init-upload', {
         accessToken: this.accessToken,
         videoFile: {
@@ -130,6 +134,8 @@ class TikTokAPI {
       });
 
       console.log('✅ Upload initialized:', response.data);
+
+      // TikTok's init returns: { data: { upload_url, publish_id, ... }, ... }
       return { success: true, data: response.data.data };
     } catch (error) {
       console.error('❌ Error initializing upload:', error);
@@ -138,60 +144,85 @@ class TikTokAPI {
     }
   }
 
-  // Upload video in chunks (TikTok Media Transfer Guide - required for files >64MB)
+  // Upload video in chunks (for files > 64MB)
   async uploadVideo(uploadUrl, videoFile) {
     try {
-      const CHUNK_SIZE = 10000000; // 10MB - matches backend calculation and working curl example
+      const CHUNK_SIZE = 10_000_000; // 10 MB - MUST match backend
       const totalSize = videoFile.size;
-      const totalChunks = Math.ceil(totalSize / CHUNK_SIZE);
-      
+
+      // Must match what backend sent to TikTok: floor(video_size / chunk_size)
+      const totalChunkCount = Math.floor(totalSize / CHUNK_SIZE) || 1;
+
       console.log('📤 Starting chunk upload:', {
+        totalSizeBytes: totalSize,
         totalSizeMB: (totalSize / 1024 / 1024).toFixed(2),
+        chunkSizeBytes: CHUNK_SIZE,
         chunkSizeMB: (CHUNK_SIZE / 1024 / 1024).toFixed(2),
-        totalChunks
+        totalChunkCount
       });
-      
-      // Upload chunks sequentially
-      for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+
+      for (let chunkIndex = 0; chunkIndex < totalChunkCount; chunkIndex++) {
+        const isLastChunk = chunkIndex === totalChunkCount - 1;
+
         const start = chunkIndex * CHUNK_SIZE;
-        const end = Math.min(start + CHUNK_SIZE, totalSize);
+        const end = isLastChunk
+          ? totalSize // last chunk absorbs all remaining bytes
+          : start + CHUNK_SIZE;
+
         const chunk = videoFile.slice(start, end);
         const chunkSize = end - start;
-        
-        console.log(`📦 Uploading chunk ${chunkIndex + 1}/${totalChunks}:`, {
+
+        const firstByte = start;
+        const lastByte = end - 1; // inclusive
+        const contentRangeHeader = `bytes ${firstByte}-${lastByte}/${totalSize}`;
+
+        console.log(`📦 Uploading chunk ${chunkIndex + 1}/${totalChunkCount}:`, {
           start,
-          end: end - 1,
+          endExclusive: end,
+          firstByte,
+          lastByte,
+          chunkSize,
           chunkSizeMB: (chunkSize / 1024 / 1024).toFixed(2),
-          contentRange: `bytes ${start}-${end - 1}/${totalSize}`
+          contentRange: contentRangeHeader
         });
-        
+
         const response = await axios.put(uploadUrl, chunk, {
           headers: {
             'Content-Type': videoFile.type || 'video/mp4',
             'Content-Length': chunkSize,
-            'Content-Range': `bytes ${start}-${end - 1}/${totalSize}`
+            'Content-Range': contentRangeHeader
           },
           maxContentLength: Infinity,
           maxBodyLength: Infinity
         });
-        
+
         console.log(`✅ Chunk ${chunkIndex + 1} response:`, {
           status: response.status,
           statusText: response.statusText,
-          contentRange: response.headers['content-range']
+          responseContentRange: response.headers['content-range']
         });
-        
-        // 206 = Partial Content (more chunks to come)
-        // 201 = Created (all chunks uploaded successfully)
-        if (response.status === 201) {
-          console.log('✅ All chunks uploaded successfully!');
+
+        // TikTok:
+        // - 206 Partial Content for intermediate chunks
+        // - 201 Created for final chunk
+        if (isLastChunk) {
+          if (response.status !== 201) {
+            throw new Error(
+              `Expected 201 on last chunk, got ${response.status}`
+            );
+          }
+          console.log('🎉 All chunks uploaded successfully!');
           return { success: true, data: response.data };
-        } else if (response.status !== 206) {
-          throw new Error(`Unexpected response status: ${response.status}`);
+        } else {
+          if (response.status !== 206) {
+            throw new Error(
+              `Unexpected response status for non-final chunk: ${response.status}`
+            );
+          }
         }
       }
-      
-      throw new Error('Upload completed but did not receive 201 status');
+
+      throw new Error('Upload loop ended without sending last chunk');
     } catch (error) {
       console.error('❌ Error uploading video:', error);
       console.error('Response:', error.response?.data);
@@ -199,7 +230,7 @@ class TikTokAPI {
     }
   }
 
-  // Publish the uploaded video
+  // Publish the uploaded video (via backend)
   async publishVideo(publishId) {
     if (!this.accessToken) {
       return { success: false, error: 'Not authenticated' };
@@ -207,7 +238,7 @@ class TikTokAPI {
 
     try {
       console.log('📊 Checking publish status via backend...');
-      
+
       const response = await axios.post('/api/check-status', {
         accessToken: this.accessToken,
         publishId: publishId
@@ -222,12 +253,10 @@ class TikTokAPI {
     }
   }
 
-  // Check if user is authenticated
   isAuthenticated() {
     return !!this.accessToken;
   }
 
-  // Logout
   logout() {
     this.accessToken = null;
     this.openId = null;
