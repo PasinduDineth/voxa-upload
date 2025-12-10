@@ -42,21 +42,3 @@ module.exports = async (req, res) => {
     });
   }
 };
-      uploadedBytes: response.data?.data?.uploaded_bytes,
-      failReason: response.data?.data?.fail_reason,
-      publiclyAvailable: response.data?.data?.publicly_available_post_id
-    });
-    
-    res.status(200).json(response.data);
-  } catch (error) {
-    console.error('❌ Status check error:', {
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      data: error.response?.data,
-      message: error.message
-    });
-    res.status(error.response?.status || 500).json({
-      error: error.response?.data || error.message
-    });
-  }
-};
