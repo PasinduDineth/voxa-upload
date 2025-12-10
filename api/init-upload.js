@@ -81,16 +81,14 @@ module.exports = async (req, res) => {
     
     console.log('📤 Request payload:', JSON.stringify(requestPayload, null, 2));
     
-    // TikTok API expects JSON body with access_token as query param (PHP SDK does this)
+    // TikTok API expects Authorization header with Bearer token (not query param)
     const response = await axios.post(
       `https://open.tiktokapis.com/v2/post/publish/video/init/`,
       requestPayload,
       {
-        params: {
-          access_token: accessToken
-        },
         headers: {
-          'Content-Type': 'application/json'
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json; charset=UTF-8'
         }
       }
     );
