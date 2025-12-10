@@ -8,35 +8,23 @@ module.exports = async (req, res) => {
   res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization');
 
   if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
+    return res.status(200).end();
   }
 
   if (req.method !== 'POST') {
-    console.log('❌ Invalid method:', req.method);
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   const { accessToken, publishId } = req.body;
 
-  console.log('📊 Check status request:', {
-    hasAccessToken: !!accessToken,
-    publishId: publishId
-  });
-
   if (!accessToken || !publishId) {
-    console.log('❌ Missing required params');
     return res.status(400).json({ error: 'Access token and publish ID required' });
   }
 
   try {
-    console.log('📤 Checking publish status for:', publishId);
-    
     const response = await axios.post(
       'https://open.tiktokapis.com/v2/post/publish/status/fetch/',
-      {
-        publish_id: publishId
-      },
+      { publish_id: publishId },
       {
         headers: {
           'Authorization': `Bearer ${accessToken}`,
@@ -45,9 +33,15 @@ module.exports = async (req, res) => {
       }
     );
 
-    console.log('✅ Full Status response:', JSON.stringify(response.data, null, 2));
-    console.log('📊 Status details:', {
-      status: response.data?.data?.status,
+    console.log('📊 Status:', response.data?.data?.status);
+    return res.status(200).json(response.data);
+  } catch (error) {
+    console.error('❌ Status check error:', error.response?.data || error.message);
+    return res.status(error.response?.status || 500).json({
+      error: error.response?.data || error.message
+    });
+  }
+};
       uploadedBytes: response.data?.data?.uploaded_bytes,
       failReason: response.data?.data?.fail_reason,
       publiclyAvailable: response.data?.data?.publicly_available_post_id

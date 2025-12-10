@@ -126,15 +126,6 @@ function TikTokUploader() {
           const status = statusResult.data.status;
           const uploadedBytes = statusResult.data.uploaded_bytes || 0;
           const failReason = statusResult.data.fail_reason;
-          const publiclyAvailable = statusResult.data.publicly_available_post_id;
-          
-          console.log('📊 Full status data:', statusResult.data);
-          console.log('📊 Current status:', status, 'Uploaded bytes:', uploadedBytes, 'Fail reason:', failReason);
-          
-          // For inbox uploads, these are the possible statuses:
-          // PROCESSING_UPLOAD - Video is being processed
-          // SEND_TO_USER_INBOX - Video sent to user's inbox (success!)
-          // FAILED - Upload failed
           
           if (status === 'PUBLISH_COMPLETE') {
             setUploadStatus('✅ Video posted successfully! It\'s set to Private (only you can see it). Go to your TikTok profile to view it.');
@@ -185,7 +176,6 @@ function TikTokUploader() {
       await checkStatus();
 
     } catch (err) {
-      console.error('Upload error:', err);
       setError('Upload failed: ' + err.message);
       setUploading(false);
       setUploadStatus('');
