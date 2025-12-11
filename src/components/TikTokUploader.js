@@ -4,6 +4,7 @@ import './TikTokUploader.css';
 
 function TikTokUploader() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [view, setView] = useState('accounts'); // 'accounts' | 'upload'
   const [accounts, setAccounts] = useState([]);
   const [activeOpenId, setActiveOpenId] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
@@ -18,6 +19,7 @@ function TikTokUploader() {
     const accs = tiktokApi.getAccounts();
     setAccounts(accs);
     setActiveOpenId(localStorage.getItem('tiktok_open_id'));
+    setView('accounts');
 
     // Handle OAuth callback
     const urlParams = new URLSearchParams(window.location.search);
@@ -73,6 +75,9 @@ function TikTokUploader() {
       setIsAuthenticated(tiktokApi.isAuthenticated());
     }
   };
+
+  const goToUploadView = () => setView('upload');
+  const goToAccountsView = () => setView('accounts');
 
 
 
@@ -199,15 +204,50 @@ function TikTokUploader() {
     }
   };
 
-  if (!isAuthenticated) {
+  // Always show Accounts Management first
+  if (view === 'accounts') {
     return (
       <div className="uploader-container">
-        <div className="auth-card">
-          <h1>TikTok Video Uploader</h1>
-          <p>Connect your TikTok account to start uploading videos</p>
-          <button onClick={handleLogin} className="btn-primary">
-            Connect TikTok Account
-          </button>
+        <div className="upload-card">
+          <div className="header">
+            <h1>Account Management</h1>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button onClick={goToUploadView} className="btn-secondary">Go to Upload</button>
+              <button onClick={handleLogout} className="btn-logout">Logout</button>
+            </div>
+          </div>
+
+          <div className="upload-form">
+            <div className="form-group">
+              <label>Saved Accounts</label>
+              {accounts.length === 0 ? (
+                <p style={{ color: '#666' }}>No accounts yet. Add one below.</p>
+              ) : (
+                <select
+                  value={activeOpenId || ''}
+                  onChange={handleAccountSwitch}
+                  disabled={uploading}
+                >
+                  {accounts.map(acc => (
+                    <option key={acc.open_id} value={acc.open_id}>
+                      {acc.open_id}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+
+            <button onClick={handleLogin} className="btn-primary" disabled={uploading}>
+              Add Account
+            </button>
+            <p style={{ fontSize: '0.9em', color: '#666', marginTop: 10 }}>
+              Tip: To add a different TikTok account, open this in an Incognito window or sign out from TikTok first.
+            </p>
+          </div>
+
+          {error && (
+            <div className="status-message error">{error}</div>
+          )}
         </div>
       </div>
     );
@@ -218,9 +258,10 @@ function TikTokUploader() {
       <div className="upload-card">
         <div className="header">
           <h1>TikTok Video Uploader</h1>
-          <button onClick={handleLogout} className="btn-logout">
-            Logout
-          </button>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button onClick={goToAccountsView} className="btn-secondary">Manage Accounts</button>
+            <button onClick={handleLogout} className="btn-logout">Logout</button>
+          </div>
         </div>
 
         <div className="upload-form">
