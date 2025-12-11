@@ -4,6 +4,8 @@ import './TikTokUploader.css';
 
 function TikTokUploader() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [accounts, setAccounts] = useState([]);
+  const [activeOpenId, setActiveOpenId] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [videoTitle, setVideoTitle] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -13,6 +15,9 @@ function TikTokUploader() {
   useEffect(() => {
     // Check if user is authenticated
     setIsAuthenticated(tiktokApi.isAuthenticated());
+    const accs = tiktokApi.getAccounts();
+    setAccounts(accs);
+    setActiveOpenId(localStorage.getItem('tiktok_open_id'));
 
     // Handle OAuth callback
     const urlParams = new URLSearchParams(window.location.search);
@@ -33,6 +38,8 @@ function TikTokUploader() {
     
     if (result.success) {
       setIsAuthenticated(true);
+      setAccounts(tiktokApi.getAccounts());
+      setActiveOpenId(localStorage.getItem('tiktok_open_id'));
       setUploadStatus('Authentication successful!');
       // Clean up URL
       window.history.replaceState({}, document.title, '/');
@@ -55,6 +62,16 @@ function TikTokUploader() {
     setVideoTitle('');
     setUploadStatus('Logged out successfully');
     setTimeout(() => setUploadStatus(''), 3000);
+    setAccounts([]);
+    setActiveOpenId(null);
+  };
+
+  const handleAccountSwitch = (e) => {
+    const openId = e.target.value;
+    if (openId && tiktokApi.useAccount(openId)) {
+      setActiveOpenId(openId);
+      setIsAuthenticated(tiktokApi.isAuthenticated());
+    }
   };
 
 
@@ -207,6 +224,26 @@ function TikTokUploader() {
         </div>
 
         <div className="upload-form">
+          {accounts.length > 0 && (
+            <div className="form-group">
+              <label htmlFor="account-select">Account</label>
+              <select
+                id="account-select"
+                value={activeOpenId || ''}
+                onChange={handleAccountSwitch}
+                disabled={uploading}
+              >
+                {accounts.map(acc => (
+                  <option key={acc.open_id} value={acc.open_id}>
+                    {acc.open_id}
+                  </option>
+                ))}
+              </select>
+              <p style={{ fontSize: '0.85em', color: '#666' }}>
+                Select which TikTok account to use for this upload.
+              </p>
+            </div>
+          )}
           <div className="form-group">
             <label htmlFor="video-file">Select Video</label>
             <input

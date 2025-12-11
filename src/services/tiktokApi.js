@@ -8,6 +8,7 @@ class TikTokAPI {
   constructor() {
     this.accessToken = localStorage.getItem('tiktok_access_token');
     this.openId = localStorage.getItem('tiktok_open_id');
+    this.accounts = this.loadAccounts();
   }
 
   generateCodeChallenge() {
@@ -70,6 +71,14 @@ class TikTokAPI {
         localStorage.setItem('tiktok_open_id', this.openId);
 
         console.log('✅ Authentication successful');
+
+        // Save/Update account list
+        this.saveAccount({
+          open_id: this.openId,
+          access_token: this.accessToken,
+          expires_in: response.data.expires_in,
+          scope: response.data.scope
+        });
         return { success: true, data: response.data };
       }
 
@@ -78,6 +87,47 @@ class TikTokAPI {
       console.error('❌ Authentication failed:', error.response?.data || error.message);
       return { success: false, error: error.response?.data || error.message };
     }
+  }
+
+  // Multi-account storage helpers
+  loadAccounts() {
+    try {
+      const raw = localStorage.getItem('tiktok_accounts');
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  saveAccounts(accounts) {
+    this.accounts = accounts;
+    localStorage.setItem('tiktok_accounts', JSON.stringify(accounts));
+  }
+
+  saveAccount(account) {
+    const accounts = this.loadAccounts();
+    const idx = accounts.findIndex(a => a.open_id === account.open_id);
+    if (idx >= 0) {
+      accounts[idx] = { ...accounts[idx], ...account };
+    } else {
+      accounts.push(account);
+    }
+    this.saveAccounts(accounts);
+  }
+
+  getAccounts() {
+    return this.accounts;
+  }
+
+  // Switch the active account without breaking existing flow
+  useAccount(openId) {
+    const account = this.accounts.find(a => a.open_id === openId);
+    if (!account) return false;
+    this.openId = account.open_id;
+    this.accessToken = account.access_token;
+    localStorage.setItem('tiktok_open_id', this.openId);
+    localStorage.setItem('tiktok_access_token', this.accessToken);
+    return true;
   }
 
   async initializeUpload(videoFile, videoTitle, privacyLevel) {
