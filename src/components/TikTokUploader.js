@@ -52,9 +52,13 @@ function TikTokUploader() {
     setTimeout(() => setUploadStatus(''), 3000);
   };
 
-  const handleLogin = () => {
+  const handleLogin = (openInNewWindow = false) => {
     const authUrl = tiktokApi.getAuthUrl();
-    window.location.href = authUrl;
+    if (openInNewWindow) {
+      window.open(authUrl, '_blank', 'noopener,noreferrer');
+    } else {
+      window.location.href = authUrl;
+    }
   };
 
   const handleLogout = () => {
@@ -237,11 +241,19 @@ function TikTokUploader() {
               )}
             </div>
 
-            <button onClick={handleLogin} className="btn-primary" disabled={uploading}>
+            <button onClick={() => handleLogin(true)} className="btn-primary" disabled={uploading}>
               Add Account
             </button>
+            <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
+              <button onClick={() => window.open('https://www.tiktok.com/logout', '_blank')} className="btn-secondary" disabled={uploading}>
+                Open TikTok Logout
+              </button>
+              <button onClick={() => handleLogin(false)} className="btn-secondary" disabled={uploading}>
+                Add (Same Tab)
+              </button>
+            </div>
             <p style={{ fontSize: '0.9em', color: '#666', marginTop: 10 }}>
-              Tip: To add a different TikTok account, open this in an Incognito window or sign out from TikTok first.
+              Tip: Adding a different TikTok account requires signing out of TikTok in the new tab or using an Incognito window.
             </p>
           </div>
 
