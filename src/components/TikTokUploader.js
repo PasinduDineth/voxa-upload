@@ -39,9 +39,16 @@ function TikTokUploader() {
     const result = await tiktokApi.getAccessToken(code);
     
     if (result.success) {
-      setIsAuthenticated(true);
-      setAccounts(tiktokApi.getAccounts());
-      setActiveOpenId(localStorage.getItem('tiktok_open_id'));
+      const updatedAccounts = tiktokApi.getAccounts();
+      setAccounts(updatedAccounts);
+      
+      // Auto-select the newly added account
+      const newOpenId = result.data.open_id;
+      if (tiktokApi.useAccount(newOpenId)) {
+        setActiveOpenId(newOpenId);
+        setIsAuthenticated(true);
+      }
+      
       setUploadStatus('Authentication successful!');
       // Clean up URL
       window.history.replaceState({}, document.title, '/');
@@ -53,6 +60,9 @@ function TikTokUploader() {
   };
 
   const handleLogin = (forceLogin = false) => {
+    // Clear active session before OAuth to force fresh login
+    localStorage.removeItem('tiktok_access_token');
+    localStorage.removeItem('tiktok_open_id');
     const authUrl = tiktokApi.getAuthUrl(forceLogin);
     window.location.href = authUrl;
   };

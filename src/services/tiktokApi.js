@@ -83,26 +83,33 @@ class TikTokAPI {
       );
 
       if (response.data.access_token) {
-        this.accessToken = response.data.access_token;
-        this.openId = response.data.open_id;
-
-        localStorage.setItem('tiktok_access_token', this.accessToken);
-        localStorage.setItem('tiktok_open_id', this.openId);
+        const accessToken = response.data.access_token;
+        const openId = response.data.open_id;
 
         console.log('✅ Authentication successful');
 
         // Fetch user info to display username and avatar
-        const userInfo = await this.getUserInfo(this.accessToken);
+        const userInfo = await this.getUserInfo(accessToken);
 
-        // Save/Update account list with user info
+        // Save to account list (don't set as active yet)
         this.saveAccount({
-          open_id: this.openId,
-          access_token: this.accessToken,
+          open_id: openId,
+          access_token: accessToken,
           expires_in: response.data.expires_in,
           scope: response.data.scope,
           display_name: userInfo?.display_name || 'TikTok User',
           avatar_url: userInfo?.avatar_url || ''
         });
+
+        // Set as active account only if this is the first account
+        const allAccounts = this.loadAccounts();
+        if (allAccounts.length === 1) {
+          this.accessToken = accessToken;
+          this.openId = openId;
+          localStorage.setItem('tiktok_access_token', accessToken);
+          localStorage.setItem('tiktok_open_id', openId);
+        }
+
         return { success: true, data: response.data };
       }
 
