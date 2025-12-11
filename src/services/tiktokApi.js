@@ -30,16 +30,19 @@ class TikTokAPI {
     return result;
   }
 
-  getAuthUrl() {
+  getAuthUrl(forceLogin = false) {
     const csrfState = Math.random().toString(36).substring(2);
     localStorage.setItem('csrf_state', csrfState);
 
     const codeChallenge = this.generateCodeChallenge();
     const scope = 'user.info.basic,video.upload,video.publish';
 
-    return `https://www.tiktok.com/v2/auth/authorize?client_key=${CLIENT_KEY}&scope=${scope}&response_type=code&redirect_uri=${encodeURIComponent(
+    const baseUrl = `https://www.tiktok.com/v2/auth/authorize?client_key=${CLIENT_KEY}&scope=${scope}&response_type=code&redirect_uri=${encodeURIComponent(
       REDIRECT_URI
     )}&state=${csrfState}&code_challenge=${codeChallenge}&code_challenge_method=plain`;
+
+    // Add force_verify=1 to prompt login screen even if user is already logged in
+    return forceLogin ? `${baseUrl}&force_verify=1` : baseUrl;
   }
 
   async getUserInfo(accessToken) {
