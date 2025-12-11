@@ -219,6 +219,55 @@
   font-size: 14px;
 }
 
+.accounts-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.account-card {
+  background: white;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.account-card:hover {
+  border-color: #667eea;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+}
+
+.account-card.active {
+  border-color: #48dbfb;
+  background: #f0f9ff;
+}
+
+.btn-remove {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: #ff4757;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.8em;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-remove:hover:not(:disabled) {
+  background: #ff3838;
+}
+
+.btn-remove:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
 .videos-list {
   background: #f8f9ff;
   padding: 20px;

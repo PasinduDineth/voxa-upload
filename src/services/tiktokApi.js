@@ -42,6 +42,22 @@ class TikTokAPI {
     )}&state=${csrfState}&code_challenge=${codeChallenge}&code_challenge_method=plain`;
   }
 
+  async getUserInfo(accessToken) {
+    try {
+      const response = await axios.get(
+        'https://open.tiktokapis.com/v2/user/info/',
+        {
+          params: { fields: 'open_id,union_id,avatar_url,display_name' },
+          headers: { 'Authorization': `Bearer ${accessToken}` }
+        }
+      );
+      return response.data.data.user;
+    } catch (error) {
+      console.error('❌ Failed to fetch user info:', error.response?.data || error.message);
+      return null;
+    }
+  }
+
   async getAccessToken(code) {
     try {
       const codeVerifier = localStorage.getItem('code_verifier');
@@ -72,12 +88,17 @@ class TikTokAPI {
 
         console.log('✅ Authentication successful');
 
-        // Save/Update account list
+        // Fetch user info to display username and avatar
+        const userInfo = await this.getUserInfo(this.accessToken);
+
+        // Save/Update account list with user info
         this.saveAccount({
           open_id: this.openId,
           access_token: this.accessToken,
           expires_in: response.data.expires_in,
-          scope: response.data.scope
+          scope: response.data.scope,
+          display_name: userInfo?.display_name || 'TikTok User',
+          avatar_url: userInfo?.avatar_url || ''
         });
         return { success: true, data: response.data };
       }
@@ -117,6 +138,18 @@ class TikTokAPI {
 
   getAccounts() {
     return this.accounts;
+  }
+
+  removeAccount(openId) {
+    const accounts = this.loadAccounts().filter(a => a.open_id !== openId);
+    this.saveAccounts(accounts);
+    // If removing active account, clear it
+    if (this.openId === openId) {
+      this.openId = null;
+      this.accessToken = null;
+      localStorage.removeItem('tiktok_open_id');
+      localStorage.removeItem('tiktok_access_token');
+    }
   }
 
   // Switch the active account without breaking existing flow

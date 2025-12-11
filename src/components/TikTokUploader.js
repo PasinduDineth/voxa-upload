@@ -222,39 +222,82 @@ function TikTokUploader() {
           </div>
 
           <div className="upload-form">
-            <div className="form-group">
-              <label>Saved Accounts</label>
-              {accounts.length === 0 ? (
-                <p style={{ color: '#666' }}>No accounts yet. Add one below.</p>
-              ) : (
-                <select
-                  value={activeOpenId || ''}
-                  onChange={handleAccountSwitch}
-                  disabled={uploading}
-                >
+            {accounts.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+                <p style={{ color: '#666', marginBottom: 20 }}>No accounts connected yet.</p>
+                <button onClick={() => handleLogin(false)} className="btn-primary">
+                  Add Your First Account
+                </button>
+              </div>
+            ) : (
+              <div>
+                <label style={{ display: 'block', marginBottom: 15, fontWeight: 600 }}>Your Connected Accounts</label>
+                <div className="accounts-grid">
                   {accounts.map(acc => (
-                    <option key={acc.open_id} value={acc.open_id}>
-                      {acc.open_id}
-                    </option>
+                    <div 
+                      key={acc.open_id} 
+                      className={`account-card ${activeOpenId === acc.open_id ? 'active' : ''}`}
+                      onClick={() => {
+                        const select = { target: { value: acc.open_id } };
+                        handleAccountSwitch(select);
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        {acc.avatar_url ? (
+                          <img 
+                            src={acc.avatar_url} 
+                            alt={acc.display_name}
+                            style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover' }}
+                          />
+                        ) : (
+                          <div style={{ width: 48, height: 48, borderRadius: '50%', background: '#667eea', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 600 }}>
+                            {(acc.display_name || 'U')[0].toUpperCase()}
+                          </div>
+                        )}
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: 600, color: '#333' }}>{acc.display_name || 'TikTok User'}</div>
+                          <div style={{ fontSize: '0.85em', color: '#999' }}>{acc.open_id.substring(0, 20)}...</div>
+                        </div>
+                        {activeOpenId === acc.open_id && (
+                          <div style={{ background: '#48dbfb', color: 'white', padding: '4px 10px', borderRadius: 12, fontSize: '0.8em', fontWeight: 600 }}>
+                            Active
+                          </div>
+                        )}
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (window.confirm(`Remove ${acc.display_name || 'this account'}?`)) {
+                            tiktokApi.removeAccount(acc.open_id);
+                            setAccounts(tiktokApi.getAccounts());
+                            if (activeOpenId === acc.open_id) {
+                              const remaining = tiktokApi.getAccounts();
+                              if (remaining.length > 0) {
+                                tiktokApi.useAccount(remaining[0].open_id);
+                                setActiveOpenId(remaining[0].open_id);
+                              } else {
+                                setActiveOpenId(null);
+                                setIsAuthenticated(false);
+                              }
+                            }
+                          }
+                        }}
+                        className="btn-remove"
+                        disabled={uploading}
+                      >
+                        Remove
+                      </button>
+                    </div>
                   ))}
-                </select>
-              )}
-            </div>
-
-            <button onClick={() => handleLogin(true)} className="btn-primary" disabled={uploading}>
-              Add Account
-            </button>
-            <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
-              <button onClick={() => window.open('https://www.tiktok.com/logout', '_blank')} className="btn-secondary" disabled={uploading}>
-                Open TikTok Logout
-              </button>
-              <button onClick={() => handleLogin(false)} className="btn-secondary" disabled={uploading}>
-                Add (Same Tab)
-              </button>
-            </div>
-            <p style={{ fontSize: '0.9em', color: '#666', marginTop: 10 }}>
-              Tip: Adding a different TikTok account requires signing out of TikTok in the new tab or using an Incognito window.
-            </p>
+                </div>
+                <button onClick={() => handleLogin(false)} className="btn-secondary" style={{ marginTop: 20, width: '100%' }} disabled={uploading}>
+                  + Add Another Account
+                </button>
+                <p style={{ fontSize: '0.85em', color: '#666', marginTop: 10, textAlign: 'center' }}>
+                  💡 Tip: To add a different TikTok account, log out from TikTok first or use an Incognito window.
+                </p>
+              </div>
+            )}
           </div>
 
           {error && (
