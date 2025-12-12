@@ -4,9 +4,22 @@ import axios from 'axios';
 const CLIENT_KEY = 'sbaw0lz3d1a0f32yv3';
 const CLIENT_SECRET = 'd3UvL0TgwNkuDVfirIT4UuI2wnCrXUMY';
 
-const baseUrl = (process.env.SITE_BASE_URL || 'https://www.pasindu.website').replace(/\/$/, '');
 const REDIRECT_PATH = process.env.TIKTOK_REDIRECT_PATH || '/callback';
-const REDIRECT_URI = `${baseUrl}${REDIRECT_PATH}`;
+
+function resolveBaseUrl(req) {
+  if (process.env.SITE_BASE_URL) {
+    return process.env.SITE_BASE_URL.replace(/\/$/, '');
+  }
+
+  const proto = (req.headers['x-forwarded-proto'] || 'https').split(',')[0];
+  const host = req.headers['x-forwarded-host'] || req.headers.host;
+
+  if (host) {
+    return `${proto}://${host}`.replace(/\/$/, '');
+  }
+
+  return 'http://localhost:3000';
+}
 
 export default async function handler(req, res) {
   // Only allow GET requests (OAuth callback)
@@ -15,6 +28,8 @@ export default async function handler(req, res) {
   }
 
   const { code, state } = req.query;
+  const baseUrl = resolveBaseUrl(req);
+  const redirectUri = `${baseUrl}${REDIRECT_PATH}`;
 
   console.log('🔄 save-account invoked', { codePresent: !!code, statePresent: !!state });
 
@@ -56,7 +71,7 @@ export default async function handler(req, res) {
       client_secret: CLIENT_SECRET,
       code,
       grant_type: 'authorization_code',
-      redirect_uri: REDIRECT_URI,
+      redirect_uri: redirectUri,
       code_verifier: codeVerifier
     });
 

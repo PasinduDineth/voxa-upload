@@ -55,7 +55,7 @@ When deploying to Vercel, make sure serverless functions bundle the Postgres cli
 
 This mirrors the `vercel.json` in the repo and prevents missing-module errors at runtime.
 
-Set `SITE_BASE_URL` (serverless) and `REACT_APP_SITE_BASE_URL` (frontend) to your deployed domain so the redirect URI resolves to your callback endpoint (default `/callback`, e.g., `https://yourdomain.com/callback`). Use `TIKTOK_REDIRECT_PATH`/`REACT_APP_TIKTOK_REDIRECT_PATH` to override the path if you need a different callback URL. The provided `vercel.json` includes a rewrite from `/callback` to the `save-account` function so you can keep an existing TikTok redirect without changing platform settings.
+Set `SITE_BASE_URL` (serverless) and `REACT_APP_SITE_BASE_URL` (frontend) to your deployed domain so the redirect URI resolves to your callback endpoint (default `/callback`, e.g., `https://yourdomain.com/callback`). If these are unset, the backend falls back to the incoming request host and the frontend falls back to `window.location.origin`/`http://localhost:3000`, avoiding clashes when switching between environments. Use `TIKTOK_REDIRECT_PATH`/`REACT_APP_TIKTOK_REDIRECT_PATH` to override the path if you need a different callback URL. The provided `vercel.json` includes a rewrite from `/callback` to the `save-account` function so you can keep an existing TikTok redirect without changing platform settings.
 
 ## Features
 

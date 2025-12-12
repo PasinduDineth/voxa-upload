@@ -2,7 +2,8 @@ import axios from 'axios';
 
 const CLIENT_KEY = 'sbaw0lz3d1a0f32yv3';
 const CLIENT_SECRET = 'd3UvL0TgwNkuDVfirIT4UuI2wnCrXUMY';
-const baseUrl = (process.env.REACT_APP_SITE_BASE_URL || 'https://www.pasindu.website').replace(/\/$/, '');
+const runtimeBaseUrl = process.env.REACT_APP_SITE_BASE_URL || (typeof window !== 'undefined' ? window.location.origin : '');
+const baseUrl = (runtimeBaseUrl || 'http://localhost:3000').replace(/\/$/, '');
 const REDIRECT_PATH = process.env.REACT_APP_TIKTOK_REDIRECT_PATH || '/callback';
 const REDIRECT_URI = `${baseUrl}${REDIRECT_PATH}`;
 
