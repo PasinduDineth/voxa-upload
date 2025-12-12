@@ -106,8 +106,8 @@ class TikTokAPI {
         if (allAccounts.length === 1) {
           this.accessToken = accessToken;
           this.openId = openId;
-          localStorage.setItem('tiktok_access_token', accessToken);
-          localStorage.setItem('tiktok_open_id', openId);
+          // localStorage.setItem('tiktok_access_token', accessToken);
+          // localStorage.setItem('tiktok_open_id', openId);
         }
 
         return { success: true, data: response.data };
@@ -189,8 +189,8 @@ class TikTokAPI {
     if (!account) return false;
     this.openId = account.open_id;
     this.accessToken = account.access_token;
-    localStorage.setItem('tiktok_open_id', this.openId);
-    localStorage.setItem('tiktok_access_token', this.accessToken);
+    // localStorage.setItem('tiktok_open_id', this.openId);
+    // localStorage.setItem('tiktok_access_token', this.accessToken);
     return true;
   }
 
