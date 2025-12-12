@@ -14,73 +14,59 @@ function TikTokUploader() {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    // Initial load of accounts from database
+    loadAccountsFromDB();
+    
     // Check if user is authenticated
     setIsAuthenticated(tiktokApi.isAuthenticated());
-    const accs = tiktokApi.getAccounts();
-    setAccounts(accs);
     setActiveOpenId(localStorage.getItem('tiktok_open_id'));
     setView('accounts');
 
-    // Handle OAuth callback
-    const urlParams = new URLSearchParams(window.location.search);
-    const code = urlParams.get('code');
-    const state = urlParams.get('state');
+    // Poll database every 3 seconds for new accounts (while popup OAuth is open)
+    const pollInterval = setInterval(() => {
+      loadAccountsFromDB();
+    }, 3000);
 
-    if (code && state) {
-      const savedState = localStorage.getItem('csrf_state');
-      if (state === savedState) {
-        handleOAuthCallback(code);
-      }
-    }
+    return () => clearInterval(pollInterval);
   }, []);
 
-  const handleOAuthCallback = async (code) => {
-    setUploadStatus('Authenticating...');
-    const result = await tiktokApi.getAccessToken(code);
+  const loadAccountsFromDB = async () => {
+    const accs = await tiktokApi.loadAccounts();
+    setAccounts(accs);
     
-    if (result.success) {
-      const updatedAccounts = tiktokApi.getAccounts();
-      setAccounts(updatedAccounts);
-      
-      // Auto-select the newly added account
-      const newOpenId = result.data.open_id;
-      if (tiktokApi.useAccount(newOpenId)) {
-        setActiveOpenId(newOpenId);
+    // Auto-select first account if none selected
+    if (accs.length > 0 && !activeOpenId) {
+      const firstAccount = accs[0];
+      if (tiktokApi.useAccount(firstAccount.open_id)) {
+        setActiveOpenId(firstAccount.open_id);
         setIsAuthenticated(true);
       }
-      
-      setUploadStatus('Authentication successful!');
-      // Clean up URL
-      window.history.replaceState({}, document.title, '/');
-    } else {
-      setError('Authentication failed: ' + JSON.stringify(result.error));
     }
+  };
+
+  const handleLogin = () => {
+    // Open OAuth in popup window (provides fresh TikTok session)
+    setUploadStatus('Opening authentication window...');
+    const popup = tiktokApi.openAuthPopup();
     
-    setTimeout(() => setUploadStatus(''), 3000);
-  };
-
-  const handleLogin = (forceLogin = false) => {
-    // Clear active session before OAuth to force fresh login
-    localStorage.removeItem('tiktok_access_token');
-    localStorage.removeItem('tiktok_open_id');
-    const authUrl = tiktokApi.getAuthUrl(forceLogin);
-    window.location.href = authUrl;
-  };
-
-  const handleAddAnotherAccount = () => {
-    if (window.confirm('To add a different TikTok account:\n\n1. Click OK to open TikTok logout\n2. After logout, come back here\n3. Click the button again to add account\n\nContinue?')) {
-      window.open('https://www.tiktok.com/logout', '_blank');
+    if (!popup) {
+      setError('Failed to open popup window. Please allow popups for this site.');
+      setUploadStatus('');
+      return;
     }
+
+    // Poll will automatically detect new account when popup completes
+    setTimeout(() => setUploadStatus(''), 2000);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     tiktokApi.logout();
     setIsAuthenticated(false);
     setSelectedFile(null);
     setVideoTitle('');
     setUploadStatus('Logged out successfully');
     setTimeout(() => setUploadStatus(''), 3000);
-    setAccounts([]);
+    await loadAccountsFromDB();
     setActiveOpenId(null);
   };
 
@@ -237,7 +223,7 @@ function TikTokUploader() {
             {accounts.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '40px 20px' }}>
                 <p style={{ color: '#666', marginBottom: 20 }}>No accounts connected yet.</p>
-                <button onClick={() => handleLogin(false)} className="btn-primary">
+                <button onClick={handleLogin} className="btn-primary">
                   Add Your First Account
                 </button>
               </div>
@@ -277,11 +263,11 @@ function TikTokUploader() {
                         )}
                       </div>
                       <button
-                        onClick={(e) => {
+                        onClick={async (e) => {
                           e.stopPropagation();
                           if (window.confirm(`Remove ${acc.display_name || 'this account'}?`)) {
-                            tiktokApi.removeAccount(acc.open_id);
-                            setAccounts(tiktokApi.getAccounts());
+                            await tiktokApi.removeAccount(acc.open_id);
+                            await loadAccountsFromDB();
                             if (activeOpenId === acc.open_id) {
                               const remaining = tiktokApi.getAccounts();
                               if (remaining.length > 0) {
@@ -302,16 +288,13 @@ function TikTokUploader() {
                     </div>
                   ))}
                 </div>
-                <div style={{ marginTop: 20, display: 'flex', gap: 10 }}>
-                  <button onClick={handleAddAnotherAccount} className="btn-secondary" style={{ flex: 1 }} disabled={uploading}>
-                    Logout from TikTok
-                  </button>
-                  <button onClick={() => handleLogin(true)} className="btn-primary" style={{ flex: 1 }} disabled={uploading}>
-                    + Add Account
+                <div style={{ marginTop: 20 }}>
+                  <button onClick={handleLogin} className="btn-primary" style={{ width: '100%' }} disabled={uploading}>
+                    + Add Another Account
                   </button>
                 </div>
                 <p style={{ fontSize: '0.85em', color: '#666', marginTop: 10, textAlign: 'center' }}>
-                  💡 To add a different account: 1) Click "Logout from TikTok" 2) Click "Add Account"
+                  💡 A popup window will open for TikTok authentication. You can login with any TikTok account.
                 </p>
               </div>
             )}
