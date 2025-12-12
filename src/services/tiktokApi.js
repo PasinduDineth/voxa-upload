@@ -35,11 +35,12 @@ class TikTokAPI {
     localStorage.setItem('csrf_state', csrfState);
 
     const codeChallenge = this.generateCodeChallenge();
+    const state = `${csrfState}::${codeChallenge}`;
     const scope = 'user.info.basic,video.upload,video.publish';
 
     const authUrl = `https://www.tiktok.com/v2/auth/authorize?client_key=${CLIENT_KEY}&scope=${scope}&response_type=code&redirect_uri=${encodeURIComponent(
       REDIRECT_URI
-    )}&state=${csrfState}&code_challenge=${codeChallenge}&code_challenge_method=plain`;
+    )}&state=${encodeURIComponent(state)}&code_challenge=${codeChallenge}&code_challenge_method=plain`;
 
     // Open OAuth in popup window (provides fresh TikTok session)
     const popup = window.open(
