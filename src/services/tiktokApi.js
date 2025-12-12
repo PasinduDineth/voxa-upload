@@ -143,8 +143,7 @@ class TikTokAPI {
           refresh_token: null,
           display_name: account.display_name,
           avatar_url: account.avatar_url,
-          scope: account.scope,
-          expires_in: account.expires_in
+          scope: account.scope
         });
       }
       console.log('✅ Accounts saved to database');

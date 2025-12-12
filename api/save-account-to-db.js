@@ -6,7 +6,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { open_id, access_token, refresh_token, display_name, avatar_url, scope, expires_in } = req.body;
+  const { open_id, access_token, refresh_token, display_name, avatar_url, scope } = req.body;
 
   if (!open_id || !access_token) {
     return res.status(400).json({ error: 'Missing required fields: open_id, access_token' });
@@ -22,7 +22,6 @@ export default async function handler(req, res) {
         display_name, 
         avatar_url, 
         scope, 
-        expires_in,
         created_at
       )
       VALUES (
@@ -32,7 +31,6 @@ export default async function handler(req, res) {
         ${display_name || 'TikTok User'},
         ${avatar_url || null},
         ${scope || ''},
-        ${expires_in || 0},
         NOW()
       )
       ON CONFLICT (open_id) 
@@ -42,7 +40,6 @@ export default async function handler(req, res) {
         display_name = EXCLUDED.display_name,
         avatar_url = EXCLUDED.avatar_url,
         scope = EXCLUDED.scope,
-        expires_in = EXCLUDED.expires_in,
         created_at = NOW()
     `;
 
