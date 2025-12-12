@@ -6,14 +6,14 @@ const REDIRECT_URI = process.env.REACT_APP_REDIRECT_URI || 'https://www.pasindu.
 
 class TikTokAPI {
   constructor() {
-    this.accessToken = localStorage.getItem('tiktok_access_token');
-    this.openId = localStorage.getItem('tiktok_open_id');
+    this.accessToken = ""
+    this.openId = ""
     this.accounts = [];
   }
 
   generateCodeChallenge() {
     const codeVerifier = this.generateRandomString(43);
-    localStorage.setItem('code_verifier', codeVerifier);
+    // localStorage.setItem('code_verifier', codeVerifier);
     return codeVerifier; // Using "plain" method
   }
 
@@ -32,7 +32,7 @@ class TikTokAPI {
 
   getAuthUrl(forceLogin = false) {
     const csrfState = Math.random().toString(36).substring(2);
-    localStorage.setItem('csrf_state', csrfState);
+    // localStorage.setItem('csrf_state', csrfState);
 
     const codeChallenge = this.generateCodeChallenge();
     const scope = 'user.info.basic,video.upload,video.publish';
@@ -172,12 +172,12 @@ class TikTokAPI {
       await this.loadAccounts();
       
       // If removing active account, clear it
-      if (this.openId === openId) {
-        this.openId = null;
-        this.accessToken = null;
-        localStorage.removeItem('tiktok_open_id');
-        localStorage.removeItem('tiktok_access_token');
-      }
+      // if (this.openId === openId) {
+      //   this.openId = null;
+      //   this.accessToken = null;
+      //   localStorage.removeItem('tiktok_open_id');
+      //   localStorage.removeItem('tiktok_access_token');
+      // }
     } catch (error) {
       console.error('❌ Failed to remove account:', error);
     }
@@ -285,10 +285,10 @@ class TikTokAPI {
   }
 
   logout() {
-    this.accessToken = null;
-    this.openId = null;
-    localStorage.removeItem('tiktok_access_token');
-    localStorage.removeItem('tiktok_open_id');
+    // this.accessToken = null;
+    // this.openId = null;
+    // localStorage.removeItem('tiktok_access_token');
+    // localStorage.removeItem('tiktok_open_id');
   }
 }
 
