@@ -34,30 +34,33 @@ export default async function handler(req, res) {
   }
 
   try {
+    const [csrfState, codeVerifierFromState] = state.split('::');
+    if (!codeVerifierFromState) {
+      throw new Error('Missing code verifier in callback state');
+    }
+
     // Step 1: Exchange code for access token
     const tokenUrl = 'https://open.tiktokapis.com/v2/oauth/token/';
-    
+
     // Get code_verifier from cookie or generate (in production, should be stored server-side)
-    // For now, we'll use 'plain' method with the code as verifier
-    const codeVerifier = code; // Simplified for demo - in production use secure storage
-    
-    const tokenResponse = await axios.post(
-      tokenUrl,
-      {
-        client_key: CLIENT_KEY,
-        client_secret: CLIENT_SECRET,
-        code: code,
-        grant_type: 'authorization_code',
-        redirect_uri: REDIRECT_URI,
-        code_verifier: codeVerifier
-      },
-      {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Cache-Control': 'no-cache'
-        }
+    // Use the plain method with the original code challenge as the verifier
+    const codeVerifier = codeVerifierFromState;
+
+    const formData = new URLSearchParams({
+      client_key: CLIENT_KEY,
+      client_secret: CLIENT_SECRET,
+      code,
+      grant_type: 'authorization_code',
+      redirect_uri: REDIRECT_URI,
+      code_verifier: codeVerifier
+    });
+
+    const tokenResponse = await axios.post(tokenUrl, formData, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Cache-Control': 'no-cache'
       }
-    );
+    });
 
     const tokenData = tokenResponse.data;
     
