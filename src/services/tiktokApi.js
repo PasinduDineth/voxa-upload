@@ -92,7 +92,7 @@ class TikTokAPI {
         const userInfo = await this.getUserInfo(accessToken);
 
         // Save to account list (don't set as active yet)
-        this.saveAccount({
+        await this.saveAccount({
           open_id: openId,
           access_token: accessToken,
           expires_in: response.data.expires_in,
@@ -130,12 +130,30 @@ class TikTokAPI {
     }
   }
 
-  saveAccounts(accounts) {
+  async saveAccounts(accounts) {
     this.accounts = accounts;
     localStorage.setItem('tiktok_accounts', JSON.stringify(accounts));
+    
+    // Also save to database
+    try {
+      for (const account of accounts) {
+        await axios.post('/api/save-account-to-db', {
+          open_id: account.open_id,
+          access_token: account.access_token,
+          refresh_token: null,
+          display_name: account.display_name,
+          avatar_url: account.avatar_url,
+          scope: account.scope,
+          expires_in: account.expires_in
+        });
+      }
+      console.log('✅ Accounts saved to database');
+    } catch (error) {
+      console.error('❌ Failed to save to database:', error);
+    }
   }
 
-  saveAccount(account) {
+  async saveAccount(account) {
     const accounts = this.loadAccounts();
     const idx = accounts.findIndex(a => a.open_id === account.open_id);
     if (idx >= 0) {
@@ -143,7 +161,7 @@ class TikTokAPI {
     } else {
       accounts.push(account);
     }
-    this.saveAccounts(accounts);
+    await this.saveAccounts(accounts);
   }
 
   getAccounts() {

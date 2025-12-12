@@ -60,11 +60,9 @@ function TikTokUploader() {
   };
 
   const handleLogin = (forceLogin = false) => {
-    // Clear active session before OAuth to force fresh login
-    localStorage.removeItem('tiktok_access_token');
-    localStorage.removeItem('tiktok_open_id');
+    // Open OAuth in new window (simulates incognito - fresh session)
     const authUrl = tiktokApi.getAuthUrl(forceLogin);
-    window.location.href = authUrl;
+    window.open(authUrl, '_blank', 'width=600,height=800,left=200,top=100');
   };
 
   const handleAddAnotherAccount = () => {
