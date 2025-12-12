@@ -8,7 +8,7 @@ class TikTokAPI {
   constructor() {
     this.accessToken = localStorage.getItem('tiktok_access_token');
     this.openId = localStorage.getItem('tiktok_open_id');
-    this.accounts = this.loadAccounts();
+    this.accounts = [];
   }
 
   generateCodeChallenge() {
@@ -120,62 +120,66 @@ class TikTokAPI {
     }
   }
 
-  // Multi-account storage helpers
-  loadAccounts() {
+  // Fetch accounts from database
+  async loadAccounts() {
     try {
-      const raw = localStorage.getItem('tiktok_accounts');
-      return raw ? JSON.parse(raw) : [];
-    } catch {
+      const response = await axios.get('/api/get-accounts');
+      if (response.data.success) {
+        this.accounts = response.data.accounts;
+        return this.accounts;
+      }
+      return [];
+    } catch (error) {
+      console.error('❌ Failed to load accounts from DB:', error);
       return [];
     }
   }
 
-  async saveAccounts(accounts) {
-    this.accounts = accounts;
-    localStorage.setItem('tiktok_accounts', JSON.stringify(accounts));
-    
-    // Also save to database
+  async saveAccountToDB(account) {
     try {
-      for (const account of accounts) {
-        await axios.post('/api/save-account-to-db', {
-          open_id: account.open_id,
-          access_token: account.access_token,
-          refresh_token: null,
-          display_name: account.display_name,
-          avatar_url: account.avatar_url,
-          scope: account.scope
-        });
-      }
-      console.log('✅ Accounts saved to database');
+      await axios.post('/api/save-account-to-db', {
+        open_id: account.open_id,
+        access_token: account.access_token,
+        refresh_token: null,
+        display_name: account.display_name,
+        avatar_url: account.avatar_url,
+        scope: account.scope
+      });
+      console.log('✅ Account saved to database');
+      return true;
     } catch (error) {
       console.error('❌ Failed to save to database:', error);
+      return false;
     }
   }
 
   async saveAccount(account) {
-    const accounts = this.loadAccounts();
-    const idx = accounts.findIndex(a => a.open_id === account.open_id);
-    if (idx >= 0) {
-      accounts[idx] = { ...accounts[idx], ...account };
-    } else {
-      accounts.push(account);
-    }
-    await this.saveAccounts(accounts);
+    await this.saveAccountToDB(account);
+    // Reload accounts from database
+    await this.loadAccounts();
   }
 
   getAccounts() {
     return this.accounts;
   }
 
-  removeAccount(openId) {
-    const accounts = this.loadAccounts().filter(a => a.open_id !== openId);
-    this.saveAccounts(accounts);
-    // If removing active account, clear it
-    if (this.openId === openId) {
-      this.openId = null;
-      this.accessToken = null;
-      localStorage.removeItem('tiktok_open_id');
-      localStorage.removeItem('tiktok_access_token');
+  async removeAccount(openId) {
+    try {
+      // Call API to delete from database
+      await axios.delete(`/api/delete-account?open_id=${openId}`);
+      
+      // Reload accounts from database
+      await this.loadAccounts();
+      
+      // If removing active account, clear it
+      if (this.openId === openId) {
+        this.openId = null;
+        this.accessToken = null;
+        localStorage.removeItem('tiktok_open_id');
+        localStorage.removeItem('tiktok_access_token');
+      }
+    } catch (error) {
+      console.error('❌ Failed to remove account:', error);
     }
   }
 

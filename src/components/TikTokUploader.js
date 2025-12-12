@@ -14,10 +14,11 @@ function TikTokUploader() {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    // Load accounts from database
+    loadAccountsFromDB();
+    
     // Check if user is authenticated
     setIsAuthenticated(tiktokApi.isAuthenticated());
-    const accs = tiktokApi.getAccounts();
-    setAccounts(accs);
     setActiveOpenId(localStorage.getItem('tiktok_open_id'));
     setView('accounts');
 
@@ -34,13 +35,18 @@ function TikTokUploader() {
     }
   }, []);
 
+  const loadAccountsFromDB = async () => {
+    const accs = await tiktokApi.loadAccounts();
+    setAccounts(accs);
+  };
+
   const handleOAuthCallback = async (code) => {
     setUploadStatus('Authenticating...');
     const result = await tiktokApi.getAccessToken(code);
     
     if (result.success) {
-      const updatedAccounts = tiktokApi.getAccounts();
-      setAccounts(updatedAccounts);
+      // Reload accounts from database
+      await loadAccountsFromDB();
       
       // Auto-select the newly added account
       const newOpenId = result.data.open_id;
@@ -275,11 +281,11 @@ function TikTokUploader() {
                         )}
                       </div>
                       <button
-                        onClick={(e) => {
+                        onClick={async (e) => {
                           e.stopPropagation();
                           if (window.confirm(`Remove ${acc.display_name || 'this account'}?`)) {
-                            tiktokApi.removeAccount(acc.open_id);
-                            setAccounts(tiktokApi.getAccounts());
+                            await tiktokApi.removeAccount(acc.open_id);
+                            await loadAccountsFromDB();
                             if (activeOpenId === acc.open_id) {
                               const remaining = tiktokApi.getAccounts();
                               if (remaining.length > 0) {
