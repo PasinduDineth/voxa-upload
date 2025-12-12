@@ -33,13 +33,27 @@ Before using this app, you need to configure your TikTok Developer Portal:
 
 ### Production Deployment
 
-⚠️ **SECURITY WARNING**: This app includes the client secret in the frontend code for development purposes only. 
+⚠️ **SECURITY WARNING**: This app includes the client secret in the frontend code for development purposes only.
 
 For production:
 - Move the OAuth token exchange to a backend server
 - Never expose your client secret in frontend code
 - Use environment variables on your backend
 - Implement proper security measures
+
+When deploying to Vercel, make sure serverless functions bundle the Postgres client:
+
+```json
+{
+  "functions": {
+    "api/**/*.js": {
+      "includeFiles": "node_modules/@vercel/postgres/**"
+    }
+  }
+}
+```
+
+This mirrors the `vercel.json` in the repo and prevents missing-module errors at runtime.
 
 ## Features
 
