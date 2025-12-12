@@ -71,7 +71,7 @@ export default async function handler(req, res) {
       client_secret: CLIENT_SECRET,
       code,
       grant_type: 'authorization_code',
-      redirect_uri: redirectUri,
+      redirect_uri: REDIRECT_URI,
       code_verifier: codeVerifier
     });
 
