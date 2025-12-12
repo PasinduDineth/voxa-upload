@@ -56,7 +56,7 @@ class TikTokAPI {
       );
       return response.data.data.user;
     } catch (error) {
-      console.error('❌ Failed to fetch user info:', error.response?.data || error.message);
+      console.error('❌ Failed to fetch user info:====', error.response?.data || error.message);
       return null;
     }
   }
