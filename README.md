@@ -33,13 +33,29 @@ Before using this app, you need to configure your TikTok Developer Portal:
 
 ### Production Deployment
 
-⚠️ **SECURITY WARNING**: This app includes the client secret in the frontend code for development purposes only. 
+⚠️ **SECURITY WARNING**: This app includes the client secret in the frontend code for development purposes only.
 
 For production:
 - Move the OAuth token exchange to a backend server
 - Never expose your client secret in frontend code
 - Use environment variables on your backend
 - Implement proper security measures
+
+When deploying to Vercel, make sure serverless functions bundle the Postgres client:
+
+```json
+{
+  "functions": {
+    "api/**/*.js": {
+      "includeFiles": "node_modules/@vercel/postgres/**"
+    }
+  }
+}
+```
+
+This mirrors the `vercel.json` in the repo and prevents missing-module errors at runtime.
+
+Set `SITE_BASE_URL` (serverless) and `REACT_APP_SITE_BASE_URL` (frontend) to your deployed domain so the redirect URI resolves to your callback endpoint (default `/callback`, e.g., `https://yourdomain.com/callback`). Use `TIKTOK_REDIRECT_PATH`/`REACT_APP_TIKTOK_REDIRECT_PATH` to override the path if you need a different callback URL. The provided `vercel.json` includes a rewrite from `/callback` to the `save-account` function so you can keep an existing TikTok redirect without changing platform settings.
 
 ## Features
 

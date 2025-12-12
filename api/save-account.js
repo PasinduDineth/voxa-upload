@@ -3,7 +3,10 @@ import axios from 'axios';
 
 const CLIENT_KEY = 'sbaw0lz3d1a0f32yv3';
 const CLIENT_SECRET = 'd3UvL0TgwNkuDVfirIT4UuI2wnCrXUMY';
-const REDIRECT_URI = 'https://www.pasindu.website/callback';
+
+const baseUrl = (process.env.SITE_BASE_URL || 'https://www.pasindu.website').replace(/\/$/, '');
+const REDIRECT_PATH = process.env.TIKTOK_REDIRECT_PATH || '/callback';
+const REDIRECT_URI = `${baseUrl}${REDIRECT_PATH}`;
 
 export default async function handler(req, res) {
   // Only allow GET requests (OAuth callback)
@@ -12,6 +15,8 @@ export default async function handler(req, res) {
   }
 
   const { code, state } = req.query;
+
+  console.log('🔄 save-account invoked', { codePresent: !!code, statePresent: !!state });
 
   if (!code || !state) {
     return res.status(400).send(`
@@ -34,30 +39,33 @@ export default async function handler(req, res) {
   }
 
   try {
+    const [csrfState, codeVerifierFromState] = state.split('::');
+    if (!codeVerifierFromState) {
+      throw new Error('Missing code verifier in callback state');
+    }
+
     // Step 1: Exchange code for access token
     const tokenUrl = 'https://open.tiktokapis.com/v2/oauth/token/';
-    
+
     // Get code_verifier from cookie or generate (in production, should be stored server-side)
-    // For now, we'll use 'plain' method with the code as verifier
-    const codeVerifier = code; // Simplified for demo - in production use secure storage
-    
-    const tokenResponse = await axios.post(
-      tokenUrl,
-      {
-        client_key: CLIENT_KEY,
-        client_secret: CLIENT_SECRET,
-        code: code,
-        grant_type: 'authorization_code',
-        redirect_uri: REDIRECT_URI,
-        code_verifier: codeVerifier
-      },
-      {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Cache-Control': 'no-cache'
-        }
+    // Use the plain method with the original code challenge as the verifier
+    const codeVerifier = codeVerifierFromState;
+
+    const formData = new URLSearchParams({
+      client_key: CLIENT_KEY,
+      client_secret: CLIENT_SECRET,
+      code,
+      grant_type: 'authorization_code',
+      redirect_uri: REDIRECT_URI,
+      code_verifier: codeVerifier
+    });
+
+    const tokenResponse = await axios.post(tokenUrl, formData, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Cache-Control': 'no-cache'
       }
-    );
+    });
 
     const tokenData = tokenResponse.data;
     

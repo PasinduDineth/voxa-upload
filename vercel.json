@@ -1,0 +1,10 @@
+{
+  "functions": {
+    "api/**/*.js": {
+      "includeFiles": "node_modules/@vercel/postgres/**"
+    }
+  },
+  "rewrites": [
+    { "source": "/callback", "destination": "/api/save-account" }
+  ]
+}
