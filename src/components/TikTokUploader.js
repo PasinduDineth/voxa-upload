@@ -38,16 +38,29 @@ function TikTokUploader() {
   const loadAccountsFromDB = async () => {
     const accs = await tiktokApi.loadAccounts();
     setAccounts(accs);
+
+    if (accs.length > 0) {
+      const savedOpenId = localStorage.getItem('tiktok_open_id');
+      const preferredAccount = accs.find(acc => acc.open_id === savedOpenId) || accs[0];
+
+      if (tiktokApi.useAccount(preferredAccount.open_id)) {
+        setActiveOpenId(preferredAccount.open_id);
+        setIsAuthenticated(true);
+      }
+    } else {
+      setActiveOpenId(null);
+      setIsAuthenticated(false);
+    }
   };
 
   const handleOAuthCallback = async (code) => {
     setUploadStatus('Authenticating...');
     const result = await tiktokApi.getAccessToken(code);
-    
+
     if (result.success) {
       // Reload accounts from database
       await loadAccountsFromDB();
-      
+
       // Auto-select the newly added account
       const newOpenId = result.data.open_id;
       if (tiktokApi.useAccount(newOpenId)) {
@@ -58,6 +71,8 @@ function TikTokUploader() {
       setUploadStatus('Authentication successful!');
       // Clean up URL
       window.history.replaceState({}, document.title, '/');
+      localStorage.removeItem('csrf_state');
+      localStorage.removeItem('code_verifier');
     } else {
       setError('Authentication failed: ' + JSON.stringify(result.error));
     }
@@ -86,6 +101,9 @@ function TikTokUploader() {
     setTimeout(() => setUploadStatus(''), 3000);
     setAccounts([]);
     setActiveOpenId(null);
+    localStorage.removeItem('tiktok_open_id');
+    localStorage.removeItem('csrf_state');
+    localStorage.removeItem('code_verifier');
   };
 
   const handleAccountSwitch = (e) => {
