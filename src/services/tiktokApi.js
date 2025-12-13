@@ -37,9 +37,21 @@ class TikTokAPI {
     const codeChallenge = this.generateCodeChallenge();
     const scope = 'user.info.basic,video.upload,video.publish';
 
-    const baseUrl = `https://www.tiktok.com/v2/auth/authorize?client_key=${CLIENT_KEY}&scope=${scope}&response_type=code&redirect_uri=${encodeURIComponent(
-      REDIRECT_URI
-    )}&state=${csrfState}&code_challenge=${codeChallenge}&code_challenge_method=plain`;
+    const params = new URLSearchParams({
+      client_key: CLIENT_KEY,
+      scope,
+      response_type: 'code',
+      redirect_uri: REDIRECT_URI,
+      state: csrfState,
+      code_challenge: codeChallenge,
+      code_challenge_method: 'plain',
+      prompt: 'login'
+    });
+
+    if (forceLogin) {
+      params.append('force_verify', '1');
+      params.append('force_login', '1');
+    }
 
     // Add force_verify/force_login to prompt login screen even if user is already logged in
     return forceLogin ? `${baseUrl}&force_verify=1&force_login=1` : baseUrl;
