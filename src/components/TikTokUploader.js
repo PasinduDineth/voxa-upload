@@ -92,12 +92,6 @@ function TikTokUploader() {
       window.history.replaceState({}, document.title, '/');
       localStorage.removeItem('csrf_state');
       localStorage.removeItem('code_verifier');
-
-      if (window.opener && window.opener !== window) {
-        window.opener.postMessage({ type: 'tiktok-auth-success', openId: newOpenId }, window.location.origin);
-        window.close();
-        return;
-      }
     } else {
       setError('Authentication failed: ' + JSON.stringify(result.error));
     }

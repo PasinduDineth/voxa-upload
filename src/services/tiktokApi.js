@@ -53,7 +53,8 @@ class TikTokAPI {
       params.append('force_login', '1');
     }
 
-    return `https://www.tiktok.com/v2/auth/authorize?${params.toString()}`;
+    // Add force_verify/force_login to prompt login screen even if user is already logged in
+    return forceLogin ? `${baseUrl}&force_verify=1&force_login=1` : baseUrl;
   }
 
   async getUserInfo(accessToken) {
