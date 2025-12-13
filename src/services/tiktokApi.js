@@ -13,7 +13,7 @@ class TikTokAPI {
 
   generateCodeChallenge() {
     const codeVerifier = this.generateRandomString(43);
-    // localStorage.setItem('code_verifier', codeVerifier);
+    localStorage.setItem('code_verifier', codeVerifier);
     return codeVerifier; // Using "plain" method
   }
 
@@ -32,17 +32,28 @@ class TikTokAPI {
 
   getAuthUrl(forceLogin = false) {
     const csrfState = Math.random().toString(36).substring(2);
-    // localStorage.setItem('csrf_state', csrfState);
+    localStorage.setItem('csrf_state', csrfState);
 
     const codeChallenge = this.generateCodeChallenge();
     const scope = 'user.info.basic,video.upload,video.publish';
 
-    const baseUrl = `https://www.tiktok.com/v2/auth/authorize?client_key=${CLIENT_KEY}&scope=${scope}&response_type=code&redirect_uri=${encodeURIComponent(
-      REDIRECT_URI
-    )}&state=${csrfState}&code_challenge=${codeChallenge}&code_challenge_method=plain`;
+    const params = new URLSearchParams({
+      client_key: CLIENT_KEY,
+      scope,
+      response_type: 'code',
+      redirect_uri: REDIRECT_URI,
+      state: csrfState,
+      code_challenge: codeChallenge,
+      code_challenge_method: 'plain',
+      prompt: 'login'
+    });
 
-    // Add force_verify=1 to prompt login screen even if user is already logged in
-    return forceLogin ? `${baseUrl}&force_verify=1` : baseUrl;
+    if (forceLogin) {
+      params.append('force_verify', '1');
+      params.append('force_login', '1');
+    }
+
+    return `https://www.tiktok.com/v2/auth/authorize?${params.toString()}`;
   }
 
   async getUserInfo(accessToken) {
@@ -102,7 +113,7 @@ class TikTokAPI {
         });
 
         // Set as active account only if this is the first account
-        const allAccounts = this.loadAccounts();
+        const allAccounts = await this.loadAccounts();
         if (allAccounts.length === 1) {
           this.accessToken = accessToken;
           this.openId = openId;
@@ -189,8 +200,7 @@ class TikTokAPI {
     if (!account) return false;
     this.openId = account.open_id;
     this.accessToken = account.access_token;
-    // localStorage.setItem('tiktok_open_id', this.openId);
-    // localStorage.setItem('tiktok_access_token', this.accessToken);
+    localStorage.setItem('tiktok_open_id', this.openId);
     return true;
   }
 
