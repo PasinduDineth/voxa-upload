@@ -41,8 +41,8 @@ class TikTokAPI {
       REDIRECT_URI
     )}&state=${csrfState}&code_challenge=${codeChallenge}&code_challenge_method=plain`;
 
-    // Add force_verify=1 to prompt login screen even if user is already logged in
-    return forceLogin ? `${baseUrl}&force_verify=1` : baseUrl;
+    // Add force_verify/force_login to prompt login screen even if user is already logged in
+    return forceLogin ? `${baseUrl}&force_verify=1&force_login=1` : baseUrl;
   }
 
   async getUserInfo(accessToken) {
