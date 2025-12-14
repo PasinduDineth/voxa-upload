@@ -1,5 +1,9 @@
 import axios from 'axios';
 
+const CLIENT_KEY = 'sbaw0lz3d1a0f32yv3';
+const CLIENT_SECRET = 'd3UvL0TgwNkuDVfirIT4UuI2wnCrXUMY';
+const REDIRECT_URI = process.env.REACT_APP_REDIRECT_URI || 'https://www.pasindu.website/callback';
+
 class TikTokAPI {
   constructor() {
     this.accessToken = ""
@@ -7,60 +11,109 @@ class TikTokAPI {
     this.accounts = [];
   }
 
-  async getAuthUrl(forceLogin = false, disableAutoAuth = false) {
+  generateCodeChallenge() {
+    const codeVerifier = this.generateRandomString(43);
+    localStorage.setItem('code_verifier', codeVerifier);
+    return codeVerifier; // Using "plain" method
+  }
+
+  generateRandomString(length) {
+    const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
+    let result = '';
+    const randomValues = new Uint8Array(length);
+    crypto.getRandomValues(randomValues);
+
+    for (let i = 0; i < length; i++) {
+      result += charset[randomValues[i] % charset.length];
+    }
+
+    return result;
+  }
+
+  getAuthUrl(forceLogin = false) {
+    const csrfState = Math.random().toString(36).substring(2);
+    localStorage.setItem('csrf_state', csrfState);
+
+    const codeChallenge = this.generateCodeChallenge();
+    const scope = 'user.info.basic,video.upload,video.publish';
+
+    const baseUrl = `https://www.tiktok.com/v2/auth/authorize?client_key=${CLIENT_KEY}&scope=${scope}&response_type=code&redirect_uri=${encodeURIComponent(
+      REDIRECT_URI
+    )}&state=${csrfState}&code_challenge=${codeChallenge}&code_challenge_method=plain`;
+
+    // Add force_verify/force_login to prompt login screen even if user is already logged in
+    return forceLogin ? `${baseUrl}&force_verify=1&force_login=1` : baseUrl;
+  }
+
+  async getUserInfo(accessToken) {
     try {
-      const params = new URLSearchParams();
-      if (forceLogin) {
-        params.append('force_login', '1');
-      }
-      if (disableAutoAuth) {
-        params.append('disable_auto_auth', '1');
-      }
-
-      const query = params.toString();
-      const response = await axios.get(`/api/tiktok-authorize${query ? `?${query}` : ''}`);
-
-      if (response.data?.state) {
-        localStorage.setItem('csrf_state', response.data.state);
-      }
-
-      return response.data?.authUrl || null;
+      const response = await axios.get(
+        'https://open.tiktokapis.com/v2/user/info/',
+        {
+          params: { fields: 'open_id,union_id,avatar_url,display_name' },
+          headers: { 'Authorization': `Bearer ${accessToken}` }
+        }
+      );
+      return response.data.data.user;
     } catch (error) {
-      console.error('❌ Failed to build TikTok auth URL:', error.response?.data || error.message);
+      console.error('❌ Failed to fetch user info:====', error.response?.data || error.message);
       return null;
     }
   }
 
-  async getAccessToken(code, state) {
+  async getAccessToken(code) {
     try {
-      const response = await axios.post('/api/tiktok-exchange', { code, state });
+      const codeVerifier = localStorage.getItem('code_verifier');
 
-      if (response.data?.success && response.data?.account) {
-        const account = response.data.account;
+      const params = new URLSearchParams({
+        client_key: CLIENT_KEY,
+        client_secret: CLIENT_SECRET,
+        code: code,
+        grant_type: 'authorization_code',
+        redirect_uri: REDIRECT_URI,
+        code_verifier: codeVerifier
+      });
 
-        console.log('✅ Authentication successful for open_id:', account.open_id);
+      const response = await axios.post(
+        'https://open.tiktokapis.com/v2/oauth/token/',
+        params,
+        {
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+        }
+      );
+
+      if (response.data.access_token) {
+        const accessToken = response.data.access_token;
+        const openId = response.data.open_id;
+
+        console.log('✅ Authentication successful');
+
+        // Fetch user info to display username and avatar
+        const userInfo = await this.getUserInfo(accessToken);
 
         // Save to account list (don't set as active yet)
         await this.saveAccount({
-          open_id: account.open_id,
-          access_token: account.access_token,
-          expires_in: account.expires_in,
-          scope: account.scope,
-          display_name: account.display_name,
-          avatar_url: account.avatar_url || ''
+          open_id: openId,
+          access_token: accessToken,
+          expires_in: response.data.expires_in,
+          scope: response.data.scope,
+          display_name: userInfo?.display_name || 'TikTok User',
+          avatar_url: userInfo?.avatar_url || ''
         });
 
         // Set as active account only if this is the first account
         const allAccounts = await this.loadAccounts();
         if (allAccounts.length === 1) {
-          this.accessToken = account.access_token;
-          this.openId = account.open_id;
+          this.accessToken = accessToken;
+          this.openId = openId;
+          // localStorage.setItem('tiktok_access_token', accessToken);
+          // localStorage.setItem('tiktok_open_id', openId);
         }
 
-        return { success: true, data: account };
+        return { success: true, data: response.data };
       }
 
-      return { success: false, error: response.data?.error || 'No access token received' };
+      return { success: false, error: 'No access token received' };
     } catch (error) {
       console.error('❌ Authentication failed:', error.response?.data || error.message);
       return { success: false, error: error.response?.data || error.message };

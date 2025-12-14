@@ -9,13 +9,7 @@ A React app for uploading videos to TikTok using the TikTok API with sandbox cre
 npm install
 ```
 
-2. Add the required TikTok credentials to `.env.local` (or your Vercel project settings):
-```
-TIKTOK_CLIENT_KEY=your_client_key
-TIKTOK_CLIENT_SECRET=your_client_secret
-TIKTOK_REDIRECT_URI=https://yourapp.com/
-```
-The redirect URI must exactly match what is configured in the TikTok Developer Portal.
+2. Make sure the `.env` file contains your TikTok API credentials (already configured)
 
 3. Start the development server:
 ```bash
@@ -32,14 +26,20 @@ Before using this app, you need to configure your TikTok Developer Portal:
 
 1. Go to [TikTok Developer Portal](https://developers.tiktok.com/)
 2. Navigate to your app settings
-3. Add the redirect URI: `http://localhost:3000/` (or your deployed URL)
+3. Add the redirect URI: `http://localhost:3000/callback`
 4. Make sure these scopes are enabled:
    - `video.upload`
    - `user.info.basic`
 
 ### Production Deployment
 
-The OAuth flow and token exchange now run entirely on the backend so that client secrets stay on the server.
+⚠️ **SECURITY WARNING**: This app includes the client secret in the frontend code for development purposes only. 
+
+For production:
+- Move the OAuth token exchange to a backend server
+- Never expose your client secret in frontend code
+- Use environment variables on your backend
+- Implement proper security measures
 
 ## Features
 

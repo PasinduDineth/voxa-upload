@@ -30,10 +30,7 @@ function TikTokUploader() {
     if (code && state) {
       const savedState = localStorage.getItem('csrf_state');
       if (state === savedState) {
-        handleOAuthCallback(code, state);
-      } else {
-        console.error('OAuth state mismatch. Aborting.');
-        setError('Authentication failed due to a state mismatch. Please start the login again.');
+        handleOAuthCallback(code);
       }
     }
   }, []);
@@ -56,9 +53,9 @@ function TikTokUploader() {
     }
   };
 
-  const handleOAuthCallback = async (code, state) => {
+  const handleOAuthCallback = async (code) => {
     setUploadStatus('Authenticating...');
-    const result = await tiktokApi.getAccessToken(code, state);
+    const result = await tiktokApi.getAccessToken(code);
 
     if (result.success) {
       // Reload accounts from database
@@ -75,6 +72,7 @@ function TikTokUploader() {
       // Clean up URL
       window.history.replaceState({}, document.title, '/');
       localStorage.removeItem('csrf_state');
+      localStorage.removeItem('code_verifier');
     } else {
       setError('Authentication failed: ' + JSON.stringify(result.error));
     }
@@ -82,18 +80,16 @@ function TikTokUploader() {
     setTimeout(() => setUploadStatus(''), 3000);
   };
 
-  const handleLogin = async (forceLogin = false, disableAutoAuth = false) => {
+  const handleLogin = (forceLogin = false) => {
     // Open OAuth in new window (simulates incognito - fresh session)
-    const authUrl = await tiktokApi.getAuthUrl(forceLogin, disableAutoAuth);
-    if (authUrl) {
-      window.open(authUrl, '_blank', 'width=600,height=800,left=200,top=100');
-    } else {
-      setError('Unable to start TikTok login. Please try again.');
-    }
+    const authUrl = tiktokApi.getAuthUrl(forceLogin);
+    window.open(authUrl, '_blank', 'width=600,height=800,left=200,top=100');
   };
 
   const handleAddAnotherAccount = () => {
-    handleLogin(true, true);
+    if (window.confirm('To add a different TikTok account:\n\n1. Click OK to open TikTok logout\n2. After logout, come back here\n3. Click the button again to add account\n\nContinue?')) {
+      window.open('https://www.tiktok.com/logout', '_blank');
+    }
   };
 
   const handleLogout = () => {
@@ -107,6 +103,7 @@ function TikTokUploader() {
     setActiveOpenId(null);
     localStorage.removeItem('tiktok_open_id');
     localStorage.removeItem('csrf_state');
+    localStorage.removeItem('code_verifier');
   };
 
   const handleAccountSwitch = (e) => {
