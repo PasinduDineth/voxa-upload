@@ -28,10 +28,8 @@ function TikTokUploader() {
     const state = urlParams.get('state');
 
     if (code && state) {
-      const savedState = localStorage.getItem('csrf_state');
-      if (state === savedState) {
-        handleOAuthCallback(code);
-      }
+      console.log('[Component] OAuth callback detected', { has_code: !!code, has_state: !!state });
+      handleOAuthCallback(code, state);
     }
   }, []);
 
@@ -40,44 +38,66 @@ function TikTokUploader() {
     setAccounts(accs);
   };
 
-  const handleOAuthCallback = async (code) => {
+  const handleOAuthCallback = async (code, state) => {
+    console.log('[Component] Handling OAuth callback', { has_code: !!code, has_state: !!state });
     setUploadStatus('Authenticating...');
-    const result = await tiktokApi.getAccessToken(code);
+    
+    const result = await tiktokApi.getAccessToken(code, state);
     
     if (result.success) {
+      console.log('[Component] OAuth callback successful', result.data);
+      
       // Reload accounts from database
       await loadAccountsFromDB();
       
       // Auto-select the newly added account
       const newOpenId = result.data.open_id;
-      if (tiktokApi.useAccount(newOpenId)) {
+      if (await tiktokApi.useAccount(newOpenId)) {
         setActiveOpenId(newOpenId);
         setIsAuthenticated(true);
+        console.log('[Component] Switched to new account', { open_id: newOpenId });
       }
       
-      setUploadStatus('Authentication successful!');
+      setUploadStatus(result.data.message || 'Authentication successful!');
       // Clean up URL
       window.history.replaceState({}, document.title, '/');
     } else {
+      console.error('[Component] OAuth callback failed', result.error);
       setError('Authentication failed: ' + JSON.stringify(result.error));
     }
     
     setTimeout(() => setUploadStatus(''), 3000);
   };
 
-  const handleLogin = (forceLogin = false) => {
-    // Open OAuth in new window (simulates incognito - fresh session)
-    const authUrl = tiktokApi.getAuthUrl(forceLogin);
-    window.open(authUrl, '_blank', 'width=600,height=800,left=200,top=100');
-  };
-
-  const handleAddAnotherAccount = () => {
-    if (window.confirm('To add a different TikTok account:\n\n1. Click OK to open TikTok logout\n2. After logout, come back here\n3. Click the button again to add account\n\nContinue?')) {
-      window.open('https://www.tiktok.com/logout', '_blank');
+  const handleLogin = async (forceLogin = false) => {
+    try {
+      console.log('[Component] Starting login', { forceLogin });
+      setError('');
+      setUploadStatus('Initializing authentication...');
+      
+      // Get authorization URL from API (this will be async now)
+      const authUrl = await tiktokApi.getAuthUrl(forceLogin);
+      
+      console.log('[Component] Opening authorization window');
+      setUploadStatus('');
+      
+      // Redirect to auth URL (same window for better UX)
+      window.location.href = authUrl;
+    } catch (error) {
+      console.error('[Component] Failed to start login:', error);
+      setError('Failed to initialize authentication: ' + error.message);
+      setUploadStatus('');
     }
   };
 
+  const handleAddAnotherAccount = async () => {
+    // Just call handleLogin with forceLogin=true
+    // The disable_auto_auth=1 parameter will force TikTok to show the login screen
+    await handleLogin(true);
+  };
+
   const handleLogout = () => {
+    console.log('[Component] Logging out');
     tiktokApi.logout();
     setIsAuthenticated(false);
     setSelectedFile(null);
@@ -88,9 +108,10 @@ function TikTokUploader() {
     setActiveOpenId(null);
   };
 
-  const handleAccountSwitch = (e) => {
+  const handleAccountSwitch = async (e) => {
     const openId = e.target.value;
-    if (openId && tiktokApi.useAccount(openId)) {
+    console.log('[Component] Switching account', { open_id: openId });
+    if (openId && await tiktokApi.useAccount(openId)) {
       setActiveOpenId(openId);
       setIsAuthenticated(tiktokApi.isAuthenticated());
     }
@@ -307,15 +328,12 @@ function TikTokUploader() {
                   ))}
                 </div>
                 <div style={{ marginTop: 20, display: 'flex', gap: 10 }}>
-                  <button onClick={handleAddAnotherAccount} className="btn-secondary" style={{ flex: 1 }} disabled={uploading}>
-                    Logout from TikTok
-                  </button>
-                  <button onClick={() => handleLogin(true)} className="btn-primary" style={{ flex: 1 }} disabled={uploading}>
-                    + Add Account
+                  <button onClick={handleAddAnotherAccount} className="btn-primary" style={{ flex: 1 }} disabled={uploading}>
+                    + Add Another Account
                   </button>
                 </div>
                 <p style={{ fontSize: '0.85em', color: '#666', marginTop: 10, textAlign: 'center' }}>
-                  💡 To add a different account: 1) Click "Logout from TikTok" 2) Click "Add Account"
+                  💡 Click "Add Another Account" to connect a different TikTok account. You'll be able to choose which account to use.
                 </p>
               </div>
             )}

@@ -1,7 +1,8 @@
 import axios from 'axios';
 
-const CLIENT_KEY = 'sbaw0lz3d1a0f32yv3';
-const CLIENT_SECRET = 'd3UvL0TgwNkuDVfirIT4UuI2wnCrXUMY';
+// CLIENT_KEY is safe to expose in frontend (it's meant to be public)
+// CLIENT_SECRET must NEVER be in frontend code - it's server-side only
+const CLIENT_KEY = process.env.REACT_APP_TIKTOK_CLIENT_KEY || 'sbaw0lz3d1a0f32yv3';
 const REDIRECT_URI = process.env.REACT_APP_REDIRECT_URI || 'https://www.pasindu.website/callback';
 
 class TikTokAPI {
@@ -11,42 +12,76 @@ class TikTokAPI {
     this.accounts = [];
   }
 
-  generateCodeChallenge() {
-    const codeVerifier = this.generateRandomString(43);
-    localStorage.setItem('code_verifier', codeVerifier);
-    return codeVerifier; // Using "plain" method
-  }
+  /**
+   * Initialize OAuth flow with proper PKCE S256
+   * Calls server to generate state and code_challenge
+   * @param {boolean} forceLogin - Whether to force TikTok to show login screen
+   * @returns {Promise<string>} Authorization URL
+   */
+  async getAuthUrl(forceLogin = false) {
+    console.log('[OAuth] Initializing OAuth flow', { forceLogin });
 
-  generateRandomString(length) {
-    const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
-    let result = '';
-    const randomValues = new Uint8Array(length);
-    crypto.getRandomValues(randomValues);
+    try {
+      // Call server to generate state, code_verifier, and code_challenge
+      const response = await axios.post('/api/init-oauth', {
+        user_id: localStorage.getItem('user_id') || null,
+        workspace_id: localStorage.getItem('workspace_id') || null
+      });
 
-    for (let i = 0; i < length; i++) {
-      result += charset[randomValues[i] % charset.length];
+      if (!response.data.success) {
+        throw new Error('Failed to initialize OAuth: ' + response.data.error);
+      }
+
+      const { state, code_challenge, code_challenge_method, code_verifier } = response.data.data;
+
+      // Store code_verifier and state in sessionStorage (more secure than localStorage)
+      // These are temporary and should be cleared after OAuth completes
+      sessionStorage.setItem('oauth_state', state);
+      sessionStorage.setItem('oauth_code_verifier', code_verifier);
+
+      console.log('[OAuth] OAuth initialized', {
+        state,
+        code_challenge_method,
+        has_code_verifier: !!code_verifier
+      });
+
+      const scope = 'user.info.basic,video.upload,video.publish';
+
+      // Build authorization URL with proper parameters
+      const params = new URLSearchParams({
+        client_key: CLIENT_KEY,
+        scope: scope,
+        response_type: 'code',
+        redirect_uri: REDIRECT_URI,
+        state: state,
+        code_challenge: code_challenge,
+        code_challenge_method: code_challenge_method
+      });
+
+      // Add disable_auto_auth=1 when adding another account
+      // This prevents TikTok from auto-authenticating with existing session
+      if (forceLogin) {
+        params.append('disable_auto_auth', '1');
+        console.log('[OAuth] Force login enabled - disable_auto_auth=1 added');
+      }
+
+      const authUrl = `https://www.tiktok.com/v2/auth/authorize?${params.toString()}`;
+      
+      console.log('[OAuth] Authorization URL generated', {
+        has_disable_auto_auth: forceLogin,
+        url_length: authUrl.length
+      });
+
+      return authUrl;
+    } catch (error) {
+      console.error('[OAuth] Failed to initialize OAuth:', error);
+      throw error;
     }
-
-    return result;
-  }
-
-  getAuthUrl(forceLogin = false) {
-    const csrfState = Math.random().toString(36).substring(2);
-    localStorage.setItem('csrf_state', csrfState);
-
-    const codeChallenge = this.generateCodeChallenge();
-    const scope = 'user.info.basic,video.upload,video.publish';
-
-    const baseUrl = `https://www.tiktok.com/v2/auth/authorize?client_key=${CLIENT_KEY}&scope=${scope}&response_type=code&redirect_uri=${encodeURIComponent(
-      REDIRECT_URI
-    )}&state=${csrfState}&code_challenge=${codeChallenge}&code_challenge_method=plain`;
-
-    // Add force_verify=1 to prompt login screen even if user is already logged in
-    return forceLogin ? `${baseUrl}&force_verify=1` : baseUrl;
   }
 
   async getUserInfo(accessToken) {
     try {
+      console.log('[TikTok API] Fetching user info');
       const response = await axios.get(
         'https://open.tiktokapis.com/v2/user/info/',
         {
@@ -54,89 +89,144 @@ class TikTokAPI {
           headers: { 'Authorization': `Bearer ${accessToken}` }
         }
       );
+      console.log('[TikTok API] User info fetched successfully', {
+        display_name: response.data.data.user.display_name,
+        open_id: response.data.data.user.open_id
+      });
       return response.data.data.user;
     } catch (error) {
-      console.error('❌ Failed to fetch user info:====', error.response?.data || error.message);
+      console.error('[TikTok API] Failed to fetch user info:', error.response?.data || error.message);
       return null;
     }
   }
 
-  async getAccessToken(code) {
-    try {
-      const codeVerifier = localStorage.getItem('code_verifier');
+  /**
+   * Exchange authorization code for access token
+   * This now happens SERVER-SIDE ONLY for security
+   * @param {string} code - Authorization code from TikTok callback
+   * @param {string} state - State parameter from TikTok callback
+   * @returns {Promise<Object>} Result with success status and data
+   */
+  async getAccessToken(code, state) {
+    console.log('[OAuth] Starting token exchange', { has_code: !!code, has_state: !!state });
 
-      const params = new URLSearchParams({
-        client_key: CLIENT_KEY,
-        client_secret: CLIENT_SECRET,
-        code: code,
-        grant_type: 'authorization_code',
-        redirect_uri: REDIRECT_URI,
+    try {
+      // Retrieve code_verifier and stored state from sessionStorage
+      const storedState = sessionStorage.getItem('oauth_state');
+      const codeVerifier = sessionStorage.getItem('oauth_code_verifier');
+
+      console.log('[OAuth] Retrieved session data', {
+        has_stored_state: !!storedState,
+        has_code_verifier: !!codeVerifier,
+        states_match: storedState === state
+      });
+
+      // Validate state to prevent CSRF attacks
+      if (!storedState || storedState !== state) {
+        console.error('[OAuth] State mismatch - possible CSRF attack', {
+          received_state: state,
+          stored_state: storedState
+        });
+        return { 
+          success: false, 
+          error: 'State mismatch. Please restart the authentication flow.' 
+        };
+      }
+
+      if (!codeVerifier) {
+        console.error('[OAuth] Missing code verifier');
+        return { 
+          success: false, 
+          error: 'Missing code verifier. Please restart the authentication flow.' 
+        };
+      }
+
+      // Call server-side endpoint to exchange code for token
+      // This keeps CLIENT_SECRET secure on the server
+      console.log('[OAuth] Calling server-side token exchange');
+      const response = await axios.post('/api/oauth-callback', {
+        code,
+        state,
         code_verifier: codeVerifier
       });
 
-      const response = await axios.post(
-        'https://open.tiktokapis.com/v2/oauth/token/',
-        params,
-        {
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-        }
-      );
+      // Clear session storage after successful exchange
+      sessionStorage.removeItem('oauth_state');
+      sessionStorage.removeItem('oauth_code_verifier');
 
-      if (response.data.access_token) {
-        const accessToken = response.data.access_token;
-        const openId = response.data.open_id;
+      if (response.data.success) {
+        const { open_id, display_name, avatar_url, is_new } = response.data.data;
 
-        console.log('✅ Authentication successful');
-
-        // Fetch user info to display username and avatar
-        const userInfo = await this.getUserInfo(accessToken);
-
-        // Save to account list (don't set as active yet)
-        await this.saveAccount({
-          open_id: openId,
-          access_token: accessToken,
-          expires_in: response.data.expires_in,
-          scope: response.data.scope,
-          display_name: userInfo?.display_name || 'TikTok User',
-          avatar_url: userInfo?.avatar_url || ''
+        console.log('[OAuth] Token exchange successful', {
+          open_id,
+          display_name,
+          is_new_account: is_new
         });
 
+        // Reload accounts from database
+        await this.loadAccounts();
+
         // Set as active account only if this is the first account
-        const allAccounts = this.loadAccounts();
-        if (allAccounts.length === 1) {
-          this.accessToken = accessToken;
-          this.openId = openId;
-          // localStorage.setItem('tiktok_access_token', accessToken);
-          // localStorage.setItem('tiktok_open_id', openId);
+        const allAccounts = this.getAccounts();
+        if (allAccounts.length === 1 || is_new) {
+          await this.useAccount(open_id);
         }
 
-        return { success: true, data: response.data };
+        return { 
+          success: true, 
+          data: { 
+            open_id, 
+            display_name, 
+            avatar_url,
+            is_new,
+            message: is_new ? 'New account connected' : 'Account re-authenticated'
+          } 
+        };
       }
 
-      return { success: false, error: 'No access token received' };
+      return { success: false, error: response.data.error || 'Unknown error' };
+
     } catch (error) {
-      console.error('❌ Authentication failed:', error.response?.data || error.message);
-      return { success: false, error: error.response?.data || error.message };
+      console.error('[OAuth] Token exchange failed:', {
+        error: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+
+      // Clear session storage on error
+      sessionStorage.removeItem('oauth_state');
+      sessionStorage.removeItem('oauth_code_verifier');
+
+      return { 
+        success: false, 
+        error: error.response?.data?.error || error.message 
+      };
     }
   }
 
   // Fetch accounts from database
   async loadAccounts() {
     try {
+      console.log('[TikTok API] Loading accounts from database');
       const response = await axios.get('/api/get-accounts');
       if (response.data.success) {
         this.accounts = response.data.accounts;
+        console.log('[TikTok API] Loaded accounts', {
+          count: this.accounts.length,
+          open_ids: this.accounts.map(a => a.open_id)
+        });
         return this.accounts;
       }
       return [];
     } catch (error) {
-      console.error('❌ Failed to load accounts from DB:', error);
+      console.error('[TikTok API] Failed to load accounts from DB:', error);
       return [];
     }
   }
 
   async saveAccountToDB(account) {
     try {
+      console.log('[TikTok API] Saving account to database', { open_id: account.open_id });
       await axios.post('/api/save-account-to-db', {
         open_id: account.open_id,
         access_token: account.access_token,
@@ -145,10 +235,10 @@ class TikTokAPI {
         avatar_url: account.avatar_url,
         scope: account.scope
       });
-      console.log('✅ Account saved to database');
+      console.log('[TikTok API] Account saved to database successfully');
       return true;
     } catch (error) {
-      console.error('❌ Failed to save to database:', error);
+      console.error('[TikTok API] Failed to save to database:', error);
       return false;
     }
   }
@@ -165,8 +255,11 @@ class TikTokAPI {
 
   async removeAccount(openId) {
     try {
+      console.log('[TikTok API] Removing account', { open_id: openId });
       // Call API to delete from database
       await axios.delete(`/api/delete-account?open_id=${openId}`);
+      
+      console.log('[TikTok API] Account removed from database');
       
       // Reload accounts from database
       await this.loadAccounts();
@@ -177,20 +270,30 @@ class TikTokAPI {
         this.accessToken = null;
         localStorage.removeItem('tiktok_open_id');
         localStorage.removeItem('tiktok_access_token');
+        console.log('[TikTok API] Cleared active account');
       }
     } catch (error) {
-      console.error('❌ Failed to remove account:', error);
+      console.error('[TikTok API] Failed to remove account:', error);
     }
   }
 
   // Switch the active account without breaking existing flow
-  useAccount(openId) {
+  async useAccount(openId) {
+    console.log('[TikTok API] Switching to account', { open_id: openId });
     const account = this.accounts.find(a => a.open_id === openId);
-    if (!account) return false;
+    if (!account) {
+      console.error('[TikTok API] Account not found', { open_id: openId });
+      return false;
+    }
     this.openId = account.open_id;
     this.accessToken = account.access_token;
-    // localStorage.setItem('tiktok_open_id', this.openId);
-    // localStorage.setItem('tiktok_access_token', this.accessToken);
+    // Store in localStorage for persistence across page reloads
+    localStorage.setItem('tiktok_open_id', this.openId);
+    localStorage.setItem('tiktok_access_token', this.accessToken);
+    console.log('[TikTok API] Switched to account successfully', {
+      display_name: account.display_name,
+      open_id: account.open_id
+    });
     return true;
   }
 

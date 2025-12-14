@@ -1,64 +1,129 @@
 # TikTok Video Uploader
 
-A React app for uploading videos to TikTok using the TikTok API with sandbox credentials.
+A secure React app for uploading videos to TikTok using the TikTok API with multi-account support and production-ready OAuth 2.0 + PKCE implementation.
 
-## Setup
+## 🚀 Quick Start
 
 1. Install dependencies:
 ```bash
 npm install
 ```
 
-2. Make sure the `.env` file contains your TikTok API credentials (already configured)
+2. Set up environment variables (see [.env.example](.env.example))
 
-3. Start the development server:
+3. Run database migration (see [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md))
+
+4. Start the development server:
 ```bash
 npm start
 ```
 
 The app will open at `http://localhost:3000`
 
-## Important Notes
+## 🔐 Security Features
 
-### TikTok Developer Portal Setup
+✅ **OAuth 2.0 with PKCE S256** - Industry-standard secure authentication  
+✅ **Multi-Account Support** - Connect multiple TikTok accounts  
+✅ **Server-Side Token Exchange** - CLIENT_SECRET never exposed to frontend  
+✅ **CSRF Protection** - State validation prevents cross-site request forgery  
+✅ **Comprehensive Logging** - Full audit trail for debugging  
 
-Before using this app, you need to configure your TikTok Developer Portal:
+**See [OAUTH_IMPLEMENTATION.md](OAUTH_IMPLEMENTATION.md) for detailed documentation.**
+
+## 📁 Documentation
+
+- **[OAUTH_IMPLEMENTATION.md](OAUTH_IMPLEMENTATION.md)** - Complete OAuth implementation guide
+- **[DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md)** - Step-by-step deployment instructions
+- **[SUMMARY.md](SUMMARY.md)** - Quick summary of changes
+- **[database-migration.sql](database-migration.sql)** - Database schema
+
+## 🎯 Features
+
+### Authentication & Accounts
+- ✅ Secure OAuth 2.0 login with PKCE
+- ✅ Multi-account management (add, switch, remove)
+- ✅ Prevents duplicate account linking
+- ✅ Automatic token refresh on re-authentication
+
+### Video Upload
+- ✅ Video file upload to TikTok (max 4GB)
+- ✅ Video title and privacy settings
+- ✅ Upload progress tracking
+- ✅ Status monitoring
+- ✅ Chunked upload for large files (10MB chunks)
+
+## 🔧 Setup
+
+### 1. TikTok Developer Portal
 
 1. Go to [TikTok Developer Portal](https://developers.tiktok.com/)
-2. Navigate to your app settings
-3. Add the redirect URI: `http://localhost:3000/callback`
-4. Make sure these scopes are enabled:
+2. Create or select your app
+3. Add redirect URI: `https://www.pasindu.website/callback`
+4. Enable these scopes:
    - `video.upload`
+   - `video.publish`
    - `user.info.basic`
 
-### Production Deployment
+### 2. Environment Variables
 
-⚠️ **SECURITY WARNING**: This app includes the client secret in the frontend code for development purposes only. 
+Create `.env.local` for local development or add to Vercel dashboard:
 
-For production:
-- Move the OAuth token exchange to a backend server
-- Never expose your client secret in frontend code
-- Use environment variables on your backend
-- Implement proper security measures
+```bash
+# Server-side only (NEVER expose in frontend)
+TIKTOK_CLIENT_KEY=your_client_key
+TIKTOK_CLIENT_SECRET=your_client_secret
+TIKTOK_REDIRECT_URI=https://www.pasindu.website/callback
 
-## Features
+# Frontend (exposed to client)
+REACT_APP_TIKTOK_CLIENT_KEY=your_client_key
+REACT_APP_REDIRECT_URI=https://www.pasindu.website/callback
+```
 
-- TikTok OAuth authentication
-- Video file upload
-- Video title and privacy settings
-- Upload progress tracking
-- Status monitoring
+### 3. Database Setup
 
-## Usage
+Run the migration in your Vercel Postgres database:
 
-1. Click "Connect TikTok Account" to authenticate
-2. Select a video file (max 4GB)
-3. Enter video title
-4. Choose privacy level
-5. Click "Upload to TikTok"
+```bash
+psql $POSTGRES_URL -f database-migration.sql
+```
 
-## Privacy Levels
+Or use the Vercel dashboard Query tab.
 
-- **Private (Only Me)**: Only you can see the video
-- **Friends**: Only your friends can see the video
-- **Public**: Everyone can see the video
+## 🚀 Deployment
+
+See [DEPLOYMENT_CHECKLIST.md](DEPLOYMENT_CHECKLIST.md) for complete deployment instructions.
+
+Quick deploy to Vercel:
+```bash
+vercel --prod
+```
+
+## 🎮 Usage
+
+### Adding Your First Account
+1. Click "Add Your First Account"
+2. Log in with your TikTok credentials
+3. Authorize the app
+4. Your account will be connected
+
+### Adding Multiple Accounts
+1. Click "+ Add Another Account"
+2. **TikTok will show login screen** (not auto-authenticate)
+3. Log in with a different TikTok account
+4. Both accounts will be available
+
+### Uploading a Video
+1. Select which account to use
+2. Choose a video file (max 4GB)
+3. Enter video title (max 150 characters)
+4. Click "Upload to TikTok"
+5. Wait for upload to complete
+6. Check your TikTok profile for the video
+
+## 📊 Tech Stack
+
+- **Frontend**: React 18
+- **Backend**: Vercel Serverless Functions
+- **Database**: Vercel Postgres
+- **Authentication**: OAuth 2.0 + PKCE (S256)
+- **API**: TikTok Web API v2
