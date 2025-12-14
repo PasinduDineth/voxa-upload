@@ -71,20 +71,34 @@ function TikTokUploader() {
 
   const handleLogin = async (forceLogin = false) => {
     try {
-      console.log('[Component] Starting login', { forceLogin });
+      console.log('[Component] Starting login', { 
+        forceLogin,
+        timestamp: new Date().toISOString(),
+        current_accounts: accounts.length
+      });
       setError('');
       setUploadStatus('Initializing authentication...');
       
       // Get authorization URL from API (this will be async now)
+      console.log('[Component] Calling tiktokApi.getAuthUrl...');
       const authUrl = await tiktokApi.getAuthUrl(forceLogin);
       
-      console.log('[Component] Opening authorization window');
+      console.log('[Component] Received authUrl', {
+        url_length: authUrl.length,
+        url_preview: authUrl.substring(0, 100) + '...',
+        has_disable_auto_auth: authUrl.includes('disable_auto_auth')
+      });
+      
+      console.log('[Component] Redirecting to TikTok authorization...');
       setUploadStatus('');
       
       // Redirect to auth URL (same window for better UX)
       window.location.href = authUrl;
     } catch (error) {
-      console.error('[Component] Failed to start login:', error);
+      console.error('[Component] Failed to start login:', {
+        error_message: error.message,
+        error_stack: error.stack
+      });
       setError('Failed to initialize authentication: ' + error.message);
       setUploadStatus('');
     }

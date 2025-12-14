@@ -19,33 +19,59 @@ class TikTokAPI {
    * @returns {Promise<string>} Authorization URL
    */
   async getAuthUrl(forceLogin = false) {
-    console.log('[OAuth] Initializing OAuth flow', { forceLogin });
+    console.log('[OAuth] Initializing OAuth flow', { 
+      forceLogin,
+      CLIENT_KEY_defined: !!CLIENT_KEY,
+      CLIENT_KEY_value: CLIENT_KEY,
+      REDIRECT_URI_defined: !!REDIRECT_URI,
+      REDIRECT_URI_value: REDIRECT_URI,
+      env_REACT_APP_TIKTOK_CLIENT_KEY: process.env.REACT_APP_TIKTOK_CLIENT_KEY,
+      env_REACT_APP_REDIRECT_URI: process.env.REACT_APP_REDIRECT_URI
+    });
 
     try {
       // Call server to generate state, code_verifier, and code_challenge
+      console.log('[OAuth] Calling /api/init-oauth endpoint');
       const response = await axios.post('/api/init-oauth', {
         user_id: localStorage.getItem('user_id') || null,
         workspace_id: localStorage.getItem('workspace_id') || null
       });
 
+      console.log('[OAuth] Received response from init-oauth', {
+        success: response.data.success,
+        has_data: !!response.data.data
+      });
+
       if (!response.data.success) {
+        console.error('[OAuth] Init OAuth failed', response.data);
         throw new Error('Failed to initialize OAuth: ' + response.data.error);
       }
 
       const { state, code_challenge, code_challenge_method, code_verifier } = response.data.data;
+
+      console.log('[OAuth] Extracted OAuth parameters', {
+        state_length: state?.length,
+        code_challenge_length: code_challenge?.length,
+        code_challenge_method,
+        code_verifier_length: code_verifier?.length
+      });
 
       // Store code_verifier and state in sessionStorage (more secure than localStorage)
       // These are temporary and should be cleared after OAuth completes
       sessionStorage.setItem('oauth_state', state);
       sessionStorage.setItem('oauth_code_verifier', code_verifier);
 
-      console.log('[OAuth] OAuth initialized', {
-        state,
-        code_challenge_method,
-        has_code_verifier: !!code_verifier
+      console.log('[OAuth] Stored in sessionStorage', {
+        stored_state: sessionStorage.getItem('oauth_state')?.substring(0, 10) + '...',
+        stored_verifier: sessionStorage.getItem('oauth_code_verifier')?.substring(0, 10) + '...'
       });
 
       const scope = 'user.info.basic,video.upload,video.publish';
+
+      // Ensure CLIENT_KEY is defined
+      if (!CLIENT_KEY) {
+        throw new Error('CLIENT_KEY is not defined. Check REACT_APP_TIKTOK_CLIENT_KEY environment variable.');
+      }
 
       console.log('[OAuth] Building authorize URL with', {
         CLIENT_KEY,
@@ -82,7 +108,11 @@ class TikTokAPI {
 
       return authUrl;
     } catch (error) {
-      console.error('[OAuth] Failed to initialize OAuth:', error);
+      console.error('[OAuth] Failed to initialize OAuth:', {
+        error_message: error.message,
+        error_stack: error.stack,
+        error_response: error.response?.data
+      });
       throw error;
     }
   }
