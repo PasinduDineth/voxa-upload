@@ -74,6 +74,14 @@ module.exports = async function handler(req, res) {
     const CLIENT_SECRET = process.env.TIKTOK_CLIENT_SECRET;
     const REDIRECT_URI = process.env.TIKTOK_REDIRECT_URI;
 
+    console.log('[OAuth Callback] Environment check:', {
+      has_CLIENT_KEY: !!CLIENT_KEY,
+      has_CLIENT_SECRET: !!CLIENT_SECRET,
+      has_REDIRECT_URI: !!REDIRECT_URI,
+      CLIENT_KEY: CLIENT_KEY ? `${CLIENT_KEY.substring(0, 5)}...` : 'missing',
+      all_env_keys: Object.keys(process.env).filter(k => k.includes('TIKTOK')).join(', ')
+    });
+
     if (!CLIENT_KEY || !CLIENT_SECRET || !REDIRECT_URI) {
       console.error('[OAuth Callback] Missing environment variables');
       return res.status(500).json({ 
