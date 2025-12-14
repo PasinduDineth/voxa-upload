@@ -47,6 +47,13 @@ class TikTokAPI {
 
       const scope = 'user.info.basic,video.upload,video.publish';
 
+      console.log('[OAuth] Building authorize URL with', {
+        CLIENT_KEY,
+        REDIRECT_URI,
+        state_length: state.length,
+        code_challenge_length: code_challenge.length
+      });
+
       // Build authorization URL with proper parameters
       const params = new URLSearchParams({
         client_key: CLIENT_KEY,
@@ -69,7 +76,8 @@ class TikTokAPI {
       
       console.log('[OAuth] Authorization URL generated', {
         has_disable_auto_auth: forceLogin,
-        url_length: authUrl.length
+        url_length: authUrl.length,
+        full_url: authUrl
       });
 
       return authUrl;
