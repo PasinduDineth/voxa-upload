@@ -1,9 +1,9 @@
-import { sql } from '@vercel/postgres';
-const axios = require('axios');
+const { sql } = require('@vercel/postgres');
+const axios = require('axios').default || require('axios');
 
 // Server-side OAuth callback handler
 // Handles token exchange with PKCE validation and state verification
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }

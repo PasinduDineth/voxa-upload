@@ -1,8 +1,8 @@
-import { sql } from '@vercel/postgres';
-import crypto from 'crypto';
+const { sql } = require('@vercel/postgres');
+const crypto = require('crypto');
 
 // Initialize OAuth flow by generating and storing state + code_verifier
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
