@@ -91,11 +91,11 @@ class TikTokAPI {
         code_challenge_method: code_challenge_method
       });
 
-      // Add disable_auto_auth=1 when adding another account
-      // This prevents TikTok from auto-authenticating with existing session
+      // Add force_verify=1 when adding another account
+      // This forces TikTok to show verification screen
       if (forceLogin) {
-        params.append('disable_auto_auth', '1');
-        console.log('[OAuth] Force login enabled - disable_auto_auth=1 added');
+        params.append('force_verify', '1');
+        console.log('[OAuth] Force login enabled - force_verify=1 added');
       }
 
       const authUrl = `https://www.tiktok.com/v2/auth/authorize?${params.toString()}`;

@@ -105,15 +105,8 @@ function TikTokUploader() {
   };
 
   const handleAddAnotherAccount = async () => {
-    // For sandbox apps, TikTok doesn't support disable_auto_auth=1 properly
-    // So we guide users to manually log out first
-    if (window.confirm('To add a different TikTok account:\n\n1. Click OK to open TikTok in a new tab\n2. Log out from TikTok\n3. Come back here and try again\n\nContinue?')) {
-      window.open('https://www.tiktok.com/logout', '_blank');
-      setTimeout(() => {
-        alert('After logging out of TikTok, click OK to add your new account');
-        handleLogin(false); // Don't use disable_auto_auth in sandbox
-      }, 2000);
-    }
+    // Call handleLogin with forceLogin=true to show account selection
+    await handleLogin(true);
   };
 
   const handleLogout = () => {
