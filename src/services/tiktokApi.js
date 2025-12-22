@@ -9,7 +9,7 @@ class TikTokAPI {
 
   async getAuthUrl(forceLogin = false) {
     try {
-      const response = await axios.post('/api/init-oauth', {
+      const response = await axios.post('/api/tiktok-init-oauth', {
         user_id: localStorage.getItem('user_id') || null,
         workspace_id: localStorage.getItem('workspace_id') || null
       });
@@ -92,7 +92,7 @@ class TikTokAPI {
         };
       }
 
-      const response = await axios.post('/api/oauth-callback', {
+      const response = await axios.post('/api/tiktok-oauth-callback', {
         code,
         state,
         code_verifier: codeVerifier
@@ -137,7 +137,7 @@ class TikTokAPI {
 
   async loadAccounts() {
     try {
-      const response = await axios.get('/api/get-accounts');
+      const response = await axios.get('/api/tiktok-get-accounts');
       if (response.data.success) {
         this.accounts = response.data.accounts;
         return this.accounts;
@@ -151,7 +151,7 @@ class TikTokAPI {
 
   async saveAccountToDB(account) {
     try {
-      await axios.post('/api/save-account-to-db', {
+      await axios.post('/api/tiktok-save-account', {
         open_id: account.open_id,
         access_token: account.access_token,
         refresh_token: null,
@@ -177,7 +177,7 @@ class TikTokAPI {
 
   async removeAccount(openId) {
     try {
-      await axios.delete(`/api/delete-account?open_id=${openId}`);
+      await axios.delete(`/api/tiktok-delete-account?open_id=${openId}`);
       await this.loadAccounts();
       
       if (this.openId === openId) {
@@ -209,7 +209,7 @@ class TikTokAPI {
     }
 
     try {
-      const response = await axios.post('/api/init-upload', {
+      const response = await axios.post('/api/tiktok-init-upload', {
         accessToken: this.accessToken,
         videoFile: {
           size: videoFile.size,
@@ -271,7 +271,7 @@ class TikTokAPI {
     }
 
     try {
-      const response = await axios.post('/api/check-status', {
+      const response = await axios.post('/api/tiktok-check-status', {
         accessToken: this.accessToken,
         publishId: publishId
       });

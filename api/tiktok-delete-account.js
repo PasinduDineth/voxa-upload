@@ -13,10 +13,10 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    // Delete account from database
     await sql`
       DELETE FROM accounts
       WHERE open_id = ${open_id}
+      AND type = 'TIKTOK'
     `;
 
     return res.status(200).json({ success: true });

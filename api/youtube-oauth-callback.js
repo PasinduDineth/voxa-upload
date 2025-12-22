@@ -18,7 +18,7 @@ module.exports = async function handler(req, res) {
   try {
     const stateResult = await sql`
       SELECT code_verifier, user_id, workspace_id, created_at
-      FROM oauth_states
+      FROM youtube_oauth_states
       WHERE state = ${state}
       AND used = false
       AND created_at > NOW() - INTERVAL '10 minutes'
@@ -41,16 +41,16 @@ module.exports = async function handler(req, res) {
     }
 
     await sql`
-      UPDATE oauth_states
+      UPDATE youtube_oauth_states
       SET used = true, used_at = NOW()
       WHERE state = ${state}
     `;
 
-    const CLIENT_KEY = process.env.TIKTOK_CLIENT_KEY;
-    const CLIENT_SECRET = process.env.TIKTOK_CLIENT_SECRET;
-    const REDIRECT_URI = process.env.TIKTOK_REDIRECT_URI;
+    const CLIENT_ID = process.env.YOUTUBE_CLIENT_ID;
+    const CLIENT_SECRET = process.env.YOUTUBE_CLIENT_SECRET;
+    const REDIRECT_URI = process.env.YOUTUBE_REDIRECT_URI;
 
-    if (!CLIENT_KEY || !CLIENT_SECRET || !REDIRECT_URI) {
+    if (!CLIENT_ID || !CLIENT_SECRET || !REDIRECT_URI) {
       return res.status(500).json({ 
         success: false, 
         error: 'Server configuration error: missing credentials' 
@@ -58,7 +58,7 @@ module.exports = async function handler(req, res) {
     }
 
     const tokenParams = new URLSearchParams({
-      client_key: CLIENT_KEY,
+      client_id: CLIENT_ID,
       client_secret: CLIENT_SECRET,
       code: code,
       grant_type: 'authorization_code',
@@ -67,12 +67,11 @@ module.exports = async function handler(req, res) {
     });
 
     const tokenResponse = await axios.post(
-      'https://open.tiktokapis.com/v2/oauth/token/',
+      'https://oauth2.googleapis.com/token',
       tokenParams,
       {
         headers: { 
-          'Content-Type': 'application/x-www-form-urlencoded',
-          'Cache-Control': 'no-cache'
+          'Content-Type': 'application/x-www-form-urlencoded'
         }
       }
     );
@@ -80,76 +79,98 @@ module.exports = async function handler(req, res) {
     if (!tokenResponse.data.access_token) {
       return res.status(400).json({ 
         success: false, 
-        error: 'Failed to obtain access token from TikTok' 
+        error: 'Failed to obtain access token from YouTube' 
       });
     }
 
-    const { access_token, refresh_token, open_id, expires_in, scope } = tokenResponse.data;
+    const { access_token, refresh_token, expires_in, scope } = tokenResponse.data;
 
-    let userInfo = null;
+    let channelInfo = null;
     try {
-      const userInfoResponse = await axios.get(
-        'https://open.tiktokapis.com/v2/user/info/',
+      const channelResponse = await axios.get(
+        'https://www.googleapis.com/youtube/v3/channels',
         {
-          params: { fields: 'open_id,union_id,avatar_url,display_name' },
+          params: { 
+            part: 'snippet,contentDetails',
+            mine: true
+          },
           headers: { 'Authorization': `Bearer ${access_token}` }
         }
       );
-      userInfo = userInfoResponse.data.data.user;
+      
+      if (channelResponse.data.items && channelResponse.data.items.length > 0) {
+        const channel = channelResponse.data.items[0];
+        channelInfo = {
+          channel_id: channel.id,
+          channel_title: channel.snippet.title,
+          thumbnail_url: channel.snippet.thumbnails?.default?.url || null
+        };
+      }
     } catch (error) {
-      console.error('Failed to fetch user info:', error.response?.data || error.message);
+      console.error('Failed to fetch channel info:', error.response?.data || error.message);
     }
 
-    const existingAccount = await sql`
+    if (!channelInfo) {
+      return res.status(400).json({
+        success: false,
+        error: 'No YouTube channel found for this account'
+      });
+    }
+
+    const existingChannel = await sql`
       SELECT open_id, display_name
       FROM accounts
-      WHERE open_id = ${open_id}
+      WHERE open_id = ${channelInfo.channel_id}
+      AND type = 'YOUTUBE'
     `;
 
-    if (existingAccount.rows.length > 0) {
+    if (existingChannel.rows.length > 0) {
       await sql`
         UPDATE accounts
         SET 
           access_token = ${access_token},
           refresh_token = ${refresh_token || null},
-          display_name = ${userInfo?.display_name || existingAccount.rows[0].display_name},
-          avatar_url = ${userInfo?.avatar_url || null},
+          display_name = ${channelInfo.channel_title},
+          avatar_url = ${channelInfo.thumbnail_url},
           scope = ${scope || ''},
           created_at = NOW()
-        WHERE open_id = ${open_id}
+        WHERE open_id = ${channelInfo.channel_id}
+        AND type = 'YOUTUBE'
       `;
 
       return res.status(200).json({
         success: true,
         data: {
-          open_id,
-          display_name: userInfo?.display_name || existingAccount.rows[0].display_name,
-          avatar_url: userInfo?.avatar_url,
+          channel_id: channelInfo.channel_id,
+          channel_title: channelInfo.channel_title,
+          thumbnail_url: channelInfo.thumbnail_url,
           is_new: false,
-          message: 'Account re-authenticated successfully'
+          message: 'Channel re-authenticated successfully'
         }
       });
     }
 
     await sql`
       INSERT INTO accounts (
-        open_id, 
+        open_id,
         access_token, 
         refresh_token, 
         display_name, 
         avatar_url, 
-        scope, 
+        scope,
+        type,
         user_id,
         workspace_id,
         created_at
       )
       VALUES (
-        ${open_id},
+        ${channelInfo.channel_id},
         ${access_token},
         ${refresh_token || null},
-        ${userInfo?.display_name || 'TikTok User'},
-        ${userInfo?.avatar_url || null},
+        ${channelInfo.channel_title},
+        ${channelInfo.thumbnail_url},
         ${scope || ''},
+        'YOUTUBE',
         ${stateData.user_id || null},
         ${stateData.workspace_id || null},
         NOW()
@@ -159,11 +180,11 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({
       success: true,
       data: {
-        open_id,
-        display_name: userInfo?.display_name || 'TikTok User',
-        avatar_url: userInfo?.avatar_url,
+        channel_id: channelInfo.channel_id,
+        channel_title: channelInfo.channel_title,
+        thumbnail_url: channelInfo.thumbnail_url,
         is_new: true,
-        message: 'Account connected successfully'
+        message: 'Channel connected successfully'
       }
     });
 
@@ -171,7 +192,7 @@ module.exports = async function handler(req, res) {
     console.error('Error during token exchange:', error.message);
     return res.status(error.response?.status || 500).json({
       success: false,
-      error: error.response?.data?.error_description || error.response?.data?.message || error.message
+      error: error.response?.data?.error_description || error.response?.data?.error || error.message
     });
   }
 }
