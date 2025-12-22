@@ -42,10 +42,31 @@ function TikTokUploader() {
     console.log('[Component] Handling OAuth callback', { has_code: !!code, has_state: !!state });
     setUploadStatus('Authenticating...');
     
+    const isAddingAccount = sessionStorage.getItem('oauth_adding_account') === 'true';
+    
     const result = await tiktokApi.getAccessToken(code, state);
     
     if (result.success) {
       console.log('[Component] OAuth callback successful', result.data);
+      
+      // Check if this is the same account trying to be added again
+      const existingAccount = accounts.find(acc => acc.open_id === result.data.open_id);
+      
+      if (isAddingAccount && existingAccount) {
+        // Same account was re-authenticated instead of adding a new one
+        setError('⚠️ Same account detected! To add a different account, please:\n1. Log out of TikTok in your browser first\n2. Or use an incognito/private window\n3. Then click "Add Another Account" again');
+        setUploadStatus('');
+        
+        // Clean up
+        sessionStorage.removeItem('oauth_adding_account');
+        window.history.replaceState({}, document.title, '/');
+        
+        setTimeout(() => setError(''), 10000);
+        return;
+      }
+      
+      // Clean up the flag
+      sessionStorage.removeItem('oauth_adding_account');
       
       // Reload accounts from database
       await loadAccountsFromDB();
@@ -58,12 +79,18 @@ function TikTokUploader() {
         console.log('[Component] Switched to new account', { open_id: newOpenId });
       }
       
-      setUploadStatus(result.data.message || 'Authentication successful!');
+      if (isAddingAccount && !existingAccount) {
+        setUploadStatus('✅ New account added successfully!');
+      } else {
+        setUploadStatus(result.data.message || 'Authentication successful!');
+      }
+      
       // Clean up URL
       window.history.replaceState({}, document.title, '/');
     } else {
       console.error('[Component] OAuth callback failed', result.error);
       setError('Authentication failed: ' + JSON.stringify(result.error));
+      sessionStorage.removeItem('oauth_adding_account');
     }
     
     setTimeout(() => setUploadStatus(''), 3000);
@@ -105,7 +132,14 @@ function TikTokUploader() {
   };
 
   const handleAddAnotherAccount = async () => {
+    console.log('[Component] Add another account - clearing any cached OAuth state');
+    
+    // Clear any existing OAuth state to ensure fresh login
+    sessionStorage.removeItem('oauth_state');
+    sessionStorage.removeItem('oauth_code_verifier');
+    
     // Call handleLogin with forceLogin=true to show account selection
+    // This will set disable_auto_auth=1 parameter
     await handleLogin(true);
   };
 
@@ -346,7 +380,10 @@ function TikTokUploader() {
                   </button>
                 </div>
                 <p style={{ fontSize: '0.85em', color: '#666', marginTop: 10, textAlign: 'center' }}>
-                  💡 Click "Add Another Account" to connect a different TikTok account. You'll be able to choose which account to use.
+                  💡 <strong>To add a different TikTok account:</strong><br/>
+                  1. Click "Add Another Account" below<br/>
+                  2. If TikTok auto-logs you in with the same account, <strong>log out of TikTok in your browser first</strong> or use an incognito/private window<br/>
+                  3. Then login with your other TikTok account
                 </p>
               </div>
             )}

@@ -91,11 +91,17 @@ class TikTokAPI {
         code_challenge_method: code_challenge_method
       });
 
-      // Add disable_auto_auth=1 when adding another account
-      // This prevents TikTok from auto-logging in with existing session
+      // When adding another account, force TikTok to show account selection
+      // Using BOTH disable_auto_auth and setting a flag to force re-auth
       if (forceLogin) {
+        // Prevent auto-login with existing session
         params.append('disable_auto_auth', '1');
         console.log('[OAuth] Force login enabled - disable_auto_auth=1 added');
+        
+        // Store flag that we're adding another account
+        sessionStorage.setItem('oauth_adding_account', 'true');
+      } else {
+        sessionStorage.removeItem('oauth_adding_account');
       }
 
       const authUrl = `https://www.tiktok.com/v2/auth/authorize?${params.toString()}`;
