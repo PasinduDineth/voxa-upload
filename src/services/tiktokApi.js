@@ -1,9 +1,7 @@
 import axios from 'axios';
 
-// CLIENT_KEY is safe to expose in frontend (it's meant to be public)
-// CLIENT_SECRET must NEVER be in frontend code - it's server-side only
-const CLIENT_KEY = process.env.REACT_APP_TIKTOK_CLIENT_KEY || 'sbaw0lz3d1a0f32yv3';
-const REDIRECT_URI = process.env.REACT_APP_REDIRECT_URI || 'https://www.pasindu.website/callback';
+// CLIENT_KEY and REDIRECT_URI are now fetched from server at runtime
+// This ensures they're always properly configured from environment variables
 
 class TikTokAPI {
   constructor() {
@@ -21,16 +19,11 @@ class TikTokAPI {
   async getAuthUrl(forceLogin = false) {
     console.log('[OAuth] Initializing OAuth flow', { 
       forceLogin,
-      CLIENT_KEY_defined: !!CLIENT_KEY,
-      CLIENT_KEY_value: CLIENT_KEY,
-      REDIRECT_URI_defined: !!REDIRECT_URI,
-      REDIRECT_URI_value: REDIRECT_URI,
-      env_REACT_APP_TIKTOK_CLIENT_KEY: process.env.REACT_APP_TIKTOK_CLIENT_KEY,
-      env_REACT_APP_REDIRECT_URI: process.env.REACT_APP_REDIRECT_URI
+      timestamp: new Date().toISOString()
     });
 
     try {
-      // Call server to generate state, code_verifier, and code_challenge
+      // Call server to get OAuth parameters including CLIENT_KEY from environment
       console.log('[OAuth] Calling /api/init-oauth endpoint');
       const response = await axios.post('/api/init-oauth', {
         user_id: localStorage.getItem('user_id') || null,
@@ -47,7 +40,16 @@ class TikTokAPI {
         throw new Error('Failed to initialize OAuth: ' + response.data.error);
       }
 
-      const { state, code_challenge, code_challenge_method, code_verifier } = response.data.data;
+      const { state, code_challenge, code_challenge_method, code_verifier, client_key, redirect_uri } = response.data.data;
+
+      // Validate that we received CLIENT_KEY from server
+      if (!client_key) {
+        throw new Error('CLIENT_KEY not received from server. Please check server configuration.');
+      }
+
+      if (!redirect_uri) {
+        throw new Error('REDIRECT_URI not received from server. Please check server configuration.');
+      }
 
       console.log('[OAuth] Extracted OAuth parameters', {
         state_length: state?.length,
@@ -68,24 +70,19 @@ class TikTokAPI {
 
       const scope = 'user.info.basic,video.upload,video.publish';
 
-      // Ensure CLIENT_KEY is defined
-      if (!CLIENT_KEY) {
-        throw new Error('CLIENT_KEY is not defined. Check REACT_APP_TIKTOK_CLIENT_KEY environment variable.');
-      }
-
       console.log('[OAuth] Building authorize URL with', {
-        CLIENT_KEY,
-        REDIRECT_URI,
+        client_key_length: client_key.length,
+        redirect_uri,
         state_length: state.length,
         code_challenge_length: code_challenge.length
       });
 
-      // Build authorization URL with proper parameters
+      // Build authorization URL with proper parameters from server
       const params = new URLSearchParams({
-        client_key: CLIENT_KEY,
+        client_key: client_key,
         scope: scope,
         response_type: 'code',
-        redirect_uri: REDIRECT_URI,
+        redirect_uri: redirect_uri,
         state: state,
         code_challenge: code_challenge,
         code_challenge_method: code_challenge_method

@@ -65,13 +65,35 @@ module.exports = async function handler(req, res) {
 
     console.log('[Init OAuth] OAuth state stored successfully');
 
+    // Get CLIENT_KEY and REDIRECT_URI from server environment variables
+    const clientKey = process.env.TIKTOK_CLIENT_KEY;
+    const redirectUri = process.env.TIKTOK_REDIRECT_URI;
+
+    if (!clientKey) {
+      console.error('[Init OAuth] TIKTOK_CLIENT_KEY not configured');
+      return res.status(500).json({
+        success: false,
+        error: 'TikTok CLIENT_KEY is not configured. Please set TIKTOK_CLIENT_KEY environment variable.'
+      });
+    }
+
+    if (!redirectUri) {
+      console.error('[Init OAuth] TIKTOK_REDIRECT_URI not configured');
+      return res.status(500).json({
+        success: false,
+        error: 'TikTok REDIRECT_URI is not configured. Please set TIKTOK_REDIRECT_URI environment variable.'
+      });
+    }
+
     return res.status(200).json({
       success: true,
       data: {
         state,
         code_challenge,
         code_challenge_method: 'S256',
-        code_verifier // Send to client to be stored temporarily
+        code_verifier, // Send to client to be stored temporarily
+        client_key: clientKey, // Safe to send (it's meant to be public)
+        redirect_uri: redirectUri
       }
     });
 
