@@ -14,21 +14,16 @@ function TikTokUploader() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    // Load accounts from database
     loadAccountsFromDB();
-    
-    // Check if user is authenticated
     setIsAuthenticated(tiktokApi.isAuthenticated());
     setActiveOpenId(localStorage.getItem('tiktok_open_id'));
     setView('accounts');
 
-    // Handle OAuth callback
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
     const state = urlParams.get('state');
 
     if (code && state) {
-      console.log('[Component] OAuth callback detected', { has_code: !!code, has_state: !!state });
       handleOAuthCallback(code, state);
     }
   }, []);
@@ -39,44 +34,30 @@ function TikTokUploader() {
   };
 
   const handleOAuthCallback = async (code, state) => {
-    console.log('[Component] Handling OAuth callback', { has_code: !!code, has_state: !!state });
     setUploadStatus('Authenticating...');
     
     const isAddingAccount = sessionStorage.getItem('oauth_adding_account') === 'true';
-    
     const result = await tiktokApi.getAccessToken(code, state);
     
     if (result.success) {
-      console.log('[Component] OAuth callback successful', result.data);
-      
-      // Check if this is the same account trying to be added again
       const existingAccount = accounts.find(acc => acc.open_id === result.data.open_id);
       
       if (isAddingAccount && existingAccount) {
-        // Same account was re-authenticated instead of adding a new one
         setError('⚠️ Same account detected! To add a different account, please:\n1. Log out of TikTok in your browser first\n2. Or use an incognito/private window\n3. Then click "Add Another Account" again');
         setUploadStatus('');
-        
-        // Clean up
         sessionStorage.removeItem('oauth_adding_account');
         window.history.replaceState({}, document.title, '/');
-        
         setTimeout(() => setError(''), 10000);
         return;
       }
       
-      // Clean up the flag
       sessionStorage.removeItem('oauth_adding_account');
-      
-      // Reload accounts from database
       await loadAccountsFromDB();
       
-      // Auto-select the newly added account
       const newOpenId = result.data.open_id;
       if (await tiktokApi.useAccount(newOpenId)) {
         setActiveOpenId(newOpenId);
         setIsAuthenticated(true);
-        console.log('[Component] Switched to new account', { open_id: newOpenId });
       }
       
       if (isAddingAccount && !existingAccount) {
@@ -85,10 +66,8 @@ function TikTokUploader() {
         setUploadStatus(result.data.message || 'Authentication successful!');
       }
       
-      // Clean up URL
       window.history.replaceState({}, document.title, '/');
     } else {
-      console.error('[Component] OAuth callback failed', result.error);
       setError('Authentication failed: ' + JSON.stringify(result.error));
       sessionStorage.removeItem('oauth_adding_account');
     }
@@ -98,53 +77,24 @@ function TikTokUploader() {
 
   const handleLogin = async (forceLogin = false) => {
     try {
-      console.log('[Component] Starting login', { 
-        forceLogin,
-        timestamp: new Date().toISOString(),
-        current_accounts: accounts.length
-      });
       setError('');
       setUploadStatus('Initializing authentication...');
-      
-      // Get authorization URL from API (this will be async now)
-      console.log('[Component] Calling tiktokApi.getAuthUrl...');
       const authUrl = await tiktokApi.getAuthUrl(forceLogin);
-      
-      console.log('[Component] Received authUrl', {
-        url_length: authUrl.length,
-        url_preview: authUrl.substring(0, 100) + '...',
-        has_disable_auto_auth: authUrl.includes('disable_auto_auth')
-      });
-      
-      console.log('[Component] Redirecting to TikTok authorization...');
       setUploadStatus('');
-      
-      // Redirect to auth URL (same window for better UX)
       window.location.href = authUrl;
     } catch (error) {
-      console.error('[Component] Failed to start login:', {
-        error_message: error.message,
-        error_stack: error.stack
-      });
       setError('Failed to initialize authentication: ' + error.message);
       setUploadStatus('');
     }
   };
 
   const handleAddAnotherAccount = async () => {
-    console.log('[Component] Add another account - clearing any cached OAuth state');
-    
-    // Clear any existing OAuth state to ensure fresh login
     sessionStorage.removeItem('oauth_state');
     sessionStorage.removeItem('oauth_code_verifier');
-    
-    // Call handleLogin with forceLogin=true to show account selection
-    // This will set disable_auto_auth=1 parameter
     await handleLogin(true);
   };
 
   const handleLogout = () => {
-    console.log('[Component] Logging out');
     tiktokApi.logout();
     setIsAuthenticated(false);
     setSelectedFile(null);
@@ -157,7 +107,6 @@ function TikTokUploader() {
 
   const handleAccountSwitch = async (e) => {
     const openId = e.target.value;
-    console.log('[Component] Switching account', { open_id: openId });
     if (openId && await tiktokApi.useAccount(openId)) {
       setActiveOpenId(openId);
       setIsAuthenticated(tiktokApi.isAuthenticated());
@@ -206,7 +155,6 @@ function TikTokUploader() {
     setError('');
 
     try {
-      // Step 1: Initialize upload
       const initResult = await tiktokApi.initializeUpload(selectedFile, videoTitle, "SELF_ONLY");
       
       if (!initResult.success) {
@@ -215,7 +163,6 @@ function TikTokUploader() {
 
       const { publish_id, upload_url } = initResult.data;
       
-      // Step 2: Upload entire video file
       setUploadStatus('Uploading video...');
       const uploadResult = await tiktokApi.uploadVideo(upload_url, selectedFile);
       
@@ -223,12 +170,10 @@ function TikTokUploader() {
         throw new Error(JSON.stringify(uploadResult.error));
       }
 
-      // Step 3: Check upload status
       setUploadStatus('Processing upload...');
       
-      // Poll for status
       let attempts = 0;
-      const maxAttempts = 120; // 120 attempts x 5 seconds = 10 minutes
+      const maxAttempts = 120;
       const checkStatus = async () => {
         const statusResult = await tiktokApi.publishVideo(publish_id);
         
@@ -251,27 +196,23 @@ function TikTokUploader() {
           } else if (status === 'FAILED') {
             throw new Error(`Upload failed: ${failReason || 'Unknown reason'}`);
           } else if (status === 'PROCESSING_UPLOAD') {
-            // Still processing
             if (attempts < maxAttempts) {
               attempts++;
               const progress = uploadedBytes > 0 ? ` (${Math.round(uploadedBytes / selectedFile.size * 100)}%)` : '';
               setUploadStatus(`Processing upload${progress}... (${attempts}/${maxAttempts})`);
-              setTimeout(checkStatus, 5000); // Check every 5 seconds
+              setTimeout(checkStatus, 5000);
             } else {
-              // After 10 minutes of processing, assume success
               setUploadStatus('✅ Upload complete! Video is being processed by TikTok. Check your TikTok app inbox/notifications in the next few minutes.');
               setSelectedFile(null);
               setVideoTitle('');
               setUploading(false);
             }
           } else {
-            // Unknown status, keep checking
             if (attempts < maxAttempts) {
               attempts++;
               setUploadStatus(`Status: ${status}... (${attempts}/${maxAttempts})`);
               setTimeout(checkStatus, 5000);
             } else {
-              // Assume success if no error
               setUploadStatus('✅ Upload complete! Check your TikTok inbox for the video notification.');
               setSelectedFile(null);
               setVideoTitle('');

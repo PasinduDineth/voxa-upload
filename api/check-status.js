@@ -1,7 +1,6 @@
 const axios = require('axios');
 
 module.exports = async (req, res) => {
-  // Enable CORS
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
@@ -33,10 +32,9 @@ module.exports = async (req, res) => {
       }
     );
 
-    console.log('📊 Status:', response.data?.data?.status);
     return res.status(200).json(response.data);
   } catch (error) {
-    console.error('❌ Status check error:', error.response?.data || error.message);
+    console.error('Status check error:', error.response?.data || error.message);
     return res.status(error.response?.status || 500).json({
       error: error.response?.data || error.message
     });

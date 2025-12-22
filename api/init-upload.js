@@ -1,14 +1,10 @@
 const axios = require('axios');
 
 module.exports = async (req, res) => {
-  // Enable CORS
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization'
-  );
+  res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -35,8 +31,7 @@ module.exports = async (req, res) => {
       return res.status(400).json({ error: 'Invalid video size' });
     }
 
-    // TikTok chunk calculation: total_chunk_count = floor(video_size / chunk_size)
-    const CHUNK_SIZE = 10_000_000; // 10 MB
+    const CHUNK_SIZE = 10_000_000;
     const totalChunkCount = Math.floor(videoSize / CHUNK_SIZE);
 
     const requestPayload = {
@@ -67,10 +62,9 @@ module.exports = async (req, res) => {
       }
     );
 
-    console.log('✅ Upload initialized:', response.data.data.publish_id);
     return res.status(200).json(response.data);
   } catch (error) {
-    console.error('❌ Init upload error:', error.response?.data || error.message);
+    console.error('Init upload error:', error.response?.data || error.message);
     return res.status(error.response?.status || 500).json({
       error: error.response?.data || error.message
     });
