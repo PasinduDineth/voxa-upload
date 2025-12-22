@@ -7,7 +7,6 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    // Fetch all accounts from database
     const result = await sql`
       SELECT 
         open_id,
@@ -17,6 +16,7 @@ module.exports = async function handler(req, res) {
         scope,
         created_at
       FROM accounts
+      WHERE type = 'TIKTOK'
       ORDER BY created_at DESC
     `;
 

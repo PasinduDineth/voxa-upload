@@ -15,7 +15,6 @@ module.exports = async function handler(req, res) {
   try {
     console.log('[Save Account] Saving account to database', { open_id, display_name });
     
-    // Save to database
     await sql`
       INSERT INTO accounts (
         open_id, 
@@ -24,6 +23,7 @@ module.exports = async function handler(req, res) {
         display_name, 
         avatar_url, 
         scope,
+        type,
         user_id,
         workspace_id,
         created_at
@@ -35,6 +35,7 @@ module.exports = async function handler(req, res) {
         ${display_name || 'TikTok User'},
         ${avatar_url || null},
         ${scope || ''},
+        'TIKTOK',
         ${user_id || null},
         ${workspace_id || null},
         NOW()
@@ -46,6 +47,7 @@ module.exports = async function handler(req, res) {
         display_name = EXCLUDED.display_name,
         avatar_url = EXCLUDED.avatar_url,
         scope = EXCLUDED.scope,
+        type = 'TIKTOK',
         user_id = EXCLUDED.user_id,
         workspace_id = EXCLUDED.workspace_id,
         created_at = NOW()

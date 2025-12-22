@@ -115,6 +115,7 @@ module.exports = async function handler(req, res) {
           display_name = ${userInfo?.display_name || existingAccount.rows[0].display_name},
           avatar_url = ${userInfo?.avatar_url || null},
           scope = ${scope || ''},
+          type = 'TIKTOK',
           created_at = NOW()
         WHERE open_id = ${open_id}
       `;
@@ -138,7 +139,8 @@ module.exports = async function handler(req, res) {
         refresh_token, 
         display_name, 
         avatar_url, 
-        scope, 
+        scope,
+        type,
         user_id,
         workspace_id,
         created_at
@@ -150,6 +152,7 @@ module.exports = async function handler(req, res) {
         ${userInfo?.display_name || 'TikTok User'},
         ${userInfo?.avatar_url || null},
         ${scope || ''},
+        'TIKTOK',
         ${stateData.user_id || null},
         ${stateData.workspace_id || null},
         NOW()
