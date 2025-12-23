@@ -137,7 +137,7 @@ class TikTokAPI {
 
   async loadAccounts() {
     try {
-      const response = await axios.get('/api/tiktok-get-accounts');
+      const response = await axios.get('/api/tiktok-accounts');
       if (response.data.success) {
         this.accounts = response.data.accounts;
         return this.accounts;
@@ -177,7 +177,7 @@ class TikTokAPI {
 
   async removeAccount(openId) {
     try {
-      await axios.delete(`/api/tiktok-delete-account?open_id=${openId}`);
+      await axios.delete(`/api/tiktok-accounts?open_id=${openId}`);
       await this.loadAccounts();
       
       if (this.openId === openId) {
@@ -271,7 +271,7 @@ class TikTokAPI {
     }
 
     try {
-      const response = await axios.post('/api/tiktok-check-status', {
+      const response = await axios.post('/api/tiktok-accounts', {
         accessToken: this.accessToken,
         publishId: publishId
       });
