@@ -166,37 +166,10 @@ class YouTubeAPI {
     return true;
   }
 
-  async testToken() {
-    if (!this.accessToken) {
-      return { success: false, error: 'Not authenticated' };
-    }
-
-    try {
-      const response = await axios.post('/api/youtube-test-token', {
-        accessToken: this.accessToken
-      });
-
-      console.log('Token test result:', response.data);
-      return response.data;
-    } catch (error) {
-      console.error('Token test failed:', error.response?.data || error.message);
-      return { 
-        success: false, 
-        error: error.response?.data || error.message 
-      };
-    }
-  }
-
   async uploadVideo(videoFile, videoTitle, videoDescription, privacyStatus = 'private') {
     if (!this.accessToken || !this.channelId) {
-      console.error('Not authenticated:', { accessToken: !!this.accessToken, channelId: !!this.channelId });
       return { success: false, error: 'Not authenticated' };
     }
-
-    console.log('=== YouTube Upload (Frontend - Direct to YouTube) ===');
-    console.log('Channel ID:', this.channelId);
-    console.log('Title:', videoTitle);
-    console.log('Video file:', videoFile.name, 'Size:', videoFile.size);
 
     try {
       const videoData = {
@@ -210,8 +183,7 @@ class YouTubeAPI {
         }
       };
 
-      // Step 1: Initialize resumable upload directly from browser
-      console.log('Step 1: Initializing resumable upload...');
+      // Step 1: Initialize resumable upload
       const initResponse = await axios.post(
         'https://www.googleapis.com/upload/youtube/v3/videos',
         JSON.stringify(videoData),
@@ -230,14 +202,12 @@ class YouTubeAPI {
       );
 
       const uploadUrl = initResponse.headers.location;
-      console.log('Step 1 successful, upload URL received');
 
       if (!uploadUrl) {
         throw new Error('Failed to get upload URL from YouTube');
       }
 
-      // Step 2: Upload the video file directly to YouTube
-      console.log('Step 2: Uploading video file to YouTube...');
+      // Step 2: Upload the video file
       const uploadResponse = await axios.put(
         uploadUrl,
         videoFile,
@@ -255,16 +225,9 @@ class YouTubeAPI {
         }
       );
 
-      console.log('Upload successful!');
-      console.log('Video ID:', uploadResponse.data?.id);
-
       return { success: true, data: uploadResponse.data };
     } catch (error) {
-      console.error('=== Upload Failed ===');
-      console.error('Status:', error.response?.status);
-      console.error('Status Text:', error.response?.statusText);
-      console.error('Error Data:', error.response?.data);
-      console.error('Full Error:', error);
+      console.error('Upload failed:', error.response?.data || error.message);
       return { success: false, error: error.response?.data || error.message };
     }
   }
