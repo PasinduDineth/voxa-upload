@@ -10,7 +10,6 @@ function YouTubeUploader() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [videoTitle, setVideoTitle] = useState('');
   const [videoDescription, setVideoDescription] = useState('');
-  const [hashtags, setHashtags] = useState('');
   const [tags, setTags] = useState('');
   const [defaultLanguage, setDefaultLanguage] = useState('en');
   const [defaultAudioLanguage, setDefaultAudioLanguage] = useState('en');
@@ -106,7 +105,6 @@ function YouTubeUploader() {
     setSelectedFile(null);
     setVideoTitle('');
     setVideoDescription('');
-    setHashtags('');
     setTags('');
     setDefaultLanguage('en');
     setDefaultAudioLanguage('en');
@@ -166,7 +164,6 @@ function YouTubeUploader() {
         selectedFile, 
         videoTitle, 
         videoDescription,
-        hashtags,
         tags,
         defaultLanguage,
         defaultAudioLanguage,
@@ -181,7 +178,6 @@ function YouTubeUploader() {
       setSelectedFile(null);
       setVideoTitle('');
       setVideoDescription('');
-      setHashtags('');
       setTags('');
       setDefaultLanguage('en');
       setDefaultAudioLanguage('en');
@@ -368,18 +364,6 @@ function YouTubeUploader() {
               rows={4}
               disabled={uploading}
               style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', fontFamily: 'inherit' }}
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="video-hashtags">Hashtags (will be added to description)</label>
-            <input
-              id="video-hashtags"
-              type="text"
-              value={hashtags}
-              onChange={(e) => setHashtags(e.target.value)}
-              placeholder="e.g., #travel #vlog #music"
-              disabled={uploading}
             />
           </div>
 

@@ -9,7 +9,6 @@ function TikTokUploader() {
   const [activeOpenId, setActiveOpenId] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [videoTitle, setVideoTitle] = useState('');
-  const [hashtags, setHashtags] = useState('');
   const [uploading, setUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState('');
   const [error, setError] = useState('');
@@ -100,7 +99,6 @@ function TikTokUploader() {
     setIsAuthenticated(false);
     setSelectedFile(null);
     setVideoTitle('');
-    setHashtags('');
     setUploadStatus('Logged out successfully');
     setTimeout(() => setUploadStatus(''), 3000);
     setAccounts([]);
@@ -157,7 +155,7 @@ function TikTokUploader() {
     setError('');
 
     try {
-      const initResult = await tiktokApi.initializeUpload(selectedFile, videoTitle, hashtags, "SELF_ONLY");
+      const initResult = await tiktokApi.initializeUpload(selectedFile, videoTitle, '', "SELF_ONLY");
       
       if (!initResult.success) {
         throw new Error(JSON.stringify(initResult.error));
@@ -188,13 +186,11 @@ function TikTokUploader() {
             setUploadStatus('✅ Video posted successfully! It\'s set to Private (only you can see it). Go to your TikTok profile to view it.');
             setSelectedFile(null);
             setVideoTitle('');
-            setHashtags('');
             setUploading(false);
             return;
           } else if (status === 'SEND_TO_USER_INBOX') {
             setSelectedFile(null);
             setVideoTitle('');
-            setHashtags('');
             setUploading(false);
             return;
           } else if (status === 'FAILED') {
@@ -209,7 +205,6 @@ function TikTokUploader() {
               setUploadStatus('✅ Upload complete! Video is being processed by TikTok. Check your TikTok app inbox/notifications in the next few minutes.');
               setSelectedFile(null);
               setVideoTitle('');
-              setHashtags('');
               setUploading(false);
             }
           } else {
@@ -221,7 +216,6 @@ function TikTokUploader() {
               setUploadStatus('✅ Upload complete! Check your TikTok inbox for the video notification.');
               setSelectedFile(null);
               setVideoTitle('');
-              setHashtags('');
               setUploading(false);
             }
           }
@@ -404,18 +398,6 @@ function TikTokUploader() {
               rows={3}
               disabled={uploading}
               style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', fontFamily: 'inherit' }}
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="video-hashtags">Hashtags (comma separated)</label>
-            <input
-              id="video-hashtags"
-              type="text"
-              value={hashtags}
-              onChange={(e) => setHashtags(e.target.value)}
-              placeholder="e.g., fyp, viral, trending"
-              disabled={uploading}
             />
           </div>
 

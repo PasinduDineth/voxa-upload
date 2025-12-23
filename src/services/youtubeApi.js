@@ -166,20 +166,15 @@ class YouTubeAPI {
     return true;
   }
 
-  async uploadVideo(videoFile, videoTitle, videoDescription, hashtags = '', tags = '', defaultLanguage = 'en', defaultAudioLanguage = 'en', privacyStatus = 'public') {
+  async uploadVideo(videoFile, videoTitle, videoDescription, tags = '', defaultLanguage = 'en', defaultAudioLanguage = 'en', privacyStatus = 'public') {
     if (!this.accessToken || !this.channelId) {
       return { success: false, error: 'Not authenticated' };
     }
 
     try {
-      // Append hashtags to description if provided
-      let fullDescription = videoDescription || '';
-      if (hashtags && hashtags.trim()) {
-        fullDescription += (fullDescription ? '\n\n' : '') + hashtags.trim();
-      }
-
       // Parse tags from comma-separated string
       const tagArray = tags ? tags.split(',').map(tag => tag.trim()).filter(tag => tag) : [];
+      const fullDescription = videoDescription || '';
 
       const videoData = {
         snippet: {
