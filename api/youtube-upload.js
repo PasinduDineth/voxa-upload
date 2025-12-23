@@ -26,17 +26,14 @@ async function refreshAccessToken(channelId) {
       client_id: CLIENT_ID,
       client_secret: CLIENT_SECRET,
       refresh_token: refresh_token,
-      grant_channelId = fields.channelId?.[0] || fields.channelId;
-      const title = fields.title?.[0] || fields.title;
-      const description = fields.description?.[0] || fields.description || '';
-      const privacyStatus = fields.privacyStatus?.[0] || fields.privacyStatus || 'private';
-      const videoFile = files.video?.[0] || files.video;
+      grant_type: 'refresh_token'
+    });
 
-      if (!accessToken || !title || !videoFile || !channelId) {
-        return res.status(400).json({ error: 'Missing required fields' });
-      }
-
-      let currentAccessToken = accessToken; headers: { 
+    const tokenResponse = await axios.post(
+      'https://oauth2.googleapis.com/token',
+      tokenParams,
+      {
+        headers: { 
           'Content-Type': 'application/x-www-form-urlencoded'
         }
       }
@@ -82,14 +79,24 @@ module.exports = async (req, res) => {
       }
 
       const accessToken = fields.accessToken?.[0] || fields.accessToken;
+      const channelId = fields.channelId?.[0] || fields.channelId;
       const title = fields.title?.[0] || fields.title;
       const description = fields.description?.[0] || fields.description || '';
       const privacyStatus = fields.privacyStatus?.[0] || fields.privacyStatus || 'private';
       const videoFile = files.video?.[0] || files.video;
 
-      if (!accessToken || !title || !videoFile) {
+      console.log('=== YouTube Upload Request ===');
+      console.log('Channel ID:', channelId);
+      console.log('Title:', title);
+      console.log('Access Token (first 20 chars):', accessToken?.substring(0, 20) + '...');
+      console.log('Video file:', videoFile?.originalFilename, 'Size:', videoFile?.size);
+
+      if (!accessToken || !title || !videoFile || !channelId) {
+        console.error('Missing required fields:', { accessToken: !!accessToken, title: !!title, videoFile: !!videoFile, channelId: !!channelId });
         return res.status(400).json({ error: 'Missing required fields' });
       }
+
+      let currentAccessToken = accessToken;
 
       try {
         const videoData = {
@@ -131,33 +138,36 @@ module.exports = async (req, res) => {
           // If we get 401/403, try refreshing the token
           if (initError.response?.status === 401 || initError.response?.status === 403) {
             console.log('Access token expired (401/403), attempting token refresh...');
-            currentAccessToken = await refreshAccessToken(channelId);
-            console.log('Token refreshed successfully, retrying upload initialization...');
-            
-            // Retry with new token
-            initResponse = await axios.post(
-              'https://www.googleapis.com/upload/youtube/v3/videos',
-              JSON.stringify(videoData),
-              {
-                params: {
-                  part: 'snippet,status',
-                  uploadType: 'resumable'
-                },
-                headers: {
-                  'Authorization': `Bearer ${currentAccessToken}`,
-                  'Content-Type': 'application/json',
-                  'X-Upload-Content-Type': videoFile.mimetype || 'video/*',
-                  'X-Upload-Content-Length': fileSize
+            try {
+              currentAccessToken = await refreshAccessToken(channelId);
+              console.log('Token refreshed successfully, retrying upload initialization...');
+              
+              // Retry with new token
+              initResponse = await axios.post(
+                'https://www.googleapis.com/upload/youtube/v3/videos',
+                JSON.stringify(videoData),
+                {
+                  params: {
+                    part: 'snippet,status',
+                    uploadType: 'resumable'
+                  },
+                  headers: {
+                    'Authorization': `Bearer ${currentAccessToken}`,
+                    'Content-Type': 'application/json',
+                    'X-Upload-Content-Type': videoFile.mimetype || 'video/*',
+                    'X-Upload-Content-Length': fileSize
+                  }
                 }
-              }
-            );
+              );
+              console.log('Retry Step 1 successful after token refresh');
+            } catch (refreshError) {
+              console.error('Token refresh failed:', refreshError.message);
+              throw initError; // Throw original error if refresh fails
+            }
           } else {
             throw initError;
           }
-        }    'X-Upload-Content-Length': fileSize
-            }
-          }
-        );
+        }
 
         const uploadUrl = initResponse.headers.location;
 
@@ -211,7 +221,8 @@ module.exports = async (req, res) => {
           status: uploadError.response?.status,
           statusText: uploadError.response?.statusText,
           data: uploadError.response?.data,
-          step: uploadError.config?.url?.includes('googleapis.com/upload/youtube') ? 'Step 1: Init Upload' : 'Step 2: File Upload'
+          step: uploadError.config?.url?.includes('googleapis.com/upload/youtube') ? 'Step 1: Init Upload' : 'Step 2: File Upload',
+          url: uploadError.config?.url
         };
         
         return res.status(uploadError.response?.status || 500).json({
