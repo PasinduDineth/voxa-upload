@@ -167,7 +167,7 @@ class YouTubeAPI {
   }
 
   async uploadVideo(videoFile, videoTitle, videoDescription, privacyStatus = 'private') {
-    if (!this.accessToken) {
+    if (!this.accessToken || !this.channelId) {
       return { success: false, error: 'Not authenticated' };
     }
 
@@ -178,6 +178,7 @@ class YouTubeAPI {
       formData.append('description', videoDescription || '');
       formData.append('privacyStatus', privacyStatus);
       formData.append('accessToken', this.accessToken);
+      formData.append('channelId', this.channelId);
 
       const response = await axios.post('/api/youtube-upload', formData, {
         headers: {
