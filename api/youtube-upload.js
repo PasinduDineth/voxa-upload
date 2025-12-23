@@ -204,8 +204,19 @@ module.exports = async (req, res) => {
         if (videoFile?.filepath && fs.existsSync(videoFile.filepath)) {
           fs.unlinkSync(videoFile.filepath);
         }
+        
+        // Return detailed error information
+        const errorDetails = {
+          message: uploadError.message,
+          status: uploadError.response?.status,
+          statusText: uploadError.response?.statusText,
+          data: uploadError.response?.data,
+          step: uploadError.config?.url?.includes('googleapis.com/upload/youtube') ? 'Step 1: Init Upload' : 'Step 2: File Upload'
+        };
+        
         return res.status(uploadError.response?.status || 500).json({
-          error: uploadError.response?.data || uploadError.message
+          error: 'Upload failed',
+          details: errorDetails
         });
       }
     });

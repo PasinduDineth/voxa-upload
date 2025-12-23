@@ -199,7 +199,11 @@ class YouTubeAPI {
 
       return { success: true, data: response.data };
     } catch (error) {
-      console.error('Upload failed:', error.response?.data || error.message);
+      console.error('=== Upload Failed ===');
+      console.error('Status:', error.response?.status);
+      console.error('Status Text:', error.response?.statusText);
+      console.error('Error Data:', error.response?.data);
+      console.error('Full Error:', error);
       return { success: false, error: error.response?.data || error.message };
     }
   }
