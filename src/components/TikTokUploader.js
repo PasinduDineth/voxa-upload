@@ -23,7 +23,7 @@ function TikTokUploader() {
     const code = urlParams.get('code');
     const state = urlParams.get('state');
 
-    if (code && state) {
+    if (code && state && !state.startsWith('youtube_')) {
       handleOAuthCallback(code, state);
     }
   }, []);
