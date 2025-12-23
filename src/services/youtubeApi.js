@@ -168,8 +168,15 @@ class YouTubeAPI {
 
   async uploadVideo(videoFile, videoTitle, videoDescription, privacyStatus = 'private') {
     if (!this.accessToken || !this.channelId) {
+      console.error('Not authenticated:', { accessToken: !!this.accessToken, channelId: !!this.channelId });
       return { success: false, error: 'Not authenticated' };
     }
+
+    console.log('=== YouTube Upload (Frontend) ===');
+    console.log('Channel ID:', this.channelId);
+    console.log('Title:', videoTitle);
+    console.log('Video file:', videoFile.name, 'Size:', videoFile.size);
+    console.log('Access Token (first 20 chars):', this.accessToken.substring(0, 20) + '...');
 
     try {
       const formData = new FormData();

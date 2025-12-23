@@ -103,6 +103,10 @@ module.exports = async (req, res) => {
           }
         };
 
+        const fileSize = videoFile.size;
+
+        // Step 1: Initialize resumable upload and get upload URL
+        console.log('Step 1: Initializing resumable upload...');
         let initResponse;
         try {
           initResponse = await axios.post(
@@ -121,11 +125,14 @@ module.exports = async (req, res) => {
               }
             }
           );
+          console.log('Step 1 successful, upload URL received');
         } catch (initError) {
+          console.error('Step 1 failed:', initError.response?.status, initError.response?.data);
           // If we get 401/403, try refreshing the token
           if (initError.response?.status === 401 || initError.response?.status === 403) {
-            console.log('Access token expired, refreshing...');
+            console.log('Access token expired (401/403), attempting token refresh...');
             currentAccessToken = await refreshAccessToken(channelId);
+            console.log('Token refreshed successfully, retrying upload initialization...');
             
             // Retry with new token
             initResponse = await axios.post(
@@ -154,11 +161,15 @@ module.exports = async (req, res) => {
 
         const uploadUrl = initResponse.headers.location;
 
+        console.log('Upload URL received:', uploadUrl ? 'Yes' : 'No');
+
         if (!uploadUrl) {
+          console.error('No upload URL in response headers');
           throw new Error('Failed to get upload URL from YouTube');
         }
 
         // Step 2: Upload the video file to the upload URL
+        console.log('Step 2: Uploading video file to YouTube...');
         const fileStream = fs.createReadStream(videoFile.filepath);
 
         const uploadResponse = await axios.put(
@@ -174,6 +185,9 @@ module.exports = async (req, res) => {
           }
         );
 
+        console.log('Step 2 successful, video uploaded!');
+        console.log('Video ID:', uploadResponse.data?.id);
+
         fs.unlinkSync(videoFile.filepath);
 
         return res.status(200).json({
@@ -182,7 +196,11 @@ module.exports = async (req, res) => {
         });
 
       } catch (uploadError) {
-        console.error('Upload error:', uploadError.response?.data || uploadError.message);
+        console.error('=== Upload Error ===');
+        console.error('Status:', uploadError.response?.status);
+        console.error('Status Text:', uploadError.response?.statusText);
+        console.error('Error Data:', JSON.stringify(uploadError.response?.data, null, 2));
+        console.error('Error Message:', uploadError.message);
         if (videoFile?.filepath && fs.existsSync(videoFile.filepath)) {
           fs.unlinkSync(videoFile.filepath);
         }
