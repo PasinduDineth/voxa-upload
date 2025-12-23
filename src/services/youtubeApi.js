@@ -193,32 +193,72 @@ class YouTubeAPI {
       return { success: false, error: 'Not authenticated' };
     }
 
-    console.log('=== YouTube Upload (Frontend) ===');
+    console.log('=== YouTube Upload (Frontend - Direct to YouTube) ===');
     console.log('Channel ID:', this.channelId);
     console.log('Title:', videoTitle);
     console.log('Video file:', videoFile.name, 'Size:', videoFile.size);
-    console.log('Access Token (first 20 chars):', this.accessToken.substring(0, 20) + '...');
 
     try {
-      const formData = new FormData();
-      formData.append('video', videoFile);
-      formData.append('title', videoTitle);
-      formData.append('description', videoDescription || '');
-      formData.append('privacyStatus', privacyStatus);
-      formData.append('accessToken', this.accessToken);
-      formData.append('channelId', this.channelId);
-
-      const response = await axios.post('/api/youtube-upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
+      const videoData = {
+        snippet: {
+          title: videoTitle,
+          description: videoDescription || '',
+          categoryId: '22'
         },
-        onUploadProgress: (progressEvent) => {
-          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-          console.log(`Upload progress: ${percentCompleted}%`);
+        status: {
+          privacyStatus: privacyStatus
         }
-      });
+      };
 
-      return { success: true, data: response.data };
+      // Step 1: Initialize resumable upload directly from browser
+      console.log('Step 1: Initializing resumable upload...');
+      const initResponse = await axios.post(
+        'https://www.googleapis.com/upload/youtube/v3/videos',
+        JSON.stringify(videoData),
+        {
+          params: {
+            part: 'snippet,status',
+            uploadType: 'resumable'
+          },
+          headers: {
+            'Authorization': `Bearer ${this.accessToken}`,
+            'Content-Type': 'application/json',
+            'X-Upload-Content-Type': videoFile.type || 'video/*',
+            'X-Upload-Content-Length': videoFile.size
+          }
+        }
+      );
+
+      const uploadUrl = initResponse.headers.location;
+      console.log('Step 1 successful, upload URL received');
+
+      if (!uploadUrl) {
+        throw new Error('Failed to get upload URL from YouTube');
+      }
+
+      // Step 2: Upload the video file directly to YouTube
+      console.log('Step 2: Uploading video file to YouTube...');
+      const uploadResponse = await axios.put(
+        uploadUrl,
+        videoFile,
+        {
+          headers: {
+            'Content-Type': videoFile.type || 'video/*',
+            'Content-Length': videoFile.size
+          },
+          maxContentLength: Infinity,
+          maxBodyLength: Infinity,
+          onUploadProgress: (progressEvent) => {
+            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            console.log(`Upload progress: ${percentCompleted}%`);
+          }
+        }
+      );
+
+      console.log('Upload successful!');
+      console.log('Video ID:', uploadResponse.data?.id);
+
+      return { success: true, data: uploadResponse.data };
     } catch (error) {
       console.error('=== Upload Failed ===');
       console.error('Status:', error.response?.status);
