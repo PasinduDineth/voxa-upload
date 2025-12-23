@@ -203,17 +203,30 @@ class TikTokAPI {
     return true;
   }
 
-  async initializeUpload(videoFile, videoTitle, privacyLevel) {
+  async initializeUpload(videoFile, videoTitle, hashtags, privacyLevel) {
     if (!this.accessToken) {
       return { success: false, error: 'Not authenticated' };
     }
 
     try {
+      // Build caption with hashtags
+      let caption = videoTitle;
+      if (hashtags && hashtags.trim()) {
+        const hashtagArray = hashtags.split(',').map(tag => {
+          const cleaned = tag.trim();
+          return cleaned.startsWith('#') ? cleaned : `#${cleaned}`;
+        }).filter(tag => tag.length > 1);
+        
+        if (hashtagArray.length > 0) {
+          caption += ' ' + hashtagArray.join(' ');
+        }
+      }
+
       const response = await axios.post('/api/tiktok-init-upload', {
         accessToken: this.accessToken,
         videoFile: {
           size: videoFile.size,
-          title: videoTitle,
+          caption: caption,
           privacyLevel: privacyLevel
         }
       });

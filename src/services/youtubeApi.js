@@ -166,20 +166,33 @@ class YouTubeAPI {
     return true;
   }
 
-  async uploadVideo(videoFile, videoTitle, videoDescription, privacyStatus = 'private') {
+  async uploadVideo(videoFile, videoTitle, videoDescription, hashtags = '', tags = '', defaultLanguage = 'en', defaultAudioLanguage = 'en', privacyStatus = 'public') {
     if (!this.accessToken || !this.channelId) {
       return { success: false, error: 'Not authenticated' };
     }
 
     try {
+      // Append hashtags to description if provided
+      let fullDescription = videoDescription || '';
+      if (hashtags && hashtags.trim()) {
+        fullDescription += (fullDescription ? '\n\n' : '') + hashtags.trim();
+      }
+
+      // Parse tags from comma-separated string
+      const tagArray = tags ? tags.split(',').map(tag => tag.trim()).filter(tag => tag) : [];
+
       const videoData = {
         snippet: {
           title: videoTitle,
-          description: videoDescription || '',
-          categoryId: '22'
+          description: fullDescription,
+          tags: tagArray,
+          categoryId: '1', // Film & Animation
+          defaultLanguage: defaultLanguage,
+          defaultAudioLanguage: defaultAudioLanguage
         },
         status: {
-          privacyStatus: privacyStatus
+          privacyStatus: privacyStatus,
+          madeForKids: false
         }
       };
 

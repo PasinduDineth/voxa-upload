@@ -36,10 +36,10 @@ module.exports = async (req, res) => {
 
     const requestPayload = {
       post_info: {
-        title: videoFile.title || 'Sandbox test video #fyp',
+        title: videoFile.caption || videoFile.title || 'Sandbox test video #fyp',
         privacy_level: videoFile.privacyLevel || 'SELF_ONLY',
         disable_duet: false,
-        disable_comment: true,
+        disable_comment: false,
         disable_stitch: false,
         video_cover_timestamp_ms: 1000
       },

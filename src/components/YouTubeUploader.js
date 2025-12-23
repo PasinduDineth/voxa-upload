@@ -10,7 +10,11 @@ function YouTubeUploader() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [videoTitle, setVideoTitle] = useState('');
   const [videoDescription, setVideoDescription] = useState('');
-  const [privacyStatus, setPrivacyStatus] = useState('private');
+  const [hashtags, setHashtags] = useState('');
+  const [tags, setTags] = useState('');
+  const [defaultLanguage, setDefaultLanguage] = useState('en');
+  const [defaultAudioLanguage, setDefaultAudioLanguage] = useState('en');
+  const [privacyStatus, setPrivacyStatus] = useState('public');
   const [uploading, setUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState('');
   const [error, setError] = useState('');
@@ -102,6 +106,10 @@ function YouTubeUploader() {
     setSelectedFile(null);
     setVideoTitle('');
     setVideoDescription('');
+    setHashtags('');
+    setTags('');
+    setDefaultLanguage('en');
+    setDefaultAudioLanguage('en');
     setUploadStatus('Logged out successfully');
     setTimeout(() => setUploadStatus(''), 3000);
     setChannels([]);
@@ -158,6 +166,10 @@ function YouTubeUploader() {
         selectedFile, 
         videoTitle, 
         videoDescription,
+        hashtags,
+        tags,
+        defaultLanguage,
+        defaultAudioLanguage,
         privacyStatus
       );
       
@@ -169,6 +181,10 @@ function YouTubeUploader() {
       setSelectedFile(null);
       setVideoTitle('');
       setVideoDescription('');
+      setHashtags('');
+      setTags('');
+      setDefaultLanguage('en');
+      setDefaultAudioLanguage('en');
       setUploading(false);
       
       setTimeout(() => setUploadStatus(''), 5000);
@@ -356,6 +372,62 @@ function YouTubeUploader() {
           </div>
 
           <div className="form-group">
+            <label htmlFor="video-hashtags">Hashtags (will be added to description)</label>
+            <input
+              id="video-hashtags"
+              type="text"
+              value={hashtags}
+              onChange={(e) => setHashtags(e.target.value)}
+              placeholder="e.g., #travel #vlog #music"
+              disabled={uploading}
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="video-tags">Tags (comma separated)</label>
+            <input
+              id="video-tags"
+              type="text"
+              value={tags}
+              onChange={(e) => setTags(e.target.value)}
+              placeholder="e.g., travel, vlog, music"
+              disabled={uploading}
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="default-language">Default Language</label>
+            <select
+              id="default-language"
+              value={defaultLanguage}
+              onChange={(e) => setDefaultLanguage(e.target.value)}
+              disabled={uploading}
+            >
+              <option value="en">English</option>
+              <option value="fr">French</option>
+              <option value="ja">Japanese</option>
+              <option value="de">German</option>
+              <option value="es">Spanish</option>
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="default-audio-language">Default Audio Language</label>
+            <select
+              id="default-audio-language"
+              value={defaultAudioLanguage}
+              onChange={(e) => setDefaultAudioLanguage(e.target.value)}
+              disabled={uploading}
+            >
+              <option value="en">English</option>
+              <option value="fr">French</option>
+              <option value="ja">Japanese</option>
+              <option value="de">German</option>
+              <option value="es">Spanish</option>
+            </select>
+          </div>
+
+          <div className="form-group">
             <label htmlFor="privacy-status">Privacy Status</label>
             <select
               id="privacy-status"
@@ -363,9 +435,9 @@ function YouTubeUploader() {
               onChange={(e) => setPrivacyStatus(e.target.value)}
               disabled={uploading}
             >
-              <option value="private">Private</option>
-              <option value="unlisted">Unlisted</option>
               <option value="public">Public</option>
+              <option value="unlisted">Unlisted</option>
+              <option value="private">Private</option>
             </select>
           </div>
 
