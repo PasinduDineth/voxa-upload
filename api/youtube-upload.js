@@ -47,12 +47,12 @@ module.exports = async (req, res) => {
           }
         };
 
-        const fileStream = fs.createReadStream(videoFile.filepath);
         const fileSize = videoFile.size;
 
-        const uploadResponse = await axios.post(
+        // Step 1: Initialize resumable upload and get upload URL
+        const initResponse = await axios.post(
           'https://www.googleapis.com/upload/youtube/v3/videos',
-          fileStream,
+          JSON.stringify(videoData),
           {
             params: {
               part: 'snippet,status',
@@ -60,10 +60,29 @@ module.exports = async (req, res) => {
             },
             headers: {
               'Authorization': `Bearer ${accessToken}`,
-              'Content-Type': videoFile.mimetype || 'video/*',
-              'Content-Length': fileSize,
+              'Content-Type': 'application/json',
               'X-Upload-Content-Type': videoFile.mimetype || 'video/*',
               'X-Upload-Content-Length': fileSize
+            }
+          }
+        );
+
+        const uploadUrl = initResponse.headers.location;
+
+        if (!uploadUrl) {
+          throw new Error('Failed to get upload URL from YouTube');
+        }
+
+        // Step 2: Upload the video file to the upload URL
+        const fileStream = fs.createReadStream(videoFile.filepath);
+
+        const uploadResponse = await axios.put(
+          uploadUrl,
+          fileStream,
+          {
+            headers: {
+              'Content-Type': videoFile.mimetype || 'video/*',
+              'Content-Length': fileSize
             },
             maxContentLength: Infinity,
             maxBodyLength: Infinity
