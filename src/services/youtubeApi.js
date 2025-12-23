@@ -166,6 +166,27 @@ class YouTubeAPI {
     return true;
   }
 
+  async testToken() {
+    if (!this.accessToken) {
+      return { success: false, error: 'Not authenticated' };
+    }
+
+    try {
+      const response = await axios.post('/api/youtube-test-token', {
+        accessToken: this.accessToken
+      });
+
+      console.log('Token test result:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('Token test failed:', error.response?.data || error.message);
+      return { 
+        success: false, 
+        error: error.response?.data || error.message 
+      };
+    }
+  }
+
   async uploadVideo(videoFile, videoTitle, videoDescription, privacyStatus = 'private') {
     if (!this.accessToken || !this.channelId) {
       console.error('Not authenticated:', { accessToken: !!this.accessToken, channelId: !!this.channelId });
