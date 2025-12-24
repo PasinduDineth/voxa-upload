@@ -187,7 +187,7 @@ class YouTubeAPI {
         },
         status: {
           privacyStatus: privacyStatus,
-          madeForKids: false
+          selfDeclaredMadeForKids: false
         }
       };
 
