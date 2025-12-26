@@ -148,14 +148,14 @@ module.exports = async function handler(req, res) {
     }
   }
 
-  // POST: Upload video to Facebook Page
-  if (req.method === 'POST' && req.body.action === 'upload_video') {
-    const { page_id, video_data, video_name, video_type, title, description } = req.body;
+  // POST: Initialize resumable upload for Facebook
+  if (req.method === 'POST' && req.body.action === 'init_upload') {
+    const { page_id, file_size, title, description } = req.body;
 
-    if (!page_id || !video_data) {
+    if (!page_id || !file_size) {
       return res.status(400).json({ 
         success: false,
-        error: 'Page ID and video data are required' 
+        error: 'Page ID and file size are required' 
       });
     }
 
@@ -175,43 +175,84 @@ module.exports = async function handler(req, res) {
 
       const pageAccessToken = pageResult.rows[0].access_token;
 
-      // Convert base64 to buffer
-      const base64Data = video_data.split(',')[1] || video_data;
-      const videoBuffer = Buffer.from(base64Data, 'base64');
-
-      // Create form data
-      const FormData = require('form-data');
-      const form = new FormData();
-      form.append('source', videoBuffer, {
-        filename: video_name || 'video.mp4',
-        contentType: video_type || 'video/mp4'
-      });
-      form.append('description', `${title}\n\n${description || ''}`);
-      form.append('access_token', pageAccessToken);
-
-      // Upload to Facebook
-      const uploadResponse = await axios.post(
+      // Initialize resumable upload
+      const initResponse = await axios.post(
         `https://graph.facebook.com/v18.0/${page_id}/videos`,
-        form,
         {
-          headers: {
-            ...form.getHeaders()
-          },
-          maxContentLength: Infinity,
-          maxBodyLength: Infinity
+          upload_phase: 'start',
+          file_size: file_size,
+          access_token: pageAccessToken
         }
       );
 
       return res.status(200).json({
         success: true,
         data: {
-          video_id: uploadResponse.data.id,
-          post_id: uploadResponse.data.id
+          upload_session_id: initResponse.data.upload_session_id,
+          video_id: initResponse.data.video_id,
+          start_offset: initResponse.data.start_offset || 0,
+          end_offset: initResponse.data.end_offset || file_size,
+          access_token: pageAccessToken
         }
       });
 
     } catch (error) {
-      console.error('Facebook upload error:', error.response?.data || error.message);
+      console.error('Facebook init upload error:', error.response?.data || error.message);
+      return res.status(500).json({
+        success: false,
+        error: error.response?.data?.error?.message || error.message
+      });
+    }
+  }
+
+  // POST: Finalize Facebook upload
+  if (req.method === 'POST' && req.body.action === 'finalize_upload') {
+    const { page_id, upload_session_id, title, description } = req.body;
+
+    if (!page_id || !upload_session_id) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Page ID and upload session ID are required' 
+      });
+    }
+
+    try {
+      // Get page access token from database
+      const pageResult = await sql`
+        SELECT access_token FROM accounts
+        WHERE open_id = ${page_id} AND type = 'FACEBOOK'
+      `;
+
+      if (pageResult.rows.length === 0) {
+        return res.status(404).json({
+          success: false,
+          error: 'Page not found'
+        });
+      }
+
+      const pageAccessToken = pageResult.rows[0].access_token;
+
+      // Finalize upload
+      const finalizeResponse = await axios.post(
+        `https://graph.facebook.com/v18.0/${page_id}/videos`,
+        {
+          upload_phase: 'finish',
+          upload_session_id: upload_session_id,
+          description: `${title}\n\n${description || ''}`,
+          access_token: pageAccessToken
+        }
+      );
+
+      return res.status(200).json({
+        success: true,
+        data: {
+          success: finalizeResponse.data.success,
+          video_id: finalizeResponse.data.video_id
+        }
+      });
+
+    } catch (error) {
+      console.error('Facebook finalize error:', error.response?.data || error.message);
       return res.status(500).json({
         success: false,
         error: error.response?.data?.error?.message || error.message

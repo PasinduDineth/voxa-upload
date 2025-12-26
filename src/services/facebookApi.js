@@ -85,49 +85,80 @@ class FacebookAPI {
     }
 
     try {
-      // For Facebook, we need to upload the video file to a temporary location first
-      // then provide the URL to Facebook. Since we can't do direct CORS uploads,
-      // we'll use Facebook's file upload approach through our backend.
-      
-      // Convert file to base64 for backend transfer
-      const reader = new FileReader();
-      const fileData = await new Promise((resolve, reject) => {
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(videoFile);
-      });
-
-      // Send to backend to handle Facebook upload
-      const response = await axios.post('/api/facebook-accounts', {
-        action: 'upload_video',
+      // Step 1: Initialize resumable upload
+      const initResponse = await axios.post('/api/facebook-accounts', {
+        action: 'init_upload',
         page_id: this.pageId,
-        video_data: fileData,
-        video_name: videoFile.name,
-        video_type: videoFile.type,
+        file_size: videoFile.size,
         title: videoTitle,
         description: description
-      }, {
-        maxContentLength: Infinity,
-        maxBodyLength: Infinity,
-        timeout: 300000 // 5 minute timeout for large files
       });
 
-      if (response.data.success) {
+      if (!initResponse.data.success) {
+        return {
+          success: false,
+          error: initResponse.data.error || 'Failed to initialize upload'
+        };
+      }
+
+      const { upload_session_id, start_offset, end_offset, access_token } = initResponse.data.data;
+
+      // Step 2: Upload video chunks directly to Facebook (no CORS issue)
+      const chunkSize = 1024 * 1024 * 5; // 5MB chunks
+      let offset = start_offset || 0;
+      
+      while (offset < videoFile.size) {
+        const chunk = videoFile.slice(offset, Math.min(offset + chunkSize, videoFile.size));
+        const formData = new FormData();
+        formData.append('upload_phase', 'transfer');
+        formData.append('upload_session_id', upload_session_id);
+        formData.append('start_offset', offset);
+        formData.append('video_file_chunk', chunk);
+        formData.append('access_token', access_token);
+
+        const uploadResponse = await axios.post(
+          `https://graph.facebook.com/v18.0/${this.pageId}/videos`,
+          formData,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
+          }
+        );
+
+        if (!uploadResponse.data.success && uploadResponse.data.start_offset === undefined) {
+          throw new Error('Chunk upload failed');
+        }
+
+        offset = uploadResponse.data.start_offset || uploadResponse.data.end_offset || (offset + chunk.size);
+      }
+
+      // Step 3: Finalize upload
+      const finalizeResponse = await axios.post('/api/facebook-accounts', {
+        action: 'finalize_upload',
+        page_id: this.pageId,
+        upload_session_id: upload_session_id,
+        title: videoTitle,
+        description: description
+      });
+
+      if (finalizeResponse.data.success) {
         return {
           success: true,
-          data: response.data.data
+          data: finalizeResponse.data.data
         };
       } else {
         return {
           success: false,
-          error: response.data.error || 'Upload failed'
+          error: finalizeResponse.data.error || 'Failed to finalize upload'
         };
       }
+
     } catch (error) {
       console.error('Facebook upload failed:', error.response?.data || error.message);
       return {
         success: false,
-        error: error.response?.data?.error || error.message
+        error: error.response?.data?.error?.message || error.message
       };
     }
   }
