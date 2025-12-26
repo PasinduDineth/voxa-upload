@@ -148,5 +148,76 @@ module.exports = async function handler(req, res) {
     }
   }
 
+  // POST: Upload video to Facebook Page
+  if (req.method === 'POST' && req.body.action === 'upload_video') {
+    const { page_id, video_data, video_name, video_type, title, description } = req.body;
+
+    if (!page_id || !video_data) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Page ID and video data are required' 
+      });
+    }
+
+    try {
+      // Get page access token from database
+      const pageResult = await sql`
+        SELECT access_token FROM accounts
+        WHERE open_id = ${page_id} AND type = 'FACEBOOK'
+      `;
+
+      if (pageResult.rows.length === 0) {
+        return res.status(404).json({
+          success: false,
+          error: 'Page not found'
+        });
+      }
+
+      const pageAccessToken = pageResult.rows[0].access_token;
+
+      // Convert base64 to buffer
+      const base64Data = video_data.split(',')[1] || video_data;
+      const videoBuffer = Buffer.from(base64Data, 'base64');
+
+      // Create form data
+      const FormData = require('form-data');
+      const form = new FormData();
+      form.append('source', videoBuffer, {
+        filename: video_name || 'video.mp4',
+        contentType: video_type || 'video/mp4'
+      });
+      form.append('description', `${title}\n\n${description || ''}`);
+      form.append('access_token', pageAccessToken);
+
+      // Upload to Facebook
+      const uploadResponse = await axios.post(
+        `https://graph.facebook.com/v18.0/${page_id}/videos`,
+        form,
+        {
+          headers: {
+            ...form.getHeaders()
+          },
+          maxContentLength: Infinity,
+          maxBodyLength: Infinity
+        }
+      );
+
+      return res.status(200).json({
+        success: true,
+        data: {
+          video_id: uploadResponse.data.id,
+          post_id: uploadResponse.data.id
+        }
+      });
+
+    } catch (error) {
+      console.error('Facebook upload error:', error.response?.data || error.message);
+      return res.status(500).json({
+        success: false,
+        error: error.response?.data?.error?.message || error.message
+      });
+    }
+  }
+
   return res.status(405).json({ error: 'Method not allowed' });
 }

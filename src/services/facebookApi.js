@@ -85,41 +85,49 @@ class FacebookAPI {
     }
 
     try {
-      // Create form data for the upload
-      const formData = new FormData();
-      formData.append('source', videoFile);
-      formData.append('description', `${videoTitle}\n\n${description || ''}`);
-      formData.append('access_token', this.accessToken);
+      // For Facebook, we need to upload the video file to a temporary location first
+      // then provide the URL to Facebook. Since we can't do direct CORS uploads,
+      // we'll use Facebook's file upload approach through our backend.
+      
+      // Convert file to base64 for backend transfer
+      const reader = new FileReader();
+      const fileData = await new Promise((resolve, reject) => {
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(videoFile);
+      });
 
-      // Upload video directly to Facebook
-      const response = await axios.post(
-        `https://graph.facebook.com/v18.0/${this.pageId}/videos`,
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data'
-          },
-          maxContentLength: Infinity,
-          maxBodyLength: Infinity,
-          onUploadProgress: (progressEvent) => {
-            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-            console.log(`Upload progress: ${percentCompleted}%`);
-          }
-        }
-      );
+      // Send to backend to handle Facebook upload
+      const response = await axios.post('/api/facebook-accounts', {
+        action: 'upload_video',
+        page_id: this.pageId,
+        video_data: fileData,
+        video_name: videoFile.name,
+        video_type: videoFile.type,
+        title: videoTitle,
+        description: description
+      }, {
+        maxContentLength: Infinity,
+        maxBodyLength: Infinity,
+        timeout: 300000 // 5 minute timeout for large files
+      });
 
-      return { 
-        success: true, 
-        data: {
-          video_id: response.data.id,
-          post_id: response.data.id
-        }
-      };
+      if (response.data.success) {
+        return {
+          success: true,
+          data: response.data.data
+        };
+      } else {
+        return {
+          success: false,
+          error: response.data.error || 'Upload failed'
+        };
+      }
     } catch (error) {
       console.error('Facebook upload failed:', error.response?.data || error.message);
-      return { 
-        success: false, 
-        error: error.response?.data?.error?.message || error.message 
+      return {
+        success: false,
+        error: error.response?.data?.error || error.message
       };
     }
   }
