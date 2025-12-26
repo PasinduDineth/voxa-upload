@@ -20,12 +20,17 @@ module.exports = async function handler(req, res) {
 
   // Parse body for JSON requests
   if (req.method === 'POST' && req.headers['content-type']?.includes('application/json')) {
-    const chunks = [];
-    for await (const chunk of req) {
-      chunks.push(chunk);
+    try {
+      const chunks = [];
+      for await (const chunk of req) {
+        chunks.push(chunk);
+      }
+      const body = Buffer.concat(chunks).toString();
+      req.body = JSON.parse(body);
+    } catch (error) {
+      console.error('JSON parse error:', error);
+      return res.status(400).json({ success: false, error: 'Invalid JSON body' });
     }
-    const body = Buffer.concat(chunks).toString();
-    req.body = JSON.parse(body);
   }
 
   // GET: Fetch all Facebook pages
