@@ -144,11 +144,11 @@ class FacebookAPI {
         }
 
         console.log('✅ Chunk uploaded successfully');
+        console.log('Facebook response:', uploadResponse.data.data);
         
-        // Facebook returns the next offset
-        const newOffset = uploadResponse.data.data.end_offset || uploadResponse.data.data.start_offset || (offset + actualChunkSize);
-        console.log(`📍 Next offset: ${newOffset} (moved ${newOffset - offset} bytes)`);
-        offset = newOffset;
+        // Move to next chunk based on what we actually sent
+        offset = endByte;
+        console.log(`📍 Next offset: ${offset}`);
       }
 
       // Step 3: Finalize upload
