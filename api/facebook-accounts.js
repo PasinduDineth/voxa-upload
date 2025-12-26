@@ -1,6 +1,13 @@
 const { sql } = require('@vercel/postgres');
 const axios = require('axios');
 
+// Disable body parser for multipart upload
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
+
 module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -9,6 +16,16 @@ module.exports = async function handler(req, res) {
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
+  }
+
+  // Parse body for JSON requests
+  if (req.method === 'POST' && req.headers['content-type']?.includes('application/json')) {
+    const chunks = [];
+    for await (const chunk of req) {
+      chunks.push(chunk);
+    }
+    const body = Buffer.concat(chunks).toString();
+    req.body = JSON.parse(body);
   }
 
   // GET: Fetch all Facebook pages
