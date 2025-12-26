@@ -18,6 +18,11 @@ module.exports = async function handler(req, res) {
     return res.status(200).end();
   }
 
+  // Initialize body
+  if (!req.body) {
+    req.body = {};
+  }
+
   // Parse body for JSON requests
   if (req.method === 'POST' && req.headers['content-type']?.includes('application/json')) {
     try {
@@ -27,6 +32,7 @@ module.exports = async function handler(req, res) {
       }
       const body = Buffer.concat(chunks).toString();
       req.body = JSON.parse(body);
+      console.log('Parsed body:', req.body);
     } catch (error) {
       console.error('JSON parse error:', error);
       return res.status(400).json({ success: false, error: 'Invalid JSON body' });
@@ -65,6 +71,8 @@ module.exports = async function handler(req, res) {
   // POST: Add Facebook page with access token
   if (req.method === 'POST' && req.body.action === 'add_page') {
     const { access_token } = req.body;
+    
+    console.log('Adding Facebook page, token length:', access_token?.length);
 
     if (!access_token) {
       return res.status(400).json({ error: 'Access token is required' });
@@ -81,6 +89,8 @@ module.exports = async function handler(req, res) {
           }
         }
       );
+
+      console.log('Facebook API response:', pagesResponse.data);
 
       if (!pagesResponse.data.data || pagesResponse.data.data.length === 0) {
         return res.status(400).json({
