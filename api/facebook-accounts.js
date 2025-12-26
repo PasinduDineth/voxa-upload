@@ -21,7 +21,7 @@ module.exports = async function handler(req, res) {
     console.log('=== Upload Chunk Request (Multipart) ===');
     
     const formidable = require('formidable');
-    const form = formidable({ maxFileSize: 10 * 1024 * 1024 }); // 10MB max
+    const form = formidable({ maxFileSize: 5 * 1024 * 1024 }); // 5MB max (Vercel limit)
 
     form.parse(req, async (err, fields, files) => {
       if (err) {

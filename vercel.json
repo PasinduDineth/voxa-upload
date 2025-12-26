@@ -4,5 +4,7 @@
       "includeFiles": "node_modules/@vercel/postgres/**",
       "maxDuration": 60
     }
-  }
+  },
+  "maxDuration": 60,
+  "outputDirectory": "build"
 }

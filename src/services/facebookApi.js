@@ -106,7 +106,7 @@ class FacebookAPI {
       console.log('✅ Upload session initialized:', upload_session_id);
 
       // Step 2: Upload binary chunks via multipart to backend
-      const chunkSize = 1024 * 1024 * 5; // 5MB chunks
+      const chunkSize = 1024 * 1024 * 4; // 4MB chunks (Vercel limit is 4.5MB)
       let offset = start_offset || 0;
       const totalSize = videoFile.size;
       
