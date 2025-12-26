@@ -105,47 +105,53 @@ class FacebookAPI {
 
       console.log('✅ Upload session initialized:', upload_session_id);
 
-      // Step 2: Upload video chunks through backend
-      const chunkSize = 1024 * 128; // 128KB chunks (becomes ~170KB as base64, safe for Vercel)
+      // Step 2: Upload binary video chunks DIRECTLY to Facebook (no backend proxy)
+      const chunkSize = 1024 * 1024 * 5; // 5MB chunks (no encoding overhead!)
       let offset = start_offset || 0;
       const totalSize = videoFile.size;
       
-      console.log(`📹 Video size: ${(totalSize / 1024 / 1024).toFixed(2)}MB, chunk size: ${(chunkSize / 1024).toFixed(0)}KB`);
+      console.log(`📹 Video size: ${(totalSize / 1024 / 1024).toFixed(2)}MB, chunk size: ${(chunkSize / 1024 / 1024).toFixed(0)}MB`);
       
       while (offset < videoFile.size) {
         const progress = Math.round((offset / totalSize) * 100);
-        console.log(`⬆️ Uploading... ${progress}%`);
+        const chunkNum = Math.floor(offset / chunkSize) + 1;
+        console.log(`⬆️ Uploading... ${progress}% (offset: ${offset})`);
         
-        const chunk = videoFile.slice(offset, Math.min(offset + chunkSize, videoFile.size));
-        console.log(`📦 Chunk ${Math.floor(offset/chunkSize) + 1}: ${(chunk.size / 1024).toFixed(1)}KB`);
+        const endByte = Math.min(offset + chunkSize, videoFile.size);
+        const chunk = videoFile.slice(offset, endByte);
+        const actualChunkSize = endByte - offset;
         
-        // Convert chunk to base64
-        const reader = new FileReader();
-        const chunkData = await new Promise((resolve, reject) => {
-          reader.onload = () => resolve(reader.result);
-          reader.onerror = reject;
-          reader.readAsDataURL(chunk);
-        });
+        console.log(`📦 Chunk ${chunkNum}: ${(actualChunkSize / 1024 / 1024).toFixed(2)}MB (${offset} to ${endByte})`);
         
-        console.log(`📊 Base64 size: ${(chunkData.length / 1024).toFixed(1)}KB`);
+        // Upload binary chunk DIRECTLY to Facebook
+        const formData = new FormData();
+        formData.append('upload_phase', 'transfer');
+        formData.append('upload_session_id', upload_session_id);
+        formData.append('start_offset', offset);
+        formData.append('video_file_chunk', chunk);
+        formData.append('access_token', access_token);
 
-        // Upload chunk through backend
-        const uploadResponse = await axios.post('/api/facebook-accounts', {
-          action: 'upload_chunk',
-          page_id: this.pageId,
-          upload_session_id: upload_session_id,
-          start_offset: offset,
-          chunk_data: chunkData,
-          access_token: access_token
-        });
+        const uploadResponse = await axios.post(
+          `https://graph.facebook.com/v18.0/${this.pageId}/videos`,
+          formData,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
+          }
+        );
 
-        if (!uploadResponse.data.success) {
-          console.error('❌ Chunk upload failed:', uploadResponse.data.error);
-          throw new Error(uploadResponse.data.error || 'Chunk upload failed');
+        if (!uploadResponse.data.success && uploadResponse.data.start_offset === undefined) {
+          console.error('❌ Chunk upload failed:', uploadResponse.data);
+          throw new Error('Chunk upload failed');
         }
 
         console.log('✅ Chunk uploaded successfully');
-        offset = uploadResponse.data.data.end_offset || (offset + chunk.size);
+        
+        // Facebook returns the next offset
+        const newOffset = uploadResponse.data.start_offset || uploadResponse.data.end_offset || (offset + actualChunkSize);
+        console.log(`📍 Next offset: ${newOffset} (moved ${newOffset - offset} bytes)`);
+        offset = newOffset;
       }
 
       // Step 3: Finalize upload
