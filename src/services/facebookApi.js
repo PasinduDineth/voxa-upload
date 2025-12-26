@@ -104,7 +104,7 @@ class FacebookAPI {
       const { upload_session_id, start_offset, end_offset, access_token } = initResponse.data.data;
 
       // Step 2: Upload video chunks through backend
-      const chunkSize = 1024 * 512; // 512KB chunks (becomes ~680KB as base64, well under Vercel limit)
+      const chunkSize = 1024 * 256; // 256KB chunks (becomes ~340KB as base64 with JSON overhead)
       let offset = start_offset || 0;
       const totalSize = videoFile.size;
       
