@@ -150,10 +150,12 @@ module.exports = async function handler(req, res) {
       });
 
     } catch (error) {
-      console.error('Error adding Facebook pages:', error.response?.data || error);
+      console.error('Error adding Facebook pages:', error.response?.data || error.message || error);
+      console.error('Full error stack:', error.stack);
       return res.status(500).json({
         success: false,
-        error: error.response?.data?.error?.message || error.message
+        error: error.response?.data?.error?.message || error.message || 'Unknown error occurred',
+        details: process.env.NODE_ENV === 'development' ? error.stack : undefined
       });
     }
   }
