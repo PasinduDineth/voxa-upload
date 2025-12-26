@@ -1,13 +1,6 @@
 const { sql } = require('@vercel/postgres');
 const axios = require('axios');
 
-// Disable body parser for multipart upload
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
-
 module.exports = async function handler(req, res) {
   console.log('=== Facebook Accounts Request ===' );
   console.log('Method:', req.method);
@@ -387,4 +380,11 @@ module.exports = async function handler(req, res) {
   }
 
   return res.status(405).json({ error: 'Method not allowed' });
-}
+};
+
+// Disable body parser for multipart upload
+module.exports.config = {
+  api: {
+    bodyParser: false,
+  },
+};
