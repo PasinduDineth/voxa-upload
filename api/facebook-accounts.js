@@ -148,6 +148,64 @@ module.exports = async function handler(req, res) {
     }
   }
 
+  // POST: Upload video chunk
+  if (req.method === 'POST' && req.body.action === 'upload_chunk') {
+    const { page_id, upload_session_id, start_offset, chunk_data, access_token } = req.body;
+
+    if (!page_id || !upload_session_id || start_offset === undefined || !chunk_data || !access_token) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Missing required parameters' 
+      });
+    }
+
+    try {
+      // Convert base64 chunk to buffer
+      const base64Data = chunk_data.split(',')[1] || chunk_data;
+      const chunkBuffer = Buffer.from(base64Data, 'base64');
+
+      // Create form data for chunk upload
+      const FormData = require('form-data');
+      const form = new FormData();
+      form.append('upload_phase', 'transfer');
+      form.append('upload_session_id', upload_session_id);
+      form.append('start_offset', start_offset);
+      form.append('video_file_chunk', chunkBuffer, {
+        filename: 'chunk.mp4',
+        contentType: 'application/octet-stream'
+      });
+      form.append('access_token', access_token);
+
+      // Upload chunk to Facebook
+      const uploadResponse = await axios.post(
+        `https://graph.facebook.com/v18.0/${page_id}/videos`,
+        form,
+        {
+          headers: {
+            ...form.getHeaders()
+          },
+          maxContentLength: Infinity,
+          maxBodyLength: Infinity
+        }
+      );
+
+      return res.status(200).json({
+        success: true,
+        data: {
+          start_offset: uploadResponse.data.start_offset,
+          end_offset: uploadResponse.data.end_offset
+        }
+      });
+
+    } catch (error) {
+      console.error('Facebook chunk upload error:', error.response?.data || error.message);
+      return res.status(500).json({
+        success: false,
+        error: error.response?.data?.error?.message || error.message
+      });
+    }
+  }
+
   // POST: Initialize resumable upload for Facebook
   if (req.method === 'POST' && req.body.action === 'init_upload') {
     const { page_id, file_size, title, description } = req.body;

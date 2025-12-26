@@ -103,34 +103,36 @@ class FacebookAPI {
 
       const { upload_session_id, start_offset, end_offset, access_token } = initResponse.data.data;
 
-      // Step 2: Upload video chunks directly to Facebook (no CORS issue)
-      const chunkSize = 1024 * 1024 * 5; // 5MB chunks
+      // Step 2: Upload video chunks through backend
+      const chunkSize = 1024 * 1024 * 3; // 3MB chunks (under Vercel 4.5MB limit)
       let offset = start_offset || 0;
       
       while (offset < videoFile.size) {
         const chunk = videoFile.slice(offset, Math.min(offset + chunkSize, videoFile.size));
-        const formData = new FormData();
-        formData.append('upload_phase', 'transfer');
-        formData.append('upload_session_id', upload_session_id);
-        formData.append('start_offset', offset);
-        formData.append('video_file_chunk', chunk);
-        formData.append('access_token', access_token);
+        
+        // Convert chunk to base64
+        const reader = new FileReader();
+        const chunkData = await new Promise((resolve, reject) => {
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(chunk);
+        });
 
-        const uploadResponse = await axios.post(
-          `https://graph.facebook.com/v18.0/${this.pageId}/videos`,
-          formData,
-          {
-            headers: {
-              'Content-Type': 'multipart/form-data'
-            }
-          }
-        );
+        // Upload chunk through backend
+        const uploadResponse = await axios.post('/api/facebook-accounts', {
+          action: 'upload_chunk',
+          page_id: this.pageId,
+          upload_session_id: upload_session_id,
+          start_offset: offset,
+          chunk_data: chunkData,
+          access_token: access_token
+        });
 
-        if (!uploadResponse.data.success && uploadResponse.data.start_offset === undefined) {
-          throw new Error('Chunk upload failed');
+        if (!uploadResponse.data.success) {
+          throw new Error(uploadResponse.data.error || 'Chunk upload failed');
         }
 
-        offset = uploadResponse.data.start_offset || uploadResponse.data.end_offset || (offset + chunk.size);
+        offset = uploadResponse.data.data.end_offset || (offset + chunk.size);
       }
 
       // Step 3: Finalize upload

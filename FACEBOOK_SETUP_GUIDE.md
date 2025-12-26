@@ -41,11 +41,14 @@ You've already done this! You should have:
 
 4. In the permission dialog, select **ALL your Facebook Pages** that you want to manage
 
-5. Grant these permissions:
-   - `pages_show_list`
-   - `pages_read_engagement`
-   - `pages_manage_posts`
-   - `pages_manage_metadata`
+5. Grant these permissions (click "Add a Permission" if you don't see them all):
+   - ✅ `pages_show_list` - To list your pages
+   - ✅ `pages_read_engagement` - To read page data
+   - ✅ `pages_manage_posts` - **REQUIRED for posting videos**
+   - ✅ `publish_video` - **REQUIRED for video uploads**
+   - ✅ `pages_manage_metadata` - For page details
+
+   **CRITICAL:** Without `publish_video` permission, you'll get "(#100) No permission to publish" error!
 
 6. Click **Generate Access Token**
 
