@@ -105,8 +105,8 @@ class FacebookAPI {
 
       console.log('✅ Upload session initialized:', upload_session_id);
 
-      // Step 2: Upload binary video chunks DIRECTLY to Facebook (no backend proxy)
-      const chunkSize = 1024 * 1024 * 5; // 5MB chunks (no encoding overhead!)
+      // Step 2: Upload binary chunks via multipart to backend
+      const chunkSize = 1024 * 1024 * 5; // 5MB chunks
       let offset = start_offset || 0;
       const totalSize = videoFile.size;
       
@@ -123,33 +123,30 @@ class FacebookAPI {
         
         console.log(`📦 Chunk ${chunkNum}: ${(actualChunkSize / 1024 / 1024).toFixed(2)}MB (${offset} to ${endByte})`);
         
-        // Upload binary chunk DIRECTLY to Facebook
+        // Send binary chunk to backend via multipart form-data
         const formData = new FormData();
-        formData.append('upload_phase', 'transfer');
+        formData.append('action', 'upload_chunk');
+        formData.append('page_id', this.pageId);
         formData.append('upload_session_id', upload_session_id);
         formData.append('start_offset', offset);
-        formData.append('video_file_chunk', chunk);
         formData.append('access_token', access_token);
+        formData.append('video_chunk', chunk, 'chunk.mp4');
 
-        const uploadResponse = await axios.post(
-          `https://graph.facebook.com/v18.0/${this.pageId}/videos`,
-          formData,
-          {
-            headers: {
-              'Content-Type': 'multipart/form-data'
-            }
+        const uploadResponse = await axios.post('/api/facebook-accounts', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
           }
-        );
+        });
 
-        if (!uploadResponse.data.success && uploadResponse.data.start_offset === undefined) {
-          console.error('❌ Chunk upload failed:', uploadResponse.data);
-          throw new Error('Chunk upload failed');
+        if (!uploadResponse.data.success) {
+          console.error('❌ Chunk upload failed:', uploadResponse.data.error);
+          throw new Error(uploadResponse.data.error || 'Chunk upload failed');
         }
 
         console.log('✅ Chunk uploaded successfully');
         
         // Facebook returns the next offset
-        const newOffset = uploadResponse.data.start_offset || uploadResponse.data.end_offset || (offset + actualChunkSize);
+        const newOffset = uploadResponse.data.data.end_offset || uploadResponse.data.data.start_offset || (offset + actualChunkSize);
         console.log(`📍 Next offset: ${newOffset} (moved ${newOffset - offset} bytes)`);
         offset = newOffset;
       }

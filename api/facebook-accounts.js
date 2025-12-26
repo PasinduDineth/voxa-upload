@@ -148,6 +148,67 @@ module.exports = async function handler(req, res) {
     }
   }
 
+  // POST: Upload video chunk via multipart
+  if (req.method === 'POST' && req.body.action === 'upload_chunk') {
+    const formidable = require('formidable');
+    const form = formidable({ maxFileSize: 10 * 1024 * 1024 }); // 10MB max
+
+    form.parse(req, async (err, fields, files) => {
+      if (err) {
+        return res.status(400).json({ success: false, error: err.message });
+      }
+
+      const { page_id, upload_session_id, start_offset, access_token } = fields;
+      const videoChunk = files.video_chunk;
+
+      if (!page_id || !upload_session_id || !start_offset || !access_token || !videoChunk) {
+        return res.status(400).json({ 
+          success: false,
+          error: 'Missing required parameters' 
+        });
+      }
+
+      try {
+        const fs = require('fs');
+        const FormData = require('form-data');
+        const form = new FormData();
+        
+        // Stream file to Facebook
+        form.append('upload_phase', 'transfer');
+        form.append('upload_session_id', upload_session_id[0]);
+        form.append('start_offset', start_offset[0]);
+        form.append('video_file_chunk', fs.createReadStream(videoChunk[0].filepath));
+        form.append('access_token', access_token[0]);
+
+        const uploadResponse = await axios.post(
+          `https://graph.facebook.com/v18.0/${page_id[0]}/videos`,
+          form,
+          {
+            headers: form.getHeaders(),
+            maxContentLength: Infinity,
+            maxBodyLength: Infinity
+          }
+        );
+
+        return res.status(200).json({
+          success: true,
+          data: {
+            start_offset: uploadResponse.data.start_offset,
+            end_offset: uploadResponse.data.end_offset
+          }
+        });
+
+      } catch (error) {
+        console.error('Facebook chunk upload error:', error.response?.data || error.message);
+        return res.status(500).json({
+          success: false,
+          error: error.response?.data?.error?.message || error.message
+        });
+      }
+    });
+    return;
+  }
+
   // POST: Initialize resumable upload for Facebook
   if (req.method === 'POST' && req.body.action === 'init_upload') {
     const { page_id, file_size, title, description } = req.body;
