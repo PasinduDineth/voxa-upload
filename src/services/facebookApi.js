@@ -103,16 +103,21 @@ class FacebookAPI {
 
       const { upload_session_id, start_offset, end_offset, access_token } = initResponse.data.data;
 
+      console.log('✅ Upload session initialized:', upload_session_id);
+
       // Step 2: Upload video chunks through backend
-      const chunkSize = 1024 * 256; // 256KB chunks (becomes ~340KB as base64 with JSON overhead)
+      const chunkSize = 1024 * 128; // 128KB chunks (becomes ~170KB as base64, safe for Vercel)
       let offset = start_offset || 0;
       const totalSize = videoFile.size;
       
+      console.log(`📹 Video size: ${(totalSize / 1024 / 1024).toFixed(2)}MB, chunk size: ${(chunkSize / 1024).toFixed(0)}KB`);
+      
       while (offset < videoFile.size) {
         const progress = Math.round((offset / totalSize) * 100);
-        console.log(`Uploading... ${progress}%`);
+        console.log(`⬆️ Uploading... ${progress}%`);
         
         const chunk = videoFile.slice(offset, Math.min(offset + chunkSize, videoFile.size));
+        console.log(`📦 Chunk ${Math.floor(offset/chunkSize) + 1}: ${(chunk.size / 1024).toFixed(1)}KB`);
         
         // Convert chunk to base64
         const reader = new FileReader();
@@ -121,6 +126,8 @@ class FacebookAPI {
           reader.onerror = reject;
           reader.readAsDataURL(chunk);
         });
+        
+        console.log(`📊 Base64 size: ${(chunkData.length / 1024).toFixed(1)}KB`);
 
         // Upload chunk through backend
         const uploadResponse = await axios.post('/api/facebook-accounts', {
@@ -133,13 +140,16 @@ class FacebookAPI {
         });
 
         if (!uploadResponse.data.success) {
+          console.error('❌ Chunk upload failed:', uploadResponse.data.error);
           throw new Error(uploadResponse.data.error || 'Chunk upload failed');
         }
 
+        console.log('✅ Chunk uploaded successfully');
         offset = uploadResponse.data.data.end_offset || (offset + chunk.size);
       }
 
       // Step 3: Finalize upload
+      console.log('🏁 Finalizing upload...');
       const finalizeResponse = await axios.post('/api/facebook-accounts', {
         action: 'finalize_upload',
         page_id: this.pageId,
@@ -149,6 +159,7 @@ class FacebookAPI {
       });
 
       if (finalizeResponse.data.success) {
+        console.log('🎉 Video uploaded successfully!', finalizeResponse.data.data);
         return {
           success: true,
           data: finalizeResponse.data.data
