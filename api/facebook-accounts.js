@@ -9,33 +9,41 @@ export const config = {
 };
 
 module.exports = async function handler(req, res) {
+  console.log('=== Facebook Accounts Request ===' );
+  console.log('Method:', req.method);
+  console.log('Content-Type:', req.headers['content-type']);
+  
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST,DELETE');
   res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization');
 
   if (req.method === 'OPTIONS') {
+    console.log('OPTIONS request - returning 200');
     return res.status(200).end();
   }
 
   // Initialize body
   if (!req.body) {
     req.body = {};
+    console.log('Initialized empty body');
   }
 
   // Parse body for JSON requests
   if (req.method === 'POST' && req.headers['content-type']?.includes('application/json')) {
+    console.log('Parsing JSON body...');
     try {
       const chunks = [];
       for await (const chunk of req) {
         chunks.push(chunk);
       }
       const body = Buffer.concat(chunks).toString();
+      console.log('Raw body:', body);
       req.body = JSON.parse(body);
-      console.log('Parsed body:', req.body);
+      console.log('Parsed body:', JSON.stringify(req.body));
     } catch (error) {
-      console.error('JSON parse error:', error);
-      return res.status(400).json({ success: false, error: 'Invalid JSON body' });
+      console.error('JSON parse error:', error.message);
+      return res.status(400).json({ success: false, error: 'Invalid JSON body', details: error.message });
     }
   }
 
@@ -70,15 +78,19 @@ module.exports = async function handler(req, res) {
 
   // POST: Add Facebook page with access token
   if (req.method === 'POST' && req.body.action === 'add_page') {
+    console.log('=== Add Page Request ===');
     const { access_token } = req.body;
     
-    console.log('Adding Facebook page, token length:', access_token?.length);
+    console.log('Access token present:', !!access_token);
+    console.log('Access token length:', access_token?.length);
 
     if (!access_token) {
-      return res.status(400).json({ error: 'Access token is required' });
+      console.error('Missing access token');
+      return res.status(400).json({ success: false, error: 'Access token is required' });
     }
 
     try {
+      console.log('Calling Facebook API...');
       // Fetch user's pages using the provided token
       const pagesResponse = await axios.get(
         'https://graph.facebook.com/v18.0/me/accounts',
@@ -90,7 +102,9 @@ module.exports = async function handler(req, res) {
         }
       );
 
-      console.log('Facebook API response:', pagesResponse.data);
+      console.log('Facebook API response status:', pagesResponse.status);
+      console.log('Facebook API data:', JSON.stringify(pagesResponse.data));
+      console.log('Pages found:', pagesResponse.data.data?.length || 0);
 
       if (!pagesResponse.data.data || pagesResponse.data.data.length === 0) {
         return res.status(400).json({
@@ -102,14 +116,20 @@ module.exports = async function handler(req, res) {
       const pages = pagesResponse.data.data;
       const addedPages = [];
 
+      console.log('Processing pages...');
       // Add all pages to database
       for (const page of pages) {
+        console.log(`Processing page: ${page.name} (${page.id})`);
+        
         const existingPage = await sql`
           SELECT open_id FROM accounts
           WHERE open_id = ${page.id} AND type = 'FACEBOOK'
         `;
 
+        console.log(`Existing page check: ${existingPage.rows.length > 0 ? 'found' : 'not found'}`);
+
         if (existingPage.rows.length === 0) {
+          console.log(`Inserting new page: ${page.name}`);
           await sql`
             INSERT INTO accounts (
               open_id,
@@ -127,8 +147,10 @@ module.exports = async function handler(req, res) {
               NOW()
             )
           `;
+          console.log(`Successfully inserted: ${page.name}`);
           addedPages.push(page.name);
         } else {
+          console.log(`Updating existing page: ${page.name}`);
           // Update existing page token
           await sql`
             UPDATE accounts
@@ -138,9 +160,13 @@ module.exports = async function handler(req, res) {
                 created_at = NOW()
             WHERE open_id = ${page.id} AND type = 'FACEBOOK'
           `;
+          console.log(`Successfully updated: ${page.name}`);
         }
       }
 
+      console.log('All pages processed successfully');
+      console.log('Added pages:', addedPages);
+      
       return res.status(200).json({
         success: true,
         message: addedPages.length > 0
@@ -150,12 +176,17 @@ module.exports = async function handler(req, res) {
       });
 
     } catch (error) {
-      console.error('Error adding Facebook pages:', error.response?.data || error.message || error);
-      console.error('Full error stack:', error.stack);
+      console.error('=== ERROR in add_page ===');
+      console.error('Error type:', error.name);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+      console.error('Facebook API error:', JSON.stringify(error.response?.data));
+      
       return res.status(500).json({
         success: false,
         error: error.response?.data?.error?.message || error.message || 'Unknown error occurred',
-        details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        errorType: error.name,
+        details: error.response?.data || error.stack
       });
     }
   }
