@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import TikTokUploader from './components/TikTokUploader';
 import YouTubeUploader from './components/YouTubeUploader';
+import FacebookUploader from './components/FacebookUploader';
 
 function App() {
   const [platform, setPlatform] = useState('tiktok');
@@ -52,9 +53,26 @@ function App() {
         >
           ▶️ YouTube
         </button>
+        <button
+          onClick={() => setPlatform('facebook')}
+          style={{
+            padding: '12px 30px',
+            fontSize: '16px',
+            fontWeight: 600,
+            border: 'none',
+            borderRadius: '25px',
+            cursor: 'pointer',
+            background: platform === 'facebook' ? 'white' : 'rgba(255,255,255,0.2)',
+            color: platform === 'facebook' ? '#1877f2' : 'white',
+            transition: 'all 0.3s ease',
+            boxShadow: platform === 'facebook' ? '0 4px 15px rgba(0,0,0,0.2)' : 'none'
+          }}
+        >
+          📘 Facebook
+        </button>
       </div>
       
-      {platform === 'tiktok' ? <TikTokUploader /> : <YouTubeUploader />}
+      {platform === 'tiktok' ? <TikTokUploader /> : platform === 'youtube' ? <YouTubeUploader /> : <FacebookUploader />}
     </div>
   );
 }

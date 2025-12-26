@@ -1,28 +1,28 @@
 # Database Schema
 
-Database structure for TikTok and YouTube video uploader application.
+Database structure for TikTok, YouTube, and Facebook video uploader application.
 
 ---
 
 ## Table: `accounts`
 
-Stores authenticated social media accounts (TikTok and YouTube channels).
+Stores authenticated social media accounts (TikTok, YouTube channels, and Facebook Pages).
 
 | Column Name | Type | Constraints | Description |
 |------------|------|-------------|-------------|
 | `id` | SERIAL | PRIMARY KEY | Auto-incrementing unique identifier |
-| `open_id` | VARCHAR(255) | NOT NULL, UNIQUE | TikTok open_id or YouTube channel_id |
+| `open_id` | VARCHAR(255) | NOT NULL, UNIQUE | TikTok open_id, YouTube channel_id, or Facebook page_id |
 | `access_token` | TEXT | NOT NULL | OAuth access token for API calls |
 | `refresh_token` | TEXT | | OAuth refresh token (YouTube only) |
-| `display_name` | VARCHAR(255) | | Account display name or channel title |
-| `avatar_url` | TEXT | | Profile picture or thumbnail URL |
+| `display_name` | VARCHAR(255) | | Account display name, channel title, or page name |
+| `avatar_url` | TEXT | | Profile picture, thumbnail URL, or page picture |
 | `scope` | TEXT | | OAuth scopes granted |
 | `expires_at` | TIMESTAMP | | Token expiration timestamp |
 | `created_at` | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | When account was first added |
 | `updated_at` | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | Last token refresh or update |
 | `user_id` | VARCHAR(255) | | User identifier (for multi-user support) |
 | `workspace_id` | VARCHAR(255) | | Workspace identifier (for team support) |
-| `type` | VARCHAR(50) | NOT NULL | Platform type: 'TIKTOK' or 'YOUTUBE' |
+| `type` | VARCHAR(50) | NOT NULL | Platform type: 'TIKTOK', 'YOUTUBE', or 'FACEBOOK' |
 
 **Indexes:**
 - `idx_accounts_open_id` on `open_id`
@@ -83,6 +83,17 @@ Temporary OAuth state data for YouTube authentication (PKCE + CSRF protection).
 
 ---
 
+## ~~Table: `facebook_oauth_states`~~ (Not Used - Token-Based Approach)
+
+**Note:** The Facebook integration uses a **token-based approach** instead of OAuth flow, so this table is **not needed**. You can keep it or drop it - it won't be used.
+
+If you want to drop it (optional):
+```sql
+DROP TABLE IF EXISTS facebook_oauth_states;
+```
+
+---
+
 ## Platform-Specific Notes
 
 ### TikTok
@@ -99,3 +110,13 @@ Temporary OAuth state data for YouTube authentication (PKCE + CSRF protection).
 - `open_id` = YouTube channel ID (starts with 'UC')
 - `type = 'YOUTUBE'`
 - Multiple channels per Google account supported
+
+### Facebook (Token-Based Approach)
+- **No OAuth state table needed**
+- Users generate access tokens from Graph API Explorer
+- Page access tokens are long-lived (60 days)
+- Tokens stored directly in `accounts` table
+- `open_id` = Facebook Page ID
+- `type = 'FACEBOOK'`
+- Multiple pages per Facebook account supported
+- **Simplest integration** - no OAuth flow complexity
