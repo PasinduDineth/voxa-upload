@@ -1,9 +1,7 @@
 {
   "functions": {
     "api/**/*.js": {
-      "includeFiles": "node_modules/@vercel/postgres/**"
-    },
-    "api/facebook-accounts.js": {
+      "includeFiles": "node_modules/@vercel/postgres/**",
       "maxDuration": 60
     }
   }
