@@ -16,31 +16,42 @@ function OAuthCallback() {
       if (!code || !state) {
         setStatus('error');
         setMessage('Missing authorization code or state. Please try again.');
-        setTimeout(() => navigate('/tiktok'), 3000);
+        setTimeout(() => navigate('/'), 3000);
         return;
       }
 
+      // Determine which platform based on state prefix
+      const isYouTube = state.startsWith('youtube_');
+      const platform = isYouTube ? 'YouTube' : 'TikTok';
+      const redirectPath = isYouTube ? '/youtube' : '/tiktok';
+      
       // Get code_verifier from session storage
-      const codeVerifier = sessionStorage.getItem('oauth_code_verifier');
-      const storedState = sessionStorage.getItem('oauth_state');
+      const codeVerifier = isYouTube 
+        ? sessionStorage.getItem('youtube_oauth_code_verifier')
+        : sessionStorage.getItem('oauth_code_verifier');
+      const storedState = isYouTube
+        ? sessionStorage.getItem('youtube_oauth_state')
+        : sessionStorage.getItem('oauth_state');
       
       if (!codeVerifier) {
         setStatus('error');
         setMessage('Code verifier not found. Please restart the authentication flow.');
-        setTimeout(() => navigate('/tiktok'), 3000);
+        setTimeout(() => navigate(redirectPath), 3000);
         return;
       }
 
       if (!storedState || storedState !== state) {
         setStatus('error');
         setMessage('State mismatch. Please restart the authentication flow.');
-        setTimeout(() => navigate('/tiktok'), 3000);
+        setTimeout(() => navigate(redirectPath), 3000);
         return;
       }
 
       try {
-        // Call the backend API to exchange code for token
-        const response = await fetch('/api/tiktok-oauth-callback', {
+        // Call the appropriate backend API to exchange code for token
+        const apiEndpoint = isYouTube ? '/api/youtube-oauth-callback' : '/api/tiktok-oauth-callback';
+        
+        const response = await fetch(apiEndpoint, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -56,25 +67,31 @@ function OAuthCallback() {
 
         if (data.success) {
           setStatus('success');
-          setMessage('Successfully authenticated! Redirecting...');
+          setMessage(`Successfully authenticated with ${platform}! Redirecting...`);
           
           // Clean up session storage
-          sessionStorage.removeItem('oauth_code_verifier');
-          sessionStorage.removeItem('oauth_state');
-          sessionStorage.removeItem('oauth_adding_account');
+          if (isYouTube) {
+            sessionStorage.removeItem('youtube_oauth_code_verifier');
+            sessionStorage.removeItem('youtube_oauth_state');
+            sessionStorage.removeItem('youtube_oauth_adding_channel');
+          } else {
+            sessionStorage.removeItem('oauth_code_verifier');
+            sessionStorage.removeItem('oauth_state');
+            sessionStorage.removeItem('oauth_adding_account');
+          }
           
-          // Redirect to TikTok page
-          setTimeout(() => navigate('/tiktok'), 2000);
+          // Redirect to appropriate page
+          setTimeout(() => navigate(redirectPath), 2000);
         } else {
           setStatus('error');
           setMessage(data.error || 'Authentication failed. Please try again.');
-          setTimeout(() => navigate('/tiktok'), 3000);
+          setTimeout(() => navigate(redirectPath), 3000);
         }
       } catch (error) {
         console.error('OAuth callback error:', error);
         setStatus('error');
         setMessage('An error occurred during authentication. Please try again.');
-        setTimeout(() => navigate('/tiktok'), 3000);
+        setTimeout(() => navigate(redirectPath), 3000);
       }
     };
 
