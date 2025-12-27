@@ -21,11 +21,19 @@ function OAuthCallback() {
       }
 
       // Get code_verifier from session storage
-      const codeVerifier = sessionStorage.getItem(`tiktok_verifier_${state}`);
+      const codeVerifier = sessionStorage.getItem('oauth_code_verifier');
+      const storedState = sessionStorage.getItem('oauth_state');
       
       if (!codeVerifier) {
         setStatus('error');
         setMessage('Code verifier not found. Please restart the authentication flow.');
+        setTimeout(() => navigate('/tiktok'), 3000);
+        return;
+      }
+
+      if (!storedState || storedState !== state) {
+        setStatus('error');
+        setMessage('State mismatch. Please restart the authentication flow.');
         setTimeout(() => navigate('/tiktok'), 3000);
         return;
       }
@@ -51,7 +59,9 @@ function OAuthCallback() {
           setMessage('Successfully authenticated! Redirecting...');
           
           // Clean up session storage
-          sessionStorage.removeItem(`tiktok_verifier_${state}`);
+          sessionStorage.removeItem('oauth_code_verifier');
+          sessionStorage.removeItem('oauth_state');
+          sessionStorage.removeItem('oauth_adding_account');
           
           // Redirect to TikTok page
           setTimeout(() => navigate('/tiktok'), 2000);
