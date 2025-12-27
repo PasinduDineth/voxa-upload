@@ -2,26 +2,19 @@ const { sql } = require('@vercel/postgres');
 const axios = require('axios');
 
 module.exports = async function handler(req, res) {
-  console.log('=== Facebook Accounts Request ===' );
-  console.log('Method:', req.method);
-  console.log('Content-Type:', req.headers['content-type']);
-  
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,POST,DELETE');
   res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization');
 
   if (req.method === 'OPTIONS') {
-    console.log('OPTIONS request - returning 200');
     return res.status(200).end();
   }
 
   // Handle multipart upload_chunk FIRST (before JSON parsing)
   if (req.method === 'POST' && req.headers['content-type']?.includes('multipart/form-data')) {
-    console.log('=== Upload Chunk Request (Multipart) ===');
-    
     const formidable = require('formidable');
-    const form = new formidable.IncomingForm({ maxFileSize: 5 * 1024 * 1024 }); // 5MB max (Vercel limit)
+    const form = new formidable.IncomingForm({ maxFileSize: 5 * 1024 * 1024 });
 
     form.parse(req, async (err, fields, files) => {
       if (err) {
@@ -29,25 +22,10 @@ module.exports = async function handler(req, res) {
         return res.status(400).json({ success: false, error: err.message });
       }
 
-      console.log('Parsed fields:', {
-        page_id: fields.page_id?.[0],
-        upload_session_id: fields.upload_session_id?.[0],
-        start_offset: fields.start_offset?.[0],
-        access_token: fields.access_token?.[0] ? `${fields.access_token[0].substring(0, 20)}...` : 'missing'
-      });
-      console.log('Parsed files:', {
-        video_chunk: files.video_chunk ? {
-          size: files.video_chunk[0].size,
-          mimetype: files.video_chunk[0].mimetype,
-          filepath: files.video_chunk[0].filepath
-        } : 'missing'
-      });
-
       const { page_id, upload_session_id, start_offset, access_token } = fields;
       const videoChunk = files.video_chunk;
 
       if (!page_id || !upload_session_id || !start_offset || !access_token || !videoChunk) {
-        console.error('Missing parameters');
         return res.status(400).json({ 
           success: false,
           error: 'Missing required parameters' 
@@ -59,20 +37,12 @@ module.exports = async function handler(req, res) {
         const FormData = require('form-data');
         const fbForm = new FormData();
         
-        console.log('Preparing Facebook upload request...');
-        console.log('Target URL:', `https://graph.facebook.com/v18.0/${page_id[0]}/videos`);
-        console.log('Upload session ID:', upload_session_id[0]);
-        console.log('Start offset:', start_offset[0]);
-        console.log('Chunk file size:', videoChunk[0].size, 'bytes');
-        
-        // Stream file to Facebook
         fbForm.append('upload_phase', 'transfer');
         fbForm.append('upload_session_id', upload_session_id[0]);
         fbForm.append('start_offset', start_offset[0]);
         fbForm.append('video_file_chunk', fs.createReadStream(videoChunk[0].filepath));
         fbForm.append('access_token', access_token[0]);
 
-        console.log('Sending chunk to Facebook...');
         const uploadResponse = await axios.post(
           `https://graph.facebook.com/v18.0/${page_id[0]}/videos`,
           fbForm,
@@ -83,7 +53,6 @@ module.exports = async function handler(req, res) {
           }
         );
 
-        console.log('Facebook chunk upload response:', uploadResponse.data);
         return res.status(200).json({
           success: true,
           data: {
@@ -93,48 +62,33 @@ module.exports = async function handler(req, res) {
         });
 
       } catch (error) {
-        console.error('=== Facebook Chunk Upload Error ===');
-        console.error('Error type:', error.constructor.name);
-        console.error('Error message:', error.message);
-        console.error('Response status:', error.response?.status);
-        console.error('Response data:', JSON.stringify(error.response?.data, null, 2));
-        console.error('Request config:', {
-          url: error.config?.url,
-          method: error.config?.method,
-          headers: error.config?.headers
-        });
-        
+        console.error('Facebook chunk upload error:', error.response?.data || error.message);
         return res.status(500).json({
           success: false,
-          error: error.response?.data?.error?.message || error.message,
-          details: error.response?.data
+          error: error.response?.data?.error?.message || error.message
         });
       }
     });
-    return; // Important: return here to prevent further processing
+    return;
   }
 
   // Initialize body for non-multipart requests
   if (!req.body) {
     req.body = {};
-    console.log('Initialized empty body');
   }
 
   // Parse body for JSON requests
   if (req.method === 'POST' && req.headers['content-type']?.includes('application/json')) {
-    console.log('Parsing JSON body...');
     try {
       const chunks = [];
       for await (const chunk of req) {
         chunks.push(chunk);
       }
       const body = Buffer.concat(chunks).toString();
-      console.log('Raw body:', body);
       req.body = JSON.parse(body);
-      console.log('Parsed body:', JSON.stringify(req.body));
     } catch (error) {
       console.error('JSON parse error:', error.message);
-      return res.status(400).json({ success: false, error: 'Invalid JSON body', details: error.message });
+      return res.status(400).json({ success: false, error: 'Invalid JSON body' });
     }
   }
 
@@ -169,20 +123,13 @@ module.exports = async function handler(req, res) {
 
   // POST: Add Facebook page with access token
   if (req.method === 'POST' && req.body.action === 'add_page') {
-    console.log('=== Add Page Request ===');
     const { access_token } = req.body;
-    
-    console.log('Access token present:', !!access_token);
-    console.log('Access token length:', access_token?.length);
 
     if (!access_token) {
-      console.error('Missing access token');
       return res.status(400).json({ success: false, error: 'Access token is required' });
     }
 
     try {
-      console.log('Calling Facebook API...');
-      // Fetch user's pages using the provided token
       const pagesResponse = await axios.get(
         'https://graph.facebook.com/v18.0/me/accounts',
         {
@@ -192,10 +139,6 @@ module.exports = async function handler(req, res) {
           }
         }
       );
-
-      console.log('Facebook API response status:', pagesResponse.status);
-      console.log('Facebook API data:', JSON.stringify(pagesResponse.data));
-      console.log('Pages found:', pagesResponse.data.data?.length || 0);
 
       if (!pagesResponse.data.data || pagesResponse.data.data.length === 0) {
         return res.status(400).json({
@@ -207,20 +150,13 @@ module.exports = async function handler(req, res) {
       const pages = pagesResponse.data.data;
       const addedPages = [];
 
-      console.log('Processing pages...');
-      // Add all pages to database
       for (const page of pages) {
-        console.log(`Processing page: ${page.name} (${page.id})`);
-        
         const existingPage = await sql`
           SELECT open_id FROM accounts
           WHERE open_id = ${page.id} AND type = 'FACEBOOK'
         `;
 
-        console.log(`Existing page check: ${existingPage.rows.length > 0 ? 'found' : 'not found'}`);
-
         if (existingPage.rows.length === 0) {
-          console.log(`Inserting new page: ${page.name}`);
           await sql`
             INSERT INTO accounts (
               open_id,
@@ -238,11 +174,8 @@ module.exports = async function handler(req, res) {
               NOW()
             )
           `;
-          console.log(`Successfully inserted: ${page.name}`);
           addedPages.push(page.name);
         } else {
-          console.log(`Updating existing page: ${page.name}`);
-          // Update existing page token
           await sql`
             UPDATE accounts
             SET access_token = ${page.access_token},
@@ -251,12 +184,8 @@ module.exports = async function handler(req, res) {
                 created_at = NOW()
             WHERE open_id = ${page.id} AND type = 'FACEBOOK'
           `;
-          console.log(`Successfully updated: ${page.name}`);
         }
       }
-
-      console.log('All pages processed successfully');
-      console.log('Added pages:', addedPages);
       
       return res.status(200).json({
         success: true,
@@ -267,17 +196,10 @@ module.exports = async function handler(req, res) {
       });
 
     } catch (error) {
-      console.error('=== ERROR in add_page ===');
-      console.error('Error type:', error.name);
-      console.error('Error message:', error.message);
-      console.error('Error stack:', error.stack);
-      console.error('Facebook API error:', JSON.stringify(error.response?.data));
-      
+      console.error('Error adding Facebook page:', error.response?.data || error.message);
       return res.status(500).json({
         success: false,
-        error: error.response?.data?.error?.message || error.message || 'Unknown error occurred',
-        errorType: error.name,
-        details: error.response?.data || error.stack
+        error: error.response?.data?.error?.message || error.message
       });
     }
   }
@@ -306,13 +228,9 @@ module.exports = async function handler(req, res) {
 
   // POST: Initialize resumable upload for Facebook
   if (req.method === 'POST' && req.body.action === 'init_upload') {
-    console.log('=== Initialize Upload Request ===');
-    const { page_id, file_size, title, description } = req.body;
-    console.log('Page ID:', page_id);
-    console.log('File size:', file_size);
+    const { page_id, file_size } = req.body;
 
     if (!page_id || !file_size) {
-      console.error('Missing page_id or file_size');
       return res.status(400).json({ 
         success: false,
         error: 'Page ID and file size are required' 
@@ -320,15 +238,12 @@ module.exports = async function handler(req, res) {
     }
 
     try {
-      // Get page access token from database
-      console.log('Fetching page access token from database...');
       const pageResult = await sql`
         SELECT access_token FROM accounts
         WHERE open_id = ${page_id} AND type = 'FACEBOOK'
       `;
 
       if (pageResult.rows.length === 0) {
-        console.error('Page not found in database');
         return res.status(404).json({
           success: false,
           error: 'Page not found'
@@ -336,10 +251,7 @@ module.exports = async function handler(req, res) {
       }
 
       const pageAccessToken = pageResult.rows[0].access_token;
-      console.log('Page access token found:', pageAccessToken ? `${pageAccessToken.substring(0, 20)}...` : 'missing');
 
-      // Initialize resumable upload
-      console.log('Initializing resumable upload with Facebook...');
       const initResponse = await axios.post(
         `https://graph.facebook.com/v18.0/${page_id}/videos`,
         {
@@ -349,7 +261,6 @@ module.exports = async function handler(req, res) {
         }
       );
 
-      console.log('Facebook init response:', initResponse.data);
       return res.status(200).json({
         success: true,
         data: {
@@ -362,16 +273,10 @@ module.exports = async function handler(req, res) {
       });
 
     } catch (error) {
-      console.error('=== Facebook Init Upload Error ===');
-      console.error('Error type:', error.constructor.name);
-      console.error('Error message:', error.message);
-      console.error('Response status:', error.response?.status);
-      console.error('Response data:', JSON.stringify(error.response?.data, null, 2));
-      
+      console.error('Facebook init upload error:', error.response?.data || error.message);
       return res.status(500).json({
         success: false,
-        error: error.response?.data?.error?.message || error.message,
-        details: error.response?.data
+        error: error.response?.data?.error?.message || error.message
       });
     }
   }

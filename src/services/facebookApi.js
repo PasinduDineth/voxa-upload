@@ -103,27 +103,15 @@ class FacebookAPI {
 
       const { upload_session_id, start_offset, end_offset, access_token } = initResponse.data.data;
 
-      console.log('✅ Upload session initialized:', upload_session_id);
-
       // Step 2: Upload binary chunks via multipart to backend
       const chunkSize = 1024 * 1024 * 4; // 4MB chunks (Vercel limit is 4.5MB)
       let offset = start_offset || 0;
       const totalSize = videoFile.size;
       
-      console.log(`📹 Video size: ${(totalSize / 1024 / 1024).toFixed(2)}MB, chunk size: ${(chunkSize / 1024 / 1024).toFixed(0)}MB`);
-      
       while (offset < videoFile.size) {
-        const progress = Math.round((offset / totalSize) * 100);
-        const chunkNum = Math.floor(offset / chunkSize) + 1;
-        console.log(`⬆️ Uploading... ${progress}% (offset: ${offset})`);
-        
         const endByte = Math.min(offset + chunkSize, videoFile.size);
         const chunk = videoFile.slice(offset, endByte);
-        const actualChunkSize = endByte - offset;
         
-        console.log(`📦 Chunk ${chunkNum}: ${(actualChunkSize / 1024 / 1024).toFixed(2)}MB (${offset} to ${endByte})`);
-        
-        // Send binary chunk to backend via multipart form-data
         const formData = new FormData();
         formData.append('action', 'upload_chunk');
         formData.append('page_id', this.pageId);
@@ -139,20 +127,13 @@ class FacebookAPI {
         });
 
         if (!uploadResponse.data.success) {
-          console.error('❌ Chunk upload failed:', uploadResponse.data.error);
           throw new Error(uploadResponse.data.error || 'Chunk upload failed');
         }
-
-        console.log('✅ Chunk uploaded successfully');
-        console.log('Facebook response:', uploadResponse.data.data);
         
-        // Move to next chunk based on what we actually sent
         offset = endByte;
-        console.log(`📍 Next offset: ${offset}`);
       }
 
       // Step 3: Finalize upload
-      console.log('🏁 Finalizing upload...');
       const finalizeResponse = await axios.post('/api/facebook-accounts', {
         action: 'finalize_upload',
         page_id: this.pageId,
@@ -162,7 +143,6 @@ class FacebookAPI {
       });
 
       if (finalizeResponse.data.success) {
-        console.log('🎉 Video uploaded successfully!', finalizeResponse.data.data);
         return {
           success: true,
           data: finalizeResponse.data.data
