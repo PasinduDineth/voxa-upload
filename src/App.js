@@ -1,79 +1,23 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import DashboardLayout from './components/Layout/DashboardLayout';
+import Dashboard from './components/Dashboard';
 import TikTokUploader from './components/TikTokUploader';
 import YouTubeUploader from './components/YouTubeUploader';
 import FacebookUploader from './components/FacebookUploader';
 
 function App() {
-  const [platform, setPlatform] = useState('tiktok');
-
   return (
-    <div className="App">
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        gap: 20, 
-        padding: '20px 0',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        position: 'sticky',
-        top: 0,
-        zIndex: 1000,
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
-      }}>
-        <button
-          onClick={() => setPlatform('tiktok')}
-          style={{
-            padding: '12px 30px',
-            fontSize: '16px',
-            fontWeight: 600,
-            border: 'none',
-            borderRadius: '25px',
-            cursor: 'pointer',
-            background: platform === 'tiktok' ? 'white' : 'rgba(255,255,255,0.2)',
-            color: platform === 'tiktok' ? '#667eea' : 'white',
-            transition: 'all 0.3s ease',
-            boxShadow: platform === 'tiktok' ? '0 4px 15px rgba(0,0,0,0.2)' : 'none'
-          }}
-        >
-          🎵 TikTok
-        </button>
-        <button
-          onClick={() => setPlatform('youtube')}
-          style={{
-            padding: '12px 30px',
-            fontSize: '16px',
-            fontWeight: 600,
-            border: 'none',
-            borderRadius: '25px',
-            cursor: 'pointer',
-            background: platform === 'youtube' ? 'white' : 'rgba(255,255,255,0.2)',
-            color: platform === 'youtube' ? '#FF0000' : 'white',
-            transition: 'all 0.3s ease',
-            boxShadow: platform === 'youtube' ? '0 4px 15px rgba(0,0,0,0.2)' : 'none'
-          }}
-        >
-          ▶️ YouTube
-        </button>
-        <button
-          onClick={() => setPlatform('facebook')}
-          style={{
-            padding: '12px 30px',
-            fontSize: '16px',
-            fontWeight: 600,
-            border: 'none',
-            borderRadius: '25px',
-            cursor: 'pointer',
-            background: platform === 'facebook' ? 'white' : 'rgba(255,255,255,0.2)',
-            color: platform === 'facebook' ? '#1877f2' : 'white',
-            transition: 'all 0.3s ease',
-            boxShadow: platform === 'facebook' ? '0 4px 15px rgba(0,0,0,0.2)' : 'none'
-          }}
-        >
-          📘 Facebook
-        </button>
-      </div>
-      
-      {platform === 'tiktok' ? <TikTokUploader /> : platform === 'youtube' ? <YouTubeUploader /> : <FacebookUploader />}
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<DashboardLayout />}>
+          <Route index element={<Dashboard />} />
+          <Route path="tiktok" element={<TikTokUploader />} />
+          <Route path="youtube" element={<YouTubeUploader />} />
+          <Route path="facebook" element={<FacebookUploader />} />
+        </Route>
+      </Routes>
+    </Router>
   );
 }
 

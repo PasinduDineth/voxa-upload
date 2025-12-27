@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import youtubeApi from '../services/youtubeApi';
+import PageHeader from './Layout/PageHeader';
 import './TikTokUploader.css';
 
 function YouTubeUploader() {
@@ -195,9 +196,14 @@ function YouTubeUploader() {
   if (view === 'channels') {
     return (
       <div className="uploader-container">
+        <PageHeader 
+          icon="▶️" 
+          title="YouTube Uploader" 
+          description="Manage your YouTube channels and upload videos"
+        />
         <div className="upload-card">
           <div className="header">
-            <h1>YouTube Channel Management</h1>
+            <h2>Channel Management</h2>
             <div style={{ display: 'flex', gap: 10 }}>
               <button onClick={goToUploadView} className="btn-secondary">Go to Upload</button>
               <button onClick={handleLogout} className="btn-logout">Logout</button>
@@ -295,9 +301,14 @@ function YouTubeUploader() {
 
   return (
     <div className="uploader-container">
+      <PageHeader 
+        icon="▶️" 
+        title="YouTube Uploader" 
+        description="Upload and manage your YouTube videos"
+      />
       <div className="upload-card">
         <div className="header">
-          <h1>YouTube Video Uploader</h1>
+          <h2>Upload Video</h2>
           <div style={{ display: 'flex', gap: 10 }}>
             <button onClick={goToChannelsView} className="btn-secondary">Manage Channels</button>
             <button onClick={handleLogout} className="btn-logout">Logout</button>

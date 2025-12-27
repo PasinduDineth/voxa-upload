@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import tiktokApi from '../services/tiktokApi';
+import PageHeader from './Layout/PageHeader';
 import './TikTokUploader.css';
 
 function TikTokUploader() {
@@ -237,9 +238,14 @@ function TikTokUploader() {
   if (view === 'accounts') {
     return (
       <div className="uploader-container">
+        <PageHeader 
+          icon="🎵" 
+          title="TikTok Uploader" 
+          description="Manage your TikTok accounts and upload videos"
+        />
         <div className="upload-card">
           <div className="header">
-            <h1>Account Management</h1>
+            <h2>Account Management</h2>
             <div style={{ display: 'flex', gap: 10 }}>
               <button onClick={goToUploadView} className="btn-secondary">Go to Upload</button>
               <button onClick={handleLogout} className="btn-logout">Logout</button>
@@ -340,9 +346,14 @@ function TikTokUploader() {
 
   return (
     <div className="uploader-container">
+      <PageHeader 
+        icon="🎵" 
+        title="TikTok Uploader" 
+        description="Upload and manage your TikTok videos"
+      />
       <div className="upload-card">
         <div className="header">
-          <h1>TikTok Video Uploader</h1>
+          <h2>Upload Video</h2>
           <div style={{ display: 'flex', gap: 10 }}>
             <button onClick={goToAccountsView} className="btn-secondary">Manage Accounts</button>
             <button onClick={handleLogout} className="btn-logout">Logout</button>

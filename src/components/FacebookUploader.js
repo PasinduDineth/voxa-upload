@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import facebookApi from '../services/facebookApi';
+import PageHeader from './Layout/PageHeader';
 import './TikTokUploader.css'; // Reusing the same CSS
 
 function FacebookUploader() {
@@ -146,41 +147,52 @@ function FacebookUploader() {
   const activeAccount = accounts.find(acc => acc.open_id === activePageId);
 
   return (
-    <div className="tiktok-uploader">
+    <div className="uploader-container">
+      <PageHeader 
+        icon="📘" 
+        title="Facebook Uploader" 
+        description="Manage your Facebook pages and upload videos"
+      />
       {view === 'accounts' && (
-        <div className="accounts-view">
-          <h2 style={{ color: '#1877f2', marginBottom: '20px' }}>📘 Facebook Pages</h2>
+        <div className="upload-card">
+          <div className="header">
+            <h2>Page Management</h2>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button onClick={goToUploadView} className="btn-secondary">Go to Upload</button>
+            </div>
+          </div>
           
-          {uploadStatus && (
-            <div style={{
-              padding: '15px',
-              marginBottom: '20px',
-              background: 'linear-gradient(135deg, #1877f2 0%, #0c63d4 100%)',
-              color: 'white',
-              borderRadius: '12px',
-              fontWeight: 600,
-              textAlign: 'center',
-              boxShadow: '0 4px 15px rgba(24, 119, 242, 0.2)'
-            }}>
-              {uploadStatus}
-            </div>
-          )}
+          <div className="upload-form">
+            {uploadStatus && (
+              <div style={{
+                padding: '15px',
+                marginBottom: '20px',
+                background: 'linear-gradient(135deg, #1877f2 0%, #0c63d4 100%)',
+                color: 'white',
+                borderRadius: '12px',
+                fontWeight: 600,
+                textAlign: 'center',
+                boxShadow: '0 4px 15px rgba(24, 119, 242, 0.2)'
+              }}>
+                {uploadStatus}
+              </div>
+            )}
 
-          {error && (
-            <div style={{
-              padding: '15px',
-              marginBottom: '20px',
-              background: 'linear-gradient(135deg, #ff4444 0%, #cc0000 100%)',
-              color: 'white',
-              borderRadius: '12px',
-              fontWeight: 600,
-              whiteSpace: 'pre-line',
-              textAlign: 'left',
-              boxShadow: '0 4px 15px rgba(255, 68, 68, 0.2)'
-            }}>
-              {error}
-            </div>
-          )}
+            {error && (
+              <div style={{
+                padding: '15px',
+                marginBottom: '20px',
+                background: 'linear-gradient(135deg, #ff4444 0%, #cc0000 100%)',
+                color: 'white',
+                borderRadius: '12px',
+                fontWeight: 600,
+                whiteSpace: 'pre-line',
+                textAlign: 'left',
+                boxShadow: '0 4px 15px rgba(255, 68, 68, 0.2)'
+              }}>
+                {error}
+              </div>
+            )}
 
           {accounts.length === 0 ? (
             <div className="no-accounts">
@@ -285,46 +297,47 @@ function FacebookUploader() {
               </div>
             </>
           )}
+          </div>
         </div>
       )}
 
       {view === 'add-token' && (
-        <div className="upload-view">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-            <h2 style={{ color: '#1877f2', margin: 0 }}>📘 Add Facebook Pages</h2>
-            <button onClick={goToAccountsView} className="secondary-button">
+        <div className="upload-card">
+          <div className="header">
+            <h2>Add Facebook Pages</h2>
+            <button onClick={goToAccountsView} className="btn-secondary">
               ← Back to Pages
             </button>
           </div>
-
-          {uploadStatus && (
-            <div style={{
-              padding: '15px',
-              marginBottom: '20px',
-              background: 'linear-gradient(135deg, #1877f2 0%, #0c63d4 100%)',
-              color: 'white',
-              borderRadius: '12px',
-              fontWeight: 600,
-              textAlign: 'center'
-            }}>
-              {uploadStatus}
-            </div>
-          )}
-
-          {error && (
-            <div style={{
-              padding: '15px',
-              marginBottom: '20px',
-              background: 'linear-gradient(135deg, #ff4444 0%, #cc0000 100%)',
-              color: 'white',
-              borderRadius: '12px',
-              fontWeight: 600
-            }}>
-              {error}
-            </div>
-          )}
-
+          
           <div className="upload-form">
+            {uploadStatus && (
+              <div style={{
+                padding: '15px',
+                marginBottom: '20px',
+                background: 'linear-gradient(135deg, #1877f2 0%, #0c63d4 100%)',
+                color: 'white',
+                borderRadius: '12px',
+                fontWeight: 600,
+                textAlign: 'center'
+              }}>
+                {uploadStatus}
+              </div>
+            )}
+
+            {error && (
+              <div style={{
+                padding: '15px',
+                marginBottom: '20px',
+                background: 'linear-gradient(135deg, #ff4444 0%, #cc0000 100%)',
+                color: 'white',
+                borderRadius: '12px',
+                fontWeight: 600
+              }}>
+                {error}
+              </div>
+            )}
+
             <div style={{
               padding: '20px',
               background: '#e7f3ff',
@@ -369,8 +382,7 @@ function FacebookUploader() {
             <button
               onClick={handleAddPages}
               disabled={!accessToken.trim()}
-              className="primary-button"
-              style={{ width: '100%' }}
+              className="btn-primary"
             >
               Add Facebook Pages
             </button>
@@ -379,74 +391,60 @@ function FacebookUploader() {
       )}
 
       {view === 'upload' && (
-        <div className="upload-view">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-            <h2 style={{ color: '#1877f2', margin: 0 }}>📘 Upload to Facebook</h2>
-            <button onClick={goToAccountsView} className="secondary-button">
+        <div className="upload-card">
+          <div className="header">
+            <h2>Upload to Facebook</h2>
+            <button onClick={goToAccountsView} className="btn-secondary">
               ← Back to Pages
             </button>
           </div>
 
-          {activeAccount && (
-            <div style={{
-              padding: '15px',
-              background: 'linear-gradient(135deg, #e7f3ff 0%, #cce5ff 100%)',
-              borderRadius: '12px',
-              marginBottom: '20px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '15px'
-            }}>
-              {activeAccount.avatar_url && (
-                <img 
-                  src={activeAccount.avatar_url} 
-                  alt={activeAccount.display_name}
-                  style={{
-                    width: '50px',
-                    height: '50px',
-                    borderRadius: '50%',
-                    objectFit: 'cover',
-                    border: '3px solid #1877f2'
-                  }}
-                />
-              )}
-              <div>
-                <p style={{ margin: '0 0 5px 0', fontWeight: 600, color: '#1877f2' }}>
-                  Posting as:
-                </p>
-                <p style={{ margin: 0, fontSize: '16px', color: '#333' }}>
-                  {activeAccount.display_name}
-                </p>
+          <div className="upload-form">
+            {activeAccount && (
+              <div style={{
+                padding: '15px',
+                background: 'linear-gradient(135deg, #e7f3ff 0%, #cce5ff 100%)',
+                borderRadius: '12px',
+                marginBottom: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '15px'
+              }}>
+                {activeAccount.avatar_url && (
+                  <img 
+                    src={activeAccount.avatar_url} 
+                    alt={activeAccount.display_name}
+                    style={{
+                      width: '50px',
+                      height: '50px',
+                      borderRadius: '50%',
+                      objectFit: 'cover',
+                      border: '3px solid #1877f2'
+                    }}
+                  />
+                )}
+                <div>
+                  <p style={{ margin: '0 0 5px 0', fontWeight: 600, color: '#1877f2' }}>
+                    Posting as:
+                  </p>
+                  <p style={{ margin: 0, fontSize: '16px', color: '#333' }}>
+                    {activeAccount.display_name}
+                  </p>
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {uploadStatus && (
-            <div style={{
-              padding: '15px',
-              marginBottom: '20px',
-              background: 'linear-gradient(135deg, #1877f2 0%, #0c63d4 100%)',
-              color: 'white',
-              borderRadius: '12px',
-              fontWeight: 600,
-              textAlign: 'center'
-            }}>
-              {uploadStatus}
-            </div>
-          )}
+            {uploadStatus && (
+              <div className="status-message success">
+                {uploadStatus}
+              </div>
+            )}
 
-          {error && (
-            <div style={{
-              padding: '15px',
-              marginBottom: '20px',
-              background: 'linear-gradient(135deg, #ff4444 0%, #cc0000 100%)',
-              color: 'white',
-              borderRadius: '12px',
-              fontWeight: 600
-            }}>
-              {error}
-            </div>
-          )}
+            {error && (
+              <div className="status-message error">
+                {error}
+              </div>
+            )}
 
           <div className="upload-form">
             <div className="form-group">
@@ -491,8 +489,7 @@ function FacebookUploader() {
             <button
               onClick={handleUpload}
               disabled={uploading || !selectedFile || !videoTitle.trim()}
-              className="primary-button"
-              style={{ width: '100%' }}
+              className="btn-upload"
             >
               {uploading ? 'Uploading...' : 'Upload to Facebook Page'}
             </button>
