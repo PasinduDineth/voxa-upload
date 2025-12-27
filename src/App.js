@@ -6,11 +6,13 @@ import MultiUploader from './components/MultiUploader';
 import TikTokUploader from './components/TikTokUploader';
 import YouTubeUploader from './components/YouTubeUploader';
 import FacebookUploader from './components/FacebookUploader';
+import OAuthCallback from './components/OAuthCallback';
 
 function App() {
   return (
     <Router>
       <Routes>
+        <Route path="/callback" element={<OAuthCallback />} />
         <Route path="/" element={<DashboardLayout />}>
           <Route index element={<Dashboard />} />
           <Route path="uploads" element={<MultiUploader />} />
