@@ -446,7 +446,6 @@ function FacebookUploader() {
               </div>
             )}
 
-          <div className="upload-form">
             <div className="form-group">
               <label>Video File</label>
               <input
