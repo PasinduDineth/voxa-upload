@@ -5,6 +5,7 @@ import './Sidebar.css';
 function Sidebar({ collapsed, onToggle }) {
   const navItems = [
     { path: '/', icon: '🏠', label: 'Dashboard', exact: true },
+    { path: '/uploads', icon: '🚀', label: 'Multi Upload' },
     { path: '/tiktok', icon: '🎵', label: 'TikTok' },
     { path: '/youtube', icon: '▶️', label: 'YouTube' },
     { path: '/facebook', icon: '📘', label: 'Facebook' },
