@@ -234,9 +234,9 @@ function MultiUploader() {
         data.title,
         data.description,
         data.tags,
-        data.privacyStatus,
         data.defaultLanguage,
-        data.defaultAudioLanguage
+        data.defaultAudioLanguage,
+        data.privacyStatus
       );
 
       if (result.success) {
