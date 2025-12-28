@@ -115,6 +115,23 @@ function YouTubeUploader() {
     setActiveChannelId(null);
   };
 
+  const formatExpiry = (expiresAt) => {
+    if (!expiresAt) return null;
+    const date = new Date(expiresAt);
+    const now = new Date();
+    const diffMs = date - now;
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    
+    if (diffMs < 0) return { text: '⚠️ Expired', color: '#ef4444' };
+    if (diffDays > 30) return { text: `✅ ${diffDays} days`, color: '#10b981' };
+    if (diffDays > 0) return { text: `⏳ ${diffDays}d ${diffHours % 24}h`, color: '#f59e0b' };
+    if (diffHours > 0) return { text: `⏳ ${diffHours}h ${diffMins % 60}m`, color: '#f59e0b' };
+    if (diffMins > 0) return { text: `⚠️ ${diffMins}m`, color: '#ef4444' };
+    return { text: '⚠️ Soon', color: '#ef4444' };
+  };
+
   const handleChannelSwitch = async (e) => {
     const channelId = e.target.value;
     if (channelId && await youtubeApi.useChannel(channelId)) {
