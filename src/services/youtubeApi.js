@@ -171,6 +171,8 @@ class YouTubeAPI {
       return { success: false, error: 'Not authenticated' };
     }
 
+    console.log('YouTube upload starting for channel:', this.channelId);
+
     try {
       // Parse tags from comma-separated string
       const tagArray = tags ? tags.split(',').map(tag => tag.trim()).filter(tag => tag) : [];
@@ -190,6 +192,8 @@ class YouTubeAPI {
           selfDeclaredMadeForKids: false
         }
       };
+
+      console.log('Calling backend API with channel_id:', this.channelId);
 
       // Step 1: Get upload URL from backend (handles token refresh)
       const initResponse = await axios.post('/api/youtube-upload', {
