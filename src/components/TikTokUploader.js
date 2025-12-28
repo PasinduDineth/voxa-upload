@@ -351,12 +351,6 @@ function TikTokUploader() {
                     + Add Another Account
                   </button>
                 </div>
-                <p style={{ fontSize: '0.85em', color: '#666', marginTop: 10, textAlign: 'center' }}>
-                  💡 <strong>To add a different TikTok account:</strong><br/>
-                  1. Click "Add Another Account" below<br/>
-                  2. If TikTok auto-logs you in with the same account, <strong>log out of TikTok in your browser first</strong> or use an incognito/private window<br/>
-                  3. Then login with your other TikTok account
-                </p>
               </div>
             )}
           </div>
