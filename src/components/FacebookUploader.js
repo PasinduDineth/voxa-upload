@@ -105,12 +105,12 @@ function FacebookUploader() {
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
     const diffMins = Math.floor(diffMs / (1000 * 60));
     
-    if (diffMs < 0) return { text: '⚠️ Expired', color: '#ef4444' };
-    if (diffDays > 30) return { text: `✅ ${diffDays} days`, color: '#10b981' };
-    if (diffDays > 0) return { text: `⏳ ${diffDays}d ${diffHours % 24}h`, color: '#f59e0b' };
-    if (diffHours > 0) return { text: `⏳ ${diffHours}h ${diffMins % 60}m`, color: '#f59e0b' };
-    if (diffMins > 0) return { text: `⚠️ ${diffMins}m`, color: '#ef4444' };
-    return { text: '⚠️ Soon', color: '#ef4444' };
+    if (diffMs < 0) return { text: '⚠️ Expired', color: '#111827' };
+    if (diffDays > 30) return { text: `✅ ${diffDays} days`, color: '#4fd1c5' };
+    if (diffDays > 0) return { text: `⏳ ${diffDays}d ${diffHours % 24}h`, color: '#6b7280' };
+    if (diffHours > 0) return { text: `⏳ ${diffHours}h ${diffMins % 60}m`, color: '#6b7280' };
+    if (diffMins > 0) return { text: `⚠️ ${diffMins}m`, color: '#111827' };
+    return { text: '⚠️ Soon', color: '#111827' };
   };
 
   const handleUpload = async () => {
@@ -163,63 +163,59 @@ function FacebookUploader() {
 
   return (
     <div style={{
-      minHeight: '100vh',
-      background: '#e5e7eb',
-      padding: '40px',
-      fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      maxWidth: '960px',
+      margin: '0 auto',
       color: '#111827'
     }}>
-      {/* Page Header */}
-      <div style={{ marginBottom: '32px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-          <span style={{ fontSize: '32px' }}>📘</span>
-          <h1 style={{ fontSize: '28px', fontWeight: 600, color: '#111827', margin: 0 }}>
-            Facebook Uploader
-          </h1>
-        </div>
-        <p style={{ fontSize: '14px', color: '#6b7280', margin: 0 }}>
-          Manage your Facebook pages and upload videos
-        </p>
-      </div>
-
       {/* Main Card */}
       <div style={{
-        background: '#fff',
-        border: '1px solid #4fd1c5',
-        borderRadius: '12px',
-        overflow: 'hidden',
-        maxWidth: '900px'
+        background: '#ffffff',
+        border: '1px solid #111827',
+        padding: '24px 32px',
+        maxWidth: '840px',
+        margin: '0 auto'
       }}>
         {/* Card Header */}
         <div style={{
-          padding: '20px 24px',
-          borderBottom: '1px solid #4fd1c5',
+          marginBottom: '24px',
           display: 'flex',
-          alignItems: 'center',
+          alignItems: 'flex-start',
           justifyContent: 'space-between'
         }}>
-          <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#111827', margin: 0 }}>
-            {view === 'accounts' && 'Page Management'}
-            {view === 'add-token' && 'Add Facebook Pages'}
-            {view === 'upload' && 'Upload to Facebook'}
-          </h2>
+          <div>
+            <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#111827', margin: '0 0 6px 0' }}>
+              {view === 'accounts' && 'Page Management'}
+              {view === 'add-token' && 'Add Facebook Pages'}
+              {view === 'upload' && 'Upload to Facebook'}
+            </h2>
+            <p style={{ fontSize: '13px', color: '#6b7280', margin: 0 }}>
+              {view === 'accounts' && 'Manage connected Facebook pages and select an active page.'}
+              {view === 'add-token' && 'Add Facebook Pages with a Page Access Token.'}
+              {view === 'upload' && 'Upload a video to your selected Facebook page.'}
+            </p>
+          </div>
           <div style={{ display: 'flex', gap: '12px' }}>
             {view !== 'accounts' && (
               <button
                 onClick={goToAccountsView}
                 style={{
-                  padding: '10px 20px',
-                  background: '#374151',
-                  color: '#e5e7eb',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  fontWeight: 500,
+                  padding: '10px 18px',
+                  background: 'transparent',
+                  color: '#111827',
+                  border: '1px solid #111827',
+                  fontSize: '13px',
+                  fontWeight: 600,
                   cursor: 'pointer',
-                  transition: 'all 0.2s'
+                  transition: 'background 0.2s, color 0.2s'
                 }}
-                onMouseEnter={e => e.currentTarget.style.background = '#4B5563'}
-                onMouseLeave={e => e.currentTarget.style.background = '#374151'}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = '#111827';
+                  e.currentTarget.style.color = '#e5e7eb';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.color = '#111827';
+                }}
               >
                 ← Back to Pages
               </button>
@@ -228,18 +224,23 @@ function FacebookUploader() {
               <button
                 onClick={goToUploadView}
                 style={{
-                  padding: '10px 20px',
-                  background: '#6366F1',
-                  color: '#FFFFFF',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  fontWeight: 500,
+                  padding: '10px 18px',
+                  background: '#4fd1c5',
+                  color: '#0b1c2d',
+                  border: '1px solid #111827',
+                  fontSize: '13px',
+                  fontWeight: 600,
                   cursor: 'pointer',
-                  transition: 'all 0.2s'
+                  transition: 'background 0.2s, color 0.2s'
                 }}
-                onMouseEnter={e => e.currentTarget.style.background = '#5558E3'}
-                onMouseLeave={e => e.currentTarget.style.background = '#6366F1'}
+                onMouseEnter={e => {
+                  e.currentTarget.style.background = '#0b1c2d';
+                  e.currentTarget.style.color = '#e5e7eb';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.background = '#4fd1c5';
+                  e.currentTarget.style.color = '#0b1c2d';
+                }}
               >
                 Go to Upload
               </button>
@@ -248,30 +249,30 @@ function FacebookUploader() {
         </div>
 
         {/* Card Content */}
-        <div style={{ padding: '24px' }}>
+        <div>
           {/* Status Messages */}
           {uploadStatus && (
             <div style={{
-              padding: '16px',
-              marginBottom: '20px',
-              background: '#10B981',
-              color: '#FFFFFF',
-              borderRadius: '8px',
-              fontSize: '14px',
-              fontWeight: 500
+              padding: '12px',
+              marginBottom: '16px',
+              background: '#e5e7eb',
+              color: '#111827',
+              border: '1px solid #111827',
+              fontSize: '13px',
+              fontWeight: 600
             }}>
               {uploadStatus}
             </div>
           )}
           {error && (
             <div style={{
-              padding: '16px',
-              marginBottom: '20px',
-              background: '#EF4444',
-              color: '#FFFFFF',
-              borderRadius: '8px',
-              fontSize: '14px',
-              fontWeight: 500,
+              padding: '12px',
+              marginBottom: '16px',
+              background: '#ffffff',
+              color: '#111827',
+              border: '1px solid #111827',
+              fontSize: '13px',
+              fontWeight: 600,
               whiteSpace: 'pre-line'
             }}>
               {error}
@@ -282,26 +283,31 @@ function FacebookUploader() {
           {view === 'accounts' && (
             <>
               {accounts.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-                  <div style={{ fontSize: '48px', marginBottom: '16px' }}>📘</div>
-                  <p style={{ fontSize: '16px', color: '#9CA3AF', marginBottom: '24px' }}>
+                <div style={{ textAlign: 'center', padding: '24px', border: '1px solid #111827', background: '#e5e7eb' }}>
+                  <div style={{ fontSize: '32px', marginBottom: '12px' }}>📘</div>
+                  <p style={{ fontSize: '13px', color: '#6b7280', marginBottom: '16px' }}>
                     No Facebook Pages connected yet
                   </p>
                   <button
                     onClick={goToAddTokenView}
                     style={{
-                      padding: '12px 24px',
-                      background: '#6366F1',
-                      color: '#FFFFFF',
-                      border: 'none',
-                      borderRadius: '8px',
-                      fontSize: '14px',
-                      fontWeight: 500,
+                      padding: '10px 18px',
+                      background: '#4fd1c5',
+                      color: '#0b1c2d',
+                      border: '1px solid #111827',
+                      fontSize: '13px',
+                      fontWeight: 600,
                       cursor: 'pointer',
-                      transition: 'all 0.2s'
+                      transition: 'background 0.2s, color 0.2s'
                     }}
-                    onMouseEnter={e => e.currentTarget.style.background = '#5558E3'}
-                    onMouseLeave={e => e.currentTarget.style.background = '#6366F1'}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.background = '#0b1c2d';
+                      e.currentTarget.style.color = '#e5e7eb';
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.background = '#4fd1c5';
+                      e.currentTarget.style.color = '#0b1c2d';
+                    }}
                   >
                     Add Facebook Pages
                   </button>
@@ -316,16 +322,16 @@ function FacebookUploader() {
                         <div
                           key={account.open_id}
                           style={{
-                            background: '#1E293B',
-                            border: isActive ? '1px solid #6366F1' : '1px solid #374151',
-                            borderLeft: isActive ? '4px solid #6366F1' : '4px solid transparent',
-                            borderRadius: '10px',
-                            padding: '16px',
+                            background: '#e5e7eb',
+                            border: '1px solid #111827',
+                            borderLeft: isActive ? '4px solid #4fd1c5' : '4px solid #111827',
+                            padding: '12px',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'space-between',
                             cursor: 'pointer',
-                            transition: 'all 0.2s'
+                            transition: 'background 0.2s',
+                            gap: '12px'
                           }}
                           onClick={async () => {
                             if (await facebookApi.useAccount(account.open_id)) {
@@ -335,54 +341,63 @@ function FacebookUploader() {
                           }}
                           onMouseEnter={e => {
                             if (!isActive) {
-                              e.currentTarget.style.background = '#2D3B52';
-                              e.currentTarget.style.borderColor = '#4B5563';
+                              e.currentTarget.style.background = '#d1d5db';
                             }
                           }}
                           onMouseLeave={e => {
                             if (!isActive) {
-                              e.currentTarget.style.background = '#1E293B';
-                              e.currentTarget.style.borderColor = '#374151';
+                              e.currentTarget.style.background = '#e5e7eb';
                             }
                           }}
                         >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>
-                            {account.avatar_url && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flex: 1 }}>
+                            {account.avatar_url ? (
                               <img
                                 src={account.avatar_url}
                                 alt={account.display_name}
                                 style={{
-                                  width: '48px',
-                                  height: '48px',
-                                  borderRadius: '50%',
-                                  objectFit: 'cover',
-                                  border: '3px solid #1877f2'
+                                  width: '40px',
+                                  height: '40px',
+                                  objectFit: 'cover'
                                 }}
                               />
+                            ) : (
+                              <div style={{
+                                width: '40px',
+                                height: '40px',
+                                background: '#0b1c2d',
+                                color: '#4fd1c5',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                fontSize: '14px',
+                                fontWeight: 600
+                              }}>
+                                {(account.display_name || 'F')[0].toUpperCase()}
+                              </div>
                             )}
                             <div style={{ flex: 1 }}>
-                              <div style={{ fontSize: '14px', fontWeight: 500, color: '#e5e7eb', marginBottom: '4px' }}>
+                              <div style={{ fontSize: '14px', fontWeight: 600, color: '#111827', marginBottom: '4px' }}>
                                 {account.display_name}
                               </div>
-                              <div style={{ fontSize: '12px', color: '#6B7280' }}>
+                              <div style={{ fontSize: '12px', color: '#6b7280' }}>
                                 Page ID: {account.open_id}
                               </div>
                               {expiry && (
-                                <div style={{ fontSize: '12px', color: expiry.color, marginTop: '4px', fontWeight: 500 }}>
+                                <div style={{ fontSize: '12px', color: expiry.color, marginTop: '4px', fontWeight: 600 }}>
                                   {expiry.text}
                                 </div>
                               )}
                             </div>
                             {isActive && (
                               <div style={{
-                                padding: '4px 12px',
-                                background: '#1877f2',
-                                color: '#FFFFFF',
-                                borderRadius: '6px',
-                                fontSize: '12px',
-                                fontWeight: 500
+                                padding: '4px 10px',
+                                background: '#0b1c2d',
+                                color: '#4fd1c5',
+                                fontSize: '11px',
+                                fontWeight: 600
                               }}>
-                                ✓ Active
+                                Active
                               </div>
                             )}
                           </div>
@@ -392,19 +407,24 @@ function FacebookUploader() {
                               handleRemoveAccount(account.open_id);
                             }}
                             style={{
-                              padding: '8px 16px',
-                              background: '#EF4444',
-                              color: '#FFFFFF',
-                              border: 'none',
-                              borderRadius: '6px',
-                              fontSize: '13px',
-                              fontWeight: 500,
+                              padding: '6px 12px',
+                              background: 'transparent',
+                              color: '#111827',
+                              border: '1px solid #111827',
+                              fontSize: '12px',
+                              fontWeight: 600,
                               cursor: 'pointer',
                               marginLeft: '12px',
-                              transition: 'all 0.2s'
+                              transition: 'background 0.2s, color 0.2s'
                             }}
-                            onMouseEnter={e => e.currentTarget.style.background = '#DC2626'}
-                            onMouseLeave={e => e.currentTarget.style.background = '#EF4444'}
+                            onMouseEnter={e => {
+                              e.currentTarget.style.background = '#111827';
+                              e.currentTarget.style.color = '#e5e7eb';
+                            }}
+                            onMouseLeave={e => {
+                              e.currentTarget.style.background = 'transparent';
+                              e.currentTarget.style.color = '#111827';
+                            }}
                           >
                             Remove
                           </button>
@@ -417,18 +437,23 @@ function FacebookUploader() {
                       onClick={goToAddTokenView}
                       style={{
                         flex: 1,
-                        padding: '12px',
-                        background: '#374151',
-                        color: '#e5e7eb',
-                        border: 'none',
-                        borderRadius: '8px',
-                        fontSize: '14px',
-                        fontWeight: 500,
+                        padding: '10px',
+                        background: '#4fd1c5',
+                        color: '#0b1c2d',
+                        border: '1px solid #111827',
+                        fontSize: '13px',
+                        fontWeight: 600,
                         cursor: 'pointer',
-                        transition: 'all 0.2s'
+                        transition: 'background 0.2s, color 0.2s'
                       }}
-                      onMouseEnter={e => e.currentTarget.style.background = '#4B5563'}
-                      onMouseLeave={e => e.currentTarget.style.background = '#374151'}
+                      onMouseEnter={e => {
+                        e.currentTarget.style.background = '#0b1c2d';
+                        e.currentTarget.style.color = '#e5e7eb';
+                      }}
+                      onMouseLeave={e => {
+                        e.currentTarget.style.background = '#4fd1c5';
+                        e.currentTarget.style.color = '#0b1c2d';
+                      }}
                     >
                       Add More Pages
                     </button>
@@ -437,18 +462,23 @@ function FacebookUploader() {
                         onClick={goToUploadView}
                         style={{
                           flex: 1,
-                          padding: '12px',
-                          background: '#6366F1',
-                          color: '#FFFFFF',
-                          border: 'none',
-                          borderRadius: '8px',
-                          fontSize: '14px',
-                          fontWeight: 500,
+                          padding: '10px',
+                          background: '#4fd1c5',
+                          color: '#0b1c2d',
+                          border: '1px solid #111827',
+                          fontSize: '13px',
+                          fontWeight: 600,
                           cursor: 'pointer',
-                          transition: 'all 0.2s'
+                          transition: 'background 0.2s, color 0.2s'
                         }}
-                        onMouseEnter={e => e.currentTarget.style.background = '#5558E3'}
-                        onMouseLeave={e => e.currentTarget.style.background = '#6366F1'}
+                        onMouseEnter={e => {
+                          e.currentTarget.style.background = '#0b1c2d';
+                          e.currentTarget.style.color = '#e5e7eb';
+                        }}
+                        onMouseLeave={e => {
+                          e.currentTarget.style.background = '#4fd1c5';
+                          e.currentTarget.style.color = '#0b1c2d';
+                        }}
                       >
                         Go to Upload
                       </button>
@@ -463,18 +493,18 @@ function FacebookUploader() {
           {view === 'add-token' && (
             <div style={{ maxWidth: '600px', margin: '0 auto' }}>
               <div style={{
-                padding: '20px',
-                background: '#e7f3ff',
-                borderRadius: '12px',
+                padding: '16px',
+                background: '#ffffff',
+                borderLeft: '3px solid #4fd1c5',
                 marginBottom: '20px',
-                border: '2px solid #1877f2'
+                border: '1px solid #111827'
               }}>
-                <h3 style={{ margin: '0 0 15px 0', color: '#1877f2' }}>
-                  📝 How to get your Page Access Token:
+                <h3 style={{ margin: '0 0 12px 0', color: '#111827', fontSize: '16px' }}>
+                  How to get your Page Access Token
                 </h3>
-                <ol style={{ margin: 0, paddingLeft: '20px', color: '#333' }}>
+                <ol style={{ margin: 0, paddingLeft: '20px', color: '#6b7280', fontSize: '13px', lineHeight: '1.7' }}>
                   <li style={{ marginBottom: '10px' }}>
-                    Go to <a href="https://developers.facebook.com/tools/explorer/" target="_blank" rel="noopener noreferrer" style={{ color: '#1877f2', fontWeight: 600 }}>Facebook Graph API Explorer</a>
+                    Go to <a href="https://developers.facebook.com/tools/explorer/" target="_blank" rel="noopener noreferrer" style={{ color: '#4fd1c5', fontWeight: 600 }}>Facebook Graph API Explorer</a>
                   </li>
                   <li style={{ marginBottom: '10px' }}>
                     Select your Facebook App from the dropdown
@@ -489,7 +519,7 @@ function FacebookUploader() {
                 </ol>
               </div>
               <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500, color: '#1E293B' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '12px', fontWeight: 600, color: '#6b7280' }}>
                   Facebook Page Access Token *
                 </label>
                 <textarea
@@ -502,14 +532,12 @@ function FacebookUploader() {
                     fontFamily: 'monospace',
                     fontSize: '13px',
                     padding: '12px',
-                    borderRadius: '8px',
-                    border: '1px solid #1877f2',
-                    background: '#f9fafb',
-                    color: '#1E293B',
-                    outline: 'none'
+                    border: '1px solid #111827',
+                    background: '#e5e7eb',
+                    color: '#111827'
                   }}
                 />
-                <p style={{ marginTop: '8px', fontSize: '13px', color: '#666' }}>
+                <p style={{ marginTop: '8px', fontSize: '12px', color: '#6b7280' }}>
                   This token will be used to fetch and connect all your Facebook Pages
                 </p>
               </div>
@@ -518,22 +546,27 @@ function FacebookUploader() {
                 disabled={!accessToken.trim()}
                 style={{
                   width: '100%',
-                  padding: '14px',
-                  background: !accessToken.trim() ? '#374151' : '#6366F1',
-                  color: '#FFFFFF',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  fontWeight: 500,
+                  padding: '12px',
+                  background: !accessToken.trim() ? '#e5e7eb' : '#4fd1c5',
+                  color: !accessToken.trim() ? '#6b7280' : '#0b1c2d',
+                  border: '1px solid #111827',
+                  fontSize: '13px',
+                  fontWeight: 600,
                   cursor: !accessToken.trim() ? 'not-allowed' : 'pointer',
-                  transition: 'all 0.2s',
-                  opacity: !accessToken.trim() ? 0.5 : 1
+                  transition: 'background 0.2s, color 0.2s',
+                  opacity: !accessToken.trim() ? 0.7 : 1
                 }}
                 onMouseEnter={e => {
-                  if (accessToken.trim()) e.currentTarget.style.background = '#5558E3';
+                  if (accessToken.trim()) {
+                    e.currentTarget.style.background = '#0b1c2d';
+                    e.currentTarget.style.color = '#e5e7eb';
+                  }
                 }}
                 onMouseLeave={e => {
-                  if (accessToken.trim()) e.currentTarget.style.background = '#6366F1';
+                  if (accessToken.trim()) {
+                    e.currentTarget.style.background = '#4fd1c5';
+                    e.currentTarget.style.color = '#0b1c2d';
+                  }
                 }}
               >
                 Add Facebook Pages
@@ -546,39 +579,37 @@ function FacebookUploader() {
             <div style={{ maxWidth: '600px', margin: '0 auto' }}>
               {activeAccount && (
                 <div style={{
-                  padding: '15px',
-                  background: '#e7f3ff',
-                  borderRadius: '12px',
+                  padding: '12px',
+                  background: '#e5e7eb',
+                  border: '1px solid #111827',
                   marginBottom: '20px',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '15px'
+                  gap: '12px'
                 }}>
                   {activeAccount.avatar_url && (
                     <img
                       src={activeAccount.avatar_url}
                       alt={activeAccount.display_name}
                       style={{
-                        width: '50px',
-                        height: '50px',
-                        borderRadius: '50%',
-                        objectFit: 'cover',
-                        border: '3px solid #1877f2'
+                        width: '44px',
+                        height: '44px',
+                        objectFit: 'cover'
                       }}
                     />
                   )}
                   <div>
-                    <p style={{ margin: '0 0 5px 0', fontWeight: 600, color: '#1877f2' }}>
+                    <p style={{ margin: '0 0 5px 0', fontWeight: 600, color: '#111827', fontSize: '12px' }}>
                       Posting as:
                     </p>
-                    <p style={{ margin: 0, fontSize: '16px', color: '#333' }}>
+                    <p style={{ margin: 0, fontSize: '14px', color: '#111827', fontWeight: 600 }}>
                       {activeAccount.display_name}
                     </p>
                   </div>
                 </div>
               )}
               <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500, color: '#e5e7eb' }}>
+                <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', fontWeight: 600, color: '#6b7280' }}>
                   Video File
                 </label>
                 <input
@@ -588,24 +619,22 @@ function FacebookUploader() {
                   disabled={uploading}
                   style={{
                     width: '100%',
-                    padding: '12px 16px',
-                    background: '#1E293B',
-                    border: '1px solid #374151',
-                    borderRadius: '8px',
-                    color: '#e5e7eb',
+                    padding: '10px 12px',
+                    background: '#e5e7eb',
+                    border: '1px solid #111827',
+                    color: '#111827',
                     fontSize: '14px',
-                    cursor: uploading ? 'not-allowed' : 'pointer',
-                    outline: 'none'
+                    cursor: uploading ? 'not-allowed' : 'pointer'
                   }}
                 />
                 {selectedFile && (
                   <div style={{
                     marginTop: '12px',
-                    padding: '12px',
-                    background: '#1E293B',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    color: '#9CA3AF'
+                    padding: '10px',
+                    background: '#e5e7eb',
+                    border: '1px solid #111827',
+                    fontSize: '13px',
+                    color: '#6b7280'
                   }}>
                     <p style={{ margin: '0 0 4px 0' }}>📹 {selectedFile.name}</p>
                     <p style={{ margin: 0 }}>Size: {Math.round(selectedFile.size / 1024 / 1024)}MB</p>
@@ -613,7 +642,7 @@ function FacebookUploader() {
                 )}
               </div>
               <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500, color: '#e5e7eb' }}>
+                <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', fontWeight: 600, color: '#6b7280' }}>
                   Video Title *
                 </label>
                 <input
@@ -625,18 +654,16 @@ function FacebookUploader() {
                   maxLength={100}
                   style={{
                     width: '100%',
-                    padding: '12px 16px',
-                    background: '#1E293B',
-                    border: '1px solid #374151',
-                    borderRadius: '8px',
-                    color: '#e5e7eb',
-                    fontSize: '14px',
-                    outline: 'none'
+                    padding: '10px 12px',
+                    background: '#e5e7eb',
+                    border: '1px solid #111827',
+                    color: '#111827',
+                    fontSize: '14px'
                   }}
                 />
               </div>
               <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500, color: '#e5e7eb' }}>
+                <label style={{ display: 'block', marginBottom: '6px', fontSize: '12px', fontWeight: 600, color: '#6b7280' }}>
                   Description (Optional)
                 </label>
                 <textarea
@@ -648,14 +675,12 @@ function FacebookUploader() {
                   maxLength={500}
                   style={{
                     width: '100%',
-                    padding: '12px 16px',
-                    background: '#1E293B',
-                    border: '1px solid #374151',
-                    borderRadius: '8px',
-                    color: '#e5e7eb',
+                    padding: '10px 12px',
+                    background: '#e5e7eb',
+                    border: '1px solid #111827',
+                    color: '#111827',
                     fontSize: '14px',
                     fontFamily: 'inherit',
-                    outline: 'none',
                     resize: 'vertical'
                   }}
                 />
@@ -665,25 +690,26 @@ function FacebookUploader() {
                 disabled={uploading || !selectedFile || !videoTitle.trim()}
                 style={{
                   width: '100%',
-                  padding: '14px',
-                  background: (!selectedFile || !videoTitle.trim() || uploading) ? '#374151' : '#6366F1',
-                  color: '#FFFFFF',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontSize: '14px',
-                  fontWeight: 500,
+                  padding: '12px',
+                  background: (!selectedFile || !videoTitle.trim() || uploading) ? '#e5e7eb' : '#4fd1c5',
+                  color: (!selectedFile || !videoTitle.trim() || uploading) ? '#6b7280' : '#0b1c2d',
+                  border: '1px solid #111827',
+                  fontSize: '13px',
+                  fontWeight: 600,
                   cursor: (!selectedFile || !videoTitle.trim() || uploading) ? 'not-allowed' : 'pointer',
-                  transition: 'all 0.2s',
-                  opacity: (!selectedFile || !videoTitle.trim() || uploading) ? 0.5 : 1
+                  transition: 'background 0.2s, color 0.2s',
+                  opacity: (!selectedFile || !videoTitle.trim() || uploading) ? 0.7 : 1
                 }}
                 onMouseEnter={e => {
                   if (selectedFile && videoTitle.trim() && !uploading) {
-                    e.currentTarget.style.background = '#5558E3';
+                    e.currentTarget.style.background = '#0b1c2d';
+                    e.currentTarget.style.color = '#e5e7eb';
                   }
                 }}
                 onMouseLeave={e => {
                   if (selectedFile && videoTitle.trim() && !uploading) {
-                    e.currentTarget.style.background = '#6366F1';
+                    e.currentTarget.style.background = '#4fd1c5';
+                    e.currentTarget.style.color = '#0b1c2d';
                   }
                 }}
               >
