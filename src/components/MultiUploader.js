@@ -158,6 +158,8 @@ function MultiUploader() {
           await tiktokApi.useAccount(acc.accountId);
           result = await uploadToTikTok(selectedFile, data.caption);
         } else if (acc.platform === 'youtube') {
+          // Ensure channels are loaded before using
+          await youtubeApi.loadChannels();
           await youtubeApi.useChannel(acc.accountId);
           result = await uploadToYouTube(selectedFile, data);
         } else if (acc.platform === 'facebook') {
