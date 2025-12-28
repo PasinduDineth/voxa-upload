@@ -17,11 +17,12 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    // Get the access token for this channel
+    // Get the access token for this channel from accounts table
     const channelResult = await sql`
-      SELECT access_token, refresh_token, token_expires_at
-      FROM youtube_channels
-      WHERE channel_id = ${channel_id}
+      SELECT access_token, refresh_token, expires_at
+      FROM accounts
+      WHERE open_id = ${channel_id}
+      AND type = 'YOUTUBE'
     `;
 
     if (channelResult.rows.length === 0) {
@@ -31,10 +32,10 @@ module.exports = async function handler(req, res) {
       });
     }
 
-    let { access_token, refresh_token, token_expires_at } = channelResult.rows[0];
+    let { access_token, refresh_token, expires_at } = channelResult.rows[0];
 
     // Check if token is expired
-    if (new Date(token_expires_at) <= new Date()) {
+    if (new Date(expires_at) <= new Date()) {
       // Refresh the token
       const CLIENT_ID = process.env.YOUTUBE_CLIENT_ID;
       const CLIENT_SECRET = process.env.YOUTUBE_CLIENT_SECRET;
@@ -52,10 +53,12 @@ module.exports = async function handler(req, res) {
 
       // Update the token in database
       await sql`
-        UPDATE youtube_channels
+        UPDATE accounts
         SET access_token = ${access_token},
-            token_expires_at = ${new_expires_at.toISOString()}
-        WHERE channel_id = ${channel_id}
+            expires_at = ${new_expires_at.toISOString()},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE open_id = ${channel_id}
+        AND type = 'YOUTUBE'
       `;
     }
 
