@@ -84,6 +84,9 @@ module.exports = async function handler(req, res) {
     }
 
     const { access_token, refresh_token, expires_in, scope } = tokenResponse.data;
+    
+    // Calculate token expiration time
+    const expires_at = new Date(Date.now() + (expires_in * 1000));
 
     let channelInfo = null;
     try {
@@ -125,18 +128,36 @@ module.exports = async function handler(req, res) {
     `;
 
     if (existingChannel.rows.length > 0) {
-      await sql`
-        UPDATE accounts
-        SET 
-          access_token = ${access_token},
-          refresh_token = ${refresh_token || null},
-          display_name = ${channelInfo.channel_title},
-          avatar_url = ${channelInfo.thumbnail_url},
-          scope = ${scope || ''},
-          created_at = NOW()
-        WHERE open_id = ${channelInfo.channel_id}
-        AND type = 'YOUTUBE'
-      `;
+      // Only update refresh_token if a new one is provided
+      // YouTube doesn't always return a new refresh_token
+      const updateQuery = refresh_token 
+        ? sql`
+            UPDATE accounts
+            SET 
+              access_token = ${access_token},
+              refresh_token = ${refresh_token},
+              display_name = ${channelInfo.channel_title},
+              avatar_url = ${channelInfo.thumbnail_url},
+              scope = ${scope || ''},
+              expires_at = ${expires_at.toISOString()},
+              updated_at = NOW()
+            WHERE open_id = ${channelInfo.channel_id}
+            AND type = 'YOUTUBE'
+          `
+        : sql`
+            UPDATE accounts
+            SET 
+              access_token = ${access_token},
+              display_name = ${channelInfo.channel_title},
+              avatar_url = ${channelInfo.thumbnail_url},
+              scope = ${scope || ''},
+              expires_at = ${expires_at.toISOString()},
+              updated_at = NOW()
+            WHERE open_id = ${channelInfo.channel_id}
+            AND type = 'YOUTUBE'
+          `;
+
+      await updateQuery;
 
       return res.status(200).json({
         success: true,
@@ -158,10 +179,12 @@ module.exports = async function handler(req, res) {
         display_name, 
         avatar_url, 
         scope,
+        expires_at,
         type,
         user_id,
         workspace_id,
-        created_at
+        created_at,
+        updated_at
       )
       VALUES (
         ${channelInfo.channel_id},
@@ -170,9 +193,11 @@ module.exports = async function handler(req, res) {
         ${channelInfo.channel_title},
         ${channelInfo.thumbnail_url},
         ${scope || ''},
+        ${expires_at.toISOString()},
         'YOUTUBE',
         ${stateData.user_id || null},
         ${stateData.workspace_id || null},
+        NOW(),
         NOW()
       )
     `;

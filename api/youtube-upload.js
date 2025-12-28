@@ -35,31 +35,50 @@ module.exports = async function handler(req, res) {
     let { access_token, refresh_token, expires_at } = channelResult.rows[0];
 
     // Check if token is expired
-    if (new Date(expires_at) <= new Date()) {
+    if (expires_at && new Date(expires_at) <= new Date()) {
+      // Check if refresh token exists
+      if (!refresh_token) {
+        return res.status(401).json({ 
+          success: false, 
+          error: 'Access token expired and no refresh token available. Please re-authenticate your YouTube channel.',
+          requires_reauth: true
+        });
+      }
+
       // Refresh the token
       const CLIENT_ID = process.env.YOUTUBE_CLIENT_ID;
       const CLIENT_SECRET = process.env.YOUTUBE_CLIENT_SECRET;
 
-      const tokenResponse = await axios.post('https://oauth2.googleapis.com/token', {
-        client_id: CLIENT_ID,
-        client_secret: CLIENT_SECRET,
-        refresh_token: refresh_token,
-        grant_type: 'refresh_token'
-      });
+      try {
+        const tokenResponse = await axios.post('https://oauth2.googleapis.com/token', {
+          client_id: CLIENT_ID,
+          client_secret: CLIENT_SECRET,
+          refresh_token: refresh_token,
+          grant_type: 'refresh_token'
+        });
 
-      access_token = tokenResponse.data.access_token;
-      const expires_in = tokenResponse.data.expires_in;
-      const new_expires_at = new Date(Date.now() + expires_in * 1000);
+        access_token = tokenResponse.data.access_token;
+        const expires_in = tokenResponse.data.expires_in;
+        const new_expires_at = new Date(Date.now() + expires_in * 1000);
 
-      // Update the token in database
-      await sql`
-        UPDATE accounts
-        SET access_token = ${access_token},
-            expires_at = ${new_expires_at.toISOString()},
-            updated_at = CURRENT_TIMESTAMP
-        WHERE open_id = ${channel_id}
-        AND type = 'YOUTUBE'
-      `;
+        // Update the token in database
+        await sql`
+          UPDATE accounts
+          SET access_token = ${access_token},
+              expires_at = ${new_expires_at.toISOString()},
+              updated_at = CURRENT_TIMESTAMP
+          WHERE open_id = ${channel_id}
+          AND type = 'YOUTUBE'
+        `;
+      } catch (refreshError) {
+        console.error('Token refresh failed:', refreshError.response?.data || refreshError.message);
+        return res.status(401).json({ 
+          success: false, 
+          error: 'Failed to refresh access token. Please re-authenticate your YouTube channel.',
+          requires_reauth: true,
+          details: refreshError.response?.data
+        });
+      }
     }
 
     // Step 1: Initialize resumable upload
