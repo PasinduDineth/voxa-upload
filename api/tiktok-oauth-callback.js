@@ -85,6 +85,9 @@ module.exports = async function handler(req, res) {
     }
 
     const { access_token, refresh_token, open_id, expires_in, scope } = tokenResponse.data;
+    
+    // Calculate token expiration time
+    const expires_at = new Date(Date.now() + (expires_in * 1000));
 
     let userInfo = null;
     try {
@@ -115,8 +118,9 @@ module.exports = async function handler(req, res) {
           display_name = ${userInfo?.display_name || existingAccount.rows[0].display_name},
           avatar_url = ${userInfo?.avatar_url || null},
           scope = ${scope || ''},
+          expires_at = ${expires_at.toISOString()},
           type = 'TIKTOK',
-          created_at = NOW()
+          updated_at = NOW()
         WHERE open_id = ${open_id}
       `;
 
@@ -140,10 +144,12 @@ module.exports = async function handler(req, res) {
         display_name, 
         avatar_url, 
         scope,
+        expires_at,
         type,
         user_id,
         workspace_id,
-        created_at
+        created_at,
+        updated_at
       )
       VALUES (
         ${open_id},
@@ -152,9 +158,11 @@ module.exports = async function handler(req, res) {
         ${userInfo?.display_name || 'TikTok User'},
         ${userInfo?.avatar_url || null},
         ${scope || ''},
+        ${expires_at.toISOString()},
         'TIKTOK',
         ${stateData.user_id || null},
         ${stateData.workspace_id || null},
+        NOW(),
         NOW()
       )
     `;

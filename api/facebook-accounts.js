@@ -150,6 +150,9 @@ module.exports = async function handler(req, res) {
 
       const pages = pagesResponse.data.data;
       const addedPages = [];
+      
+      // Facebook page tokens typically last 60 days
+      const expiresAt = new Date(Date.now() + (60 * 24 * 60 * 60 * 1000));
 
       for (const page of pages) {
         const existingPage = await sql`
@@ -164,14 +167,18 @@ module.exports = async function handler(req, res) {
               access_token,
               display_name,
               avatar_url,
+              expires_at,
               type,
-              created_at
+              created_at,
+              updated_at
             ) VALUES (
               ${page.id},
               ${page.access_token},
               ${page.name},
               ${page.picture?.data?.url || null},
+              ${expiresAt.toISOString()},
               'FACEBOOK',
+              NOW(),
               NOW()
             )
           `;
@@ -182,7 +189,8 @@ module.exports = async function handler(req, res) {
             SET access_token = ${page.access_token},
                 display_name = ${page.name},
                 avatar_url = ${page.picture?.data?.url || null},
-                created_at = NOW()
+                expires_at = ${expiresAt.toISOString()},
+                updated_at = NOW()
             WHERE open_id = ${page.id} AND type = 'FACEBOOK'
           `;
         }
