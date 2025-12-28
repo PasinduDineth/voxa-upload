@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { FaVideo } from 'react-icons/fa6';
 import tiktokApi from '../services/tiktokApi';
 
 function TikTokUploader() {
@@ -696,8 +697,11 @@ function TikTokUploader() {
                 background: '#e5e7eb',
                 border: '1px solid #111827'
               }}>
-                <p style={{ color: '#111827', fontSize: '13px', margin: '0 0 4px 0', fontWeight: 600 }}>
-                  📹 {selectedFile.name}
+                <p style={{ color: '#111827', fontSize: '13px', margin: '0 0 4px 0', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ display: 'inline-flex', color: '#0b1c2d' }}>
+                    <FaVideo />
+                  </span>
+                  {selectedFile.name}
                 </p>
                 <p style={{ color: '#6b7280', fontSize: '12px', margin: 0 }}>
                   Size: {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
