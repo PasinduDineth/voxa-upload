@@ -1,6 +1,5 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import './Dashboard.css';
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -10,60 +9,180 @@ function Dashboard() {
       id: 'tiktok',
       name: 'TikTok',
       icon: '🎵',
-      color: '#000000',
-      gradient: 'linear-gradient(135deg, #000000 0%, #fe2c55 100%)',
-      description: 'Upload and manage your TikTok videos',
-      stats: { label: 'Videos', value: '0' }
+      description: 'Upload and manage your TikTok videos'
     },
     {
       id: 'youtube',
       name: 'YouTube',
       icon: '▶️',
-      color: '#FF0000',
-      gradient: 'linear-gradient(135deg, #c4302b 0%, #FF0000 100%)',
-      description: 'Manage your YouTube channel and uploads',
-      stats: { label: 'Videos', value: '0' }
+      description: 'Manage your YouTube channel and uploads'
     },
     {
       id: 'facebook',
       name: 'Facebook',
       icon: '📘',
-      color: '#1877f2',
-      gradient: 'linear-gradient(135deg, #0062E0 0%, #1877f2 100%)',
-      description: 'Share videos to Facebook pages',
-      stats: { label: 'Videos', value: '0' }
+      description: 'Share videos to Facebook pages'
     }
   ];
 
   return (
-    <div className="dashboard-home">
-      <div className="dashboard-hero">
-        <h2 className="hero-title">Multi-Platform Video Uploader</h2>
-        <p className="hero-subtitle">
+    <div style={{
+      minHeight: '100vh',
+      background: '#020617',
+      padding: '40px',
+      fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+    }}>
+      {/* Hero Section */}
+      <div style={{
+        marginBottom: '40px'
+      }}>
+        <h1 style={{
+          fontSize: '28px',
+          fontWeight: 600,
+          color: '#E5E7EB',
+          margin: '0 0 12px 0'
+        }}>
+          Multi-Platform Video Uploader
+        </h1>
+        <p style={{
+          fontSize: '14px',
+          color: '#9CA3AF',
+          margin: 0
+        }}>
           Upload and manage your videos across TikTok, YouTube, and Facebook from one place
         </p>
       </div>
 
-      <div className="platform-grid">
+      {/* Platform Cards */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+        gap: '20px',
+        maxWidth: '1200px'
+      }}>
         {platforms.map((platform) => (
           <div
             key={platform.id}
-            className="platform-card"
             onClick={() => navigate(`/${platform.id}`)}
-            style={{ '--platform-gradient': platform.gradient }}
+            style={{
+              background: '#0F172A',
+              border: '1px solid #1F2937',
+              borderRadius: '12px',
+              padding: '24px',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              position: 'relative'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = '#6366F1';
+              e.currentTarget.style.transform = 'translateY(-2px)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(99, 102, 241, 0.15)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = '#1F2937';
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = 'none';
+            }}
           >
-            <div className="platform-icon">{platform.icon}</div>
-            <h3 className="platform-name">{platform.name}</h3>
-            <p className="platform-description">{platform.description}</p>
-            <div className="platform-stats">
-              <span className="stats-label">{platform.stats.label}</span>
-              <span className="stats-value">{platform.stats.value}</span>
+            {/* Icon */}
+            <div style={{
+              fontSize: '48px',
+              marginBottom: '16px'
+            }}>
+              {platform.icon}
             </div>
-            <button className="platform-btn">
-              Open Uploader →
-            </button>
+
+            {/* Title */}
+            <h2 style={{
+              fontSize: '20px',
+              fontWeight: 600,
+              color: '#E5E7EB',
+              margin: '0 0 8px 0'
+            }}>
+              {platform.name}
+            </h2>
+
+            {/* Description */}
+            <p style={{
+              fontSize: '14px',
+              color: '#9CA3AF',
+              margin: '0 0 20px 0',
+              lineHeight: '1.5'
+            }}>
+              {platform.description}
+            </p>
+
+            {/* Action Button */}
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontSize: '14px',
+              fontWeight: 500,
+              color: '#6366F1'
+            }}>
+              <span>Open Uploader</span>
+              <span>→</span>
+            </div>
           </div>
         ))}
+      </div>
+
+      {/* Multi Upload Card */}
+      <div
+        onClick={() => navigate('/uploads')}
+        style={{
+          background: '#0F172A',
+          border: '1px solid #1F2937',
+          borderRadius: '12px',
+          padding: '24px',
+          cursor: 'pointer',
+          transition: 'all 0.2s',
+          marginTop: '20px',
+          maxWidth: '1200px'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.borderColor = '#6366F1';
+          e.currentTarget.style.transform = 'translateY(-2px)';
+          e.currentTarget.style.boxShadow = '0 4px 12px rgba(99, 102, 241, 0.15)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.borderColor = '#1F2937';
+          e.currentTarget.style.transform = 'translateY(0)';
+          e.currentTarget.style.boxShadow = 'none';
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div style={{ fontSize: '36px' }}>🚀</div>
+          <div style={{ flex: 1 }}>
+            <h3 style={{
+              fontSize: '18px',
+              fontWeight: 600,
+              color: '#E5E7EB',
+              margin: '0 0 4px 0'
+            }}>
+              Multi-Platform Upload
+            </h3>
+            <p style={{
+              fontSize: '14px',
+              color: '#9CA3AF',
+              margin: 0
+            }}>
+              Upload one video to multiple platforms simultaneously
+            </p>
+          </div>
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '8px',
+            fontSize: '14px',
+            fontWeight: 500,
+            color: '#6366F1'
+          }}>
+            <span>Start Upload</span>
+            <span>→</span>
+          </div>
+        </div>
       </div>
     </div>
   );

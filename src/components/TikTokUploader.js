@@ -254,68 +254,262 @@ function TikTokUploader() {
   // Always show Accounts Management first
   if (view === 'accounts') {
     return (
-      <div className="uploader-container">
-        <PageHeader 
-          icon="🎵" 
-          title="TikTok Uploader" 
-          description="Manage your TikTok accounts and upload videos"
-        />
-        <div className="upload-card">
-          <div className="header">
-            <h2>Account Management</h2>
-            <div style={{ display: 'flex', gap: 10 }}>
-              <button onClick={goToUploadView} className="btn-secondary">Go to Upload</button>
-              <button onClick={handleLogout} className="btn-logout">Logout</button>
-            </div>
+      <div style={{ 
+        minHeight: '100vh',
+        background: '#020617',
+        fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+      }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '32px' }}>
+          {/* Page Header */}
+          <div style={{ marginBottom: '32px' }}>
+            <h1 style={{ 
+              fontSize: '28px', 
+              fontWeight: 600, 
+              color: '#E5E7EB', 
+              marginBottom: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px'
+            }}>
+              <span style={{ color: '#6366F1' }}>🎵</span>
+              TikTok Account Management
+            </h1>
+            <p style={{ fontSize: '15px', color: '#9CA3AF', margin: 0 }}>
+              Manage your connected TikTok accounts and switch between them
+            </p>
           </div>
 
-          <div className="upload-form">
+          {/* Main Card */}
+          <div style={{ 
+            background: '#0F172A',
+            border: '1px solid #1F2937',
+            borderRadius: '20px',
+            padding: '32px'
+          }}>
+            {/* Card Header */}
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              marginBottom: '32px',
+              paddingBottom: '24px',
+              borderBottom: '1px solid #1F2937'
+            }}>
+              <h2 style={{ 
+                fontSize: '20px', 
+                fontWeight: 600, 
+                color: '#E5E7EB',
+                margin: 0
+              }}>
+                Connected Accounts
+              </h2>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button 
+                  onClick={goToUploadView}
+                  style={{
+                    background: '#6366F1',
+                    color: '#F9FAFB',
+                    border: 'none',
+                    borderRadius: '9999px',
+                    padding: '10px 20px',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.background = '#4F46E5';
+                    e.target.style.transform = 'translateY(-1px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.background = '#6366F1';
+                    e.target.style.transform = 'translateY(0)';
+                  }}
+                >
+                  Go to Upload →
+                </button>
+                <button 
+                  onClick={handleLogout}
+                  style={{
+                    background: 'transparent',
+                    color: '#EF4444',
+                    border: '1px solid #EF4444',
+                    borderRadius: '9999px',
+                    padding: '10px 20px',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.background = '#EF4444';
+                    e.target.style.color = '#F9FAFB';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.background = 'transparent';
+                    e.target.style.color = '#EF4444';
+                  }}
+                >
+                  Logout
+                </button>
+              </div>
+            </div>
+
+            {/* Account Content */}
             {accounts.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-                <p style={{ color: '#666', marginBottom: 20 }}>No accounts connected yet.</p>
-                <button onClick={() => handleLogin(false)} className="btn-primary">
+              <div style={{ 
+                textAlign: 'center', 
+                padding: '60px 20px',
+                background: '#020617',
+                borderRadius: '16px',
+                border: '2px dashed #1F2937'
+              }}>
+                <div style={{ 
+                  fontSize: '48px', 
+                  marginBottom: '16px',
+                  opacity: 0.5
+                }}>🎵</div>
+                <p style={{ 
+                  color: '#9CA3AF', 
+                  marginBottom: '24px',
+                  fontSize: '15px'
+                }}>
+                  No accounts connected yet. Add your first TikTok account to get started.
+                </p>
+                <button 
+                  onClick={() => handleLogin(false)}
+                  style={{
+                    background: '#6366F1',
+                    color: '#F9FAFB',
+                    border: 'none',
+                    borderRadius: '9999px',
+                    padding: '12px 32px',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.background = '#4F46E5';
+                    e.target.style.transform = 'translateY(-1px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.background = '#6366F1';
+                    e.target.style.transform = 'translateY(0)';
+                  }}
+                >
                   Add Your First Account
                 </button>
               </div>
             ) : (
               <div>
-                <label style={{ display: 'block', marginBottom: 15, fontWeight: 600 }}>Your Connected Accounts</label>
-                <div className="accounts-grid">
+                <div style={{ 
+                  display: 'grid',
+                  gap: '12px',
+                  marginBottom: '24px'
+                }}>
                   {accounts.map(acc => (
                     <div 
-                      key={acc.open_id} 
-                      className={`account-card ${activeOpenId === acc.open_id ? 'active' : ''}`}
+                      key={acc.open_id}
                       onClick={() => {
                         const select = { target: { value: acc.open_id } };
                         handleAccountSwitch(select);
                       }}
+                      style={{
+                        background: activeOpenId === acc.open_id ? '#111827' : '#020617',
+                        border: activeOpenId === acc.open_id ? '1px solid #6366F1' : '1px solid #1F2937',
+                        borderLeft: activeOpenId === acc.open_id ? '4px solid #6366F1' : '4px solid transparent',
+                        borderRadius: '12px',
+                        padding: '16px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (activeOpenId !== acc.open_id) {
+                          e.currentTarget.style.background = '#0B1120';
+                          e.currentTarget.style.borderColor = '#374151';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (activeOpenId !== acc.open_id) {
+                          e.currentTarget.style.background = '#020617';
+                          e.currentTarget.style.borderColor = '#1F2937';
+                        }
+                      }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>
                         {acc.avatar_url ? (
                           <img 
                             src={acc.avatar_url} 
                             alt={acc.display_name}
-                            style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover' }}
+                            style={{ 
+                              width: '48px', 
+                              height: '48px', 
+                              borderRadius: '50%', 
+                              objectFit: 'cover',
+                              border: '2px solid #1F2937'
+                            }}
                           />
                         ) : (
-                          <div style={{ width: 48, height: 48, borderRadius: '50%', background: '#667eea', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 600 }}>
+                          <div style={{ 
+                            width: '48px', 
+                            height: '48px', 
+                            borderRadius: '50%', 
+                            background: '#6366F1', 
+                            color: 'white', 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center', 
+                            fontSize: '20px', 
+                            fontWeight: 600 
+                          }}>
                             {(acc.display_name || 'U')[0].toUpperCase()}
                           </div>
                         )}
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontWeight: 600, color: '#333' }}>{acc.display_name || 'TikTok User'}</div>
-                          <div style={{ fontSize: '0.85em', color: '#999' }}>{acc.open_id.substring(0, 20)}...</div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ 
+                            fontWeight: 600, 
+                            color: '#E5E7EB',
+                            fontSize: '15px',
+                            marginBottom: '4px'
+                          }}>
+                            {acc.display_name || 'TikTok User'}
+                          </div>
+                          <div style={{ 
+                            fontSize: '13px', 
+                            color: '#6B7280',
+                            marginBottom: '4px',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap'
+                          }}>
+                            {acc.open_id.substring(0, 25)}...
+                          </div>
                           {(() => {
                             const expiry = formatExpiry(acc.expires_at);
                             return expiry ? (
-                              <div style={{ fontSize: '0.75em', color: expiry.color, marginTop: 3 }}>
+                              <div style={{ 
+                                fontSize: '12px', 
+                                color: expiry.color,
+                                fontWeight: 500
+                              }}>
                                 {expiry.text}
                               </div>
                             ) : null;
                           })()}
                         </div>
                         {activeOpenId === acc.open_id && (
-                          <div style={{ background: '#48dbfb', color: 'white', padding: '4px 10px', borderRadius: 12, fontSize: '0.8em', fontWeight: 600 }}>
+                          <div style={{ 
+                            background: '#022C22', 
+                            color: '#22C55E', 
+                            padding: '4px 12px', 
+                            borderRadius: '9999px', 
+                            fontSize: '12px', 
+                            fontWeight: 600 
+                          }}>
                             Active
                           </div>
                         )}
@@ -338,25 +532,85 @@ function TikTokUploader() {
                             }
                           }
                         }}
-                        className="btn-remove"
                         disabled={uploading}
+                        style={{
+                          background: 'transparent',
+                          color: '#EF4444',
+                          border: '1px solid #EF4444',
+                          borderRadius: '8px',
+                          padding: '8px 16px',
+                          fontSize: '13px',
+                          fontWeight: 500,
+                          cursor: 'pointer',
+                          marginLeft: '16px',
+                          transition: 'all 0.2s',
+                          opacity: uploading ? 0.5 : 1
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!uploading) {
+                            e.target.style.background = '#EF4444';
+                            e.target.style.color = '#F9FAFB';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          e.target.style.background = 'transparent';
+                          e.target.style.color = '#EF4444';
+                        }}
                       >
                         Remove
                       </button>
                     </div>
                   ))}
                 </div>
-                <div style={{ marginTop: 20, display: 'flex', gap: 10 }}>
-                  <button onClick={handleAddAnotherAccount} className="btn-primary" style={{ flex: 1 }} disabled={uploading}>
-                    + Add Another Account
-                  </button>
-                </div>
+                
+                <button 
+                  onClick={handleAddAnotherAccount}
+                  disabled={uploading}
+                  style={{
+                    background: '#6366F1',
+                    color: '#F9FAFB',
+                    border: 'none',
+                    borderRadius: '9999px',
+                    padding: '12px 24px',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                    width: '100%',
+                    transition: 'all 0.2s',
+                    opacity: uploading ? 0.5 : 1
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!uploading) {
+                      e.target.style.background = '#4F46E5';
+                      e.target.style.transform = 'translateY(-1px)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.background = '#6366F1';
+                    e.target.style.transform = 'translateY(0)';
+                  }}
+                >
+                  + Add Another Account
+                </button>
               </div>
             )}
           </div>
 
+          {/* Error Message */}
           {error && (
-            <div className="status-message error">{error}</div>
+            <div style={{
+              marginTop: '24px',
+              padding: '16px 20px',
+              background: '#7F1D1D',
+              border: '1px solid #991B1B',
+              borderRadius: '12px',
+              color: '#FEE2E2',
+              fontSize: '14px',
+              lineHeight: '1.5',
+              whiteSpace: 'pre-line'
+            }}>
+              {error}
+            </div>
           )}
         </div>
       </div>
@@ -364,109 +618,429 @@ function TikTokUploader() {
   }
 
   return (
-    <div className="uploader-container">
-      <PageHeader 
-        icon="🎵" 
-        title="TikTok Uploader" 
-        description="Upload and manage your TikTok videos"
-      />
-      <div className="upload-card">
-        <div className="header">
-          <h2>Upload Video</h2>
-          <div style={{ display: 'flex', gap: 10 }}>
-            <button onClick={goToAccountsView} className="btn-secondary">Manage Accounts</button>
-            <button onClick={handleLogout} className="btn-logout">Logout</button>
-          </div>
+    <div style={{ 
+      minHeight: '100vh',
+      background: '#020617',
+      fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+    }}>
+      <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '32px' }}>
+        {/* Page Header */}
+        <div style={{ marginBottom: '32px' }}>
+          <h1 style={{ 
+            fontSize: '28px', 
+            fontWeight: 600, 
+            color: '#E5E7EB', 
+            marginBottom: '8px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px'
+          }}>
+            <span style={{ color: '#6366F1' }}>🎵</span>
+            TikTok Video Upload
+          </h1>
+          <p style={{ fontSize: '15px', color: '#9CA3AF', margin: 0 }}>
+            Upload your video to TikTok
+          </p>
         </div>
 
-        <div className="upload-form">
-          {accounts.length > 0 && (
-            <div className="form-group">
-              <label htmlFor="account-select">Account</label>
-              <select
-                id="account-select"
-                value={activeOpenId || ''}
-                onChange={handleAccountSwitch}
-                disabled={uploading}
+        {/* Main Upload Card */}
+        <div style={{ 
+          background: '#0F172A',
+          border: '1px solid #1F2937',
+          borderRadius: '20px',
+          padding: '32px'
+        }}>
+          {/* Card Header */}
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            marginBottom: '32px',
+            paddingBottom: '24px',
+            borderBottom: '1px solid #1F2937'
+          }}>
+            <h2 style={{ 
+              fontSize: '20px', 
+              fontWeight: 600, 
+              color: '#E5E7EB',
+              margin: 0
+            }}>
+              Upload Video
+            </h2>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button 
+                onClick={goToAccountsView}
+                style={{
+                  background: 'transparent',
+                  color: '#9CA3AF',
+                  border: '1px solid #1F2937',
+                  borderRadius: '9999px',
+                  padding: '10px 20px',
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.borderColor = '#6366F1';
+                  e.target.style.color = '#E5E7EB';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.borderColor = '#1F2937';
+                  e.target.style.color = '#9CA3AF';
+                }}
               >
-                {accounts.map(acc => (
-                  <option key={acc.open_id} value={acc.open_id}>
-                    {acc.open_id}
-                  </option>
-                ))}
-              </select>
-              <p style={{ fontSize: '0.85em', color: '#666' }}>
-                Select which TikTok account to use for this upload.
-              </p>
+                ← Manage Accounts
+              </button>
+              <button 
+                onClick={handleLogout}
+                style={{
+                  background: 'transparent',
+                  color: '#EF4444',
+                  border: '1px solid #EF4444',
+                  borderRadius: '9999px',
+                  padding: '10px 20px',
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = '#EF4444';
+                  e.target.style.color = '#F9FAFB';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'transparent';
+                  e.target.style.color = '#EF4444';
+                }}
+              >
+                Logout
+              </button>
             </div>
-          )}
-          <div className="form-group">
-            <label htmlFor="video-file">Select Video</label>
-            <input
-              id="video-file"
-              type="file"
-              accept="video/*"
-              onChange={handleFileSelect}
-              disabled={uploading}
-            />
-            {selectedFile && (
-              <div className="file-info">
-                <p>📹 {selectedFile.name}</p>
-                <p>Size: {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB</p>
+          </div>
+
+          {/* Upload Form */}
+          <div style={{ display: 'grid', gap: '24px' }}>
+            {/* Account Select */}
+            {accounts.length > 0 && (
+              <div>
+                <label 
+                  htmlFor="account-select"
+                  style={{
+                    display: 'block',
+                    fontSize: '12px',
+                    fontWeight: 500,
+                    color: '#9CA3AF',
+                    marginBottom: '8px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px'
+                  }}
+                >
+                  Account
+                </label>
+                <select
+                  id="account-select"
+                  value={activeOpenId || ''}
+                  onChange={handleAccountSwitch}
+                  disabled={uploading}
+                  style={{
+                    width: '100%',
+                    background: '#020617',
+                    border: '1px solid #1F2937',
+                    borderRadius: '12px',
+                    padding: '12px 16px',
+                    fontSize: '14px',
+                    color: '#E5E7EB',
+                    cursor: 'pointer',
+                    outline: 'none',
+                    transition: 'all 0.2s'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#6366F1';
+                    e.target.style.boxShadow = '0 0 0 3px rgba(99, 102, 241, 0.1)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#1F2937';
+                    e.target.style.boxShadow = 'none';
+                  }}
+                >
+                  {accounts.map(acc => (
+                    <option key={acc.open_id} value={acc.open_id}>
+                      {acc.display_name || acc.open_id}
+                    </option>
+                  ))}
+                </select>
+                <p style={{ 
+                  fontSize: '13px', 
+                  color: '#6B7280',
+                  marginTop: '8px',
+                  margin: '8px 0 0 0'
+                }}>
+                  Select which TikTok account to use for this upload
+                </p>
               </div>
             )}
-          </div>
 
-          <div className="form-group">
-            <label htmlFor="video-title">Caption</label>
-            <textarea
-              id="video-title"
-              value={videoTitle}
-              onChange={(e) => setVideoTitle(e.target.value)}
-              placeholder="Enter video caption"
-              maxLength={150}
-              rows={3}
-              disabled={uploading}
-              style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', fontFamily: 'inherit' }}
-            />
-          </div>
+            {/* Video File Input */}
+            <div>
+              <label 
+                htmlFor="video-file"
+                style={{
+                  display: 'block',
+                  fontSize: '12px',
+                  fontWeight: 500,
+                  color: '#9CA3AF',
+                  marginBottom: '8px',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px'
+                }}
+              >
+                Video File
+              </label>
+              <input
+                id="video-file"
+                type="file"
+                accept="video/*"
+                onChange={handleFileSelect}
+                disabled={uploading}
+                style={{
+                  width: '100%',
+                  background: '#020617',
+                  border: '1px solid #1F2937',
+                  borderRadius: '12px',
+                  padding: '12px 16px',
+                  fontSize: '14px',
+                  color: '#E5E7EB',
+                  cursor: 'pointer',
+                  outline: 'none'
+                }}
+              />
+              {selectedFile && (
+                <div style={{
+                  marginTop: '12px',
+                  padding: '12px 16px',
+                  background: '#111827',
+                  border: '1px solid #1F2937',
+                  borderRadius: '10px',
+                }}>
+                  <p style={{ 
+                    color: '#E5E7EB', 
+                    fontSize: '14px',
+                    margin: '0 0 4px 0',
+                    fontWeight: 500
+                  }}>
+                    📹 {selectedFile.name}
+                  </p>
+                  <p style={{ 
+                    color: '#6B7280',
+                    fontSize: '13px',
+                    margin: 0
+                  }}>
+                    Size: {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
+                  </p>
+                </div>
+              )}
+            </div>
 
-          <button
-            onClick={handleUpload}
-            disabled={!selectedFile || !videoTitle.trim() || uploading}
-            className="btn-upload"
-          >
-            {uploading ? 'Uploading...' : 'Upload to TikTok'}
-          </button>
+            {/* Caption */}
+            <div>
+              <label 
+                htmlFor="video-title"
+                style={{
+                  display: 'block',
+                  fontSize: '12px',
+                  fontWeight: 500,
+                  color: '#9CA3AF',
+                  marginBottom: '8px',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px'
+                }}
+              >
+                Caption
+              </label>
+              <textarea
+                id="video-title"
+                value={videoTitle}
+                onChange={(e) => setVideoTitle(e.target.value)}
+                placeholder="Enter video caption (max 150 characters)"
+                maxLength={150}
+                rows={4}
+                disabled={uploading}
+                style={{
+                  width: '100%',
+                  background: '#020617',
+                  border: '1px solid #1F2937',
+                  borderRadius: '12px',
+                  padding: '12px 16px',
+                  fontSize: '14px',
+                  color: '#E5E7EB',
+                  fontFamily: 'inherit',
+                  resize: 'vertical',
+                  outline: 'none',
+                  transition: 'all 0.2s',
+                  lineHeight: '1.5'
+                }}
+                onFocus={(e) => {
+                  e.target.style.borderColor = '#6366F1';
+                  e.target.style.boxShadow = '0 0 0 3px rgba(99, 102, 241, 0.1)';
+                }}
+                onBlur={(e) => {
+                  e.target.style.borderColor = '#1F2937';
+                  e.target.style.boxShadow = 'none';
+                }}
+              />
+              <p style={{ 
+                fontSize: '13px', 
+                color: '#6B7280',
+                marginTop: '8px',
+                margin: '8px 0 0 0',
+                textAlign: 'right'
+              }}>
+                {videoTitle.length}/150
+              </p>
+            </div>
+
+            {/* Upload Button */}
+            <button
+              onClick={handleUpload}
+              disabled={!selectedFile || !videoTitle.trim() || uploading}
+              style={{
+                background: (!selectedFile || !videoTitle.trim() || uploading) ? '#374151' : '#6366F1',
+                color: (!selectedFile || !videoTitle.trim() || uploading) ? '#6B7280' : '#F9FAFB',
+                border: 'none',
+                borderRadius: '12px',
+                padding: '16px 24px',
+                fontSize: '15px',
+                fontWeight: 600,
+                cursor: (!selectedFile || !videoTitle.trim() || uploading) ? 'not-allowed' : 'pointer',
+                width: '100%',
+                transition: 'all 0.2s',
+                marginTop: '8px'
+              }}
+              onMouseEnter={(e) => {
+                if (selectedFile && videoTitle.trim() && !uploading) {
+                  e.target.style.background = '#4F46E5';
+                  e.target.style.transform = 'translateY(-1px)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (selectedFile && videoTitle.trim() && !uploading) {
+                  e.target.style.background = '#6366F1';
+                  e.target.style.transform = 'translateY(0)';
+                }
+              }}
+            >
+              {uploading ? '⏳ Uploading...' : '🚀 Upload to TikTok'}
+            </button>
+          </div>
         </div>
 
+        {/* Status Messages */}
         {uploadStatus && (
-          <div className="status-message success">
+          <div style={{
+            marginTop: '24px',
+            padding: '16px 20px',
+            background: '#064E3B',
+            border: '1px solid #065F46',
+            borderRadius: '12px',
+            color: '#D1FAE5',
+            fontSize: '14px',
+            lineHeight: '1.5'
+          }}>
             {uploadStatus}
           </div>
         )}
 
         {error && (
-          <div className="status-message error">
+          <div style={{
+            marginTop: '24px',
+            padding: '16px 20px',
+            background: '#7F1D1D',
+            border: '1px solid #991B1B',
+            borderRadius: '12px',
+            color: '#FEE2E2',
+            fontSize: '14px',
+            lineHeight: '1.5'
+          }}>
             {error}
           </div>
         )}
 
-        <div className="info-section">
-          <h3>📱 Where to Find Your Uploaded Videos:</h3>
-          <ol style={{ textAlign: 'left', lineHeight: '1.8' }}>
-            <li><strong>Open the TikTok mobile app</strong> on your phone</li>
-            <li>Tap on <strong>"Profile"</strong> (bottom right icon)</li>
-            <li>Look at your profile videos (they'll show a 🔒 lock icon)</li>
-            <li>Your videos are automatically set to <strong>PRIVATE</strong> (only you can see them)</li>
-            <li>Tap on a video → Three dots (...) → Privacy settings to change visibility</li>
+        {/* Info Section */}
+        <div style={{
+          marginTop: '32px',
+          padding: '24px',
+          background: '#0F172A',
+          border: '1px solid #1F2937',
+          borderRadius: '16px'
+        }}>
+          <h3 style={{
+            fontSize: '16px',
+            fontWeight: 600,
+            color: '#E5E7EB',
+            marginBottom: '16px',
+            margin: '0 0 16px 0'
+          }}>
+            📱 Where to Find Your Uploaded Videos
+          </h3>
+          <ol style={{
+            color: '#9CA3AF',
+            fontSize: '14px',
+            lineHeight: '1.8',
+            paddingLeft: '20px',
+            margin: '0 0 20px 0'
+          }}>
+            <li style={{ marginBottom: '8px' }}>
+              <strong style={{ color: '#E5E7EB' }}>Open the TikTok mobile app</strong> on your phone
+            </li>
+            <li style={{ marginBottom: '8px' }}>
+              Tap on <strong style={{ color: '#E5E7EB' }}>Profile</strong> (bottom right icon)
+            </li>
+            <li style={{ marginBottom: '8px' }}>
+              Look at your profile videos (they'll show a 🔒 lock icon)
+            </li>
+            <li style={{ marginBottom: '8px' }}>
+              Your videos are automatically set to <strong style={{ color: '#E5E7EB' }}>PRIVATE</strong> (only you can see them)
+            </li>
+            <li>
+              Tap on a video → Three dots (...) → Privacy settings to change visibility
+            </li>
           </ol>
-          <p style={{ marginTop: '15px', padding: '10px', background: '#fff3cd', borderRadius: '5px', fontSize: '0.9em' }}>
-            <strong>⚠️ Sandbox Mode:</strong> All videos uploaded via this sandbox app are <strong>automatically set to PRIVATE</strong> (only visible to you). 
-            This is a TikTok restriction for unapproved apps. To make videos public, your app needs to complete TikTok's audit process.
-          </p>
-          <h3 style={{ marginTop: '25px' }}>Upload Requirements:</h3>
-          <ul>
+          
+          <div style={{
+            padding: '16px',
+            background: '#422006',
+            border: '1px solid #78350F',
+            borderRadius: '10px',
+            marginBottom: '20px'
+          }}>
+            <p style={{
+              color: '#FED7AA',
+              fontSize: '13px',
+              lineHeight: '1.6',
+              margin: 0
+            }}>
+              <strong style={{ color: '#FDBA74' }}>⚠️ Sandbox Mode:</strong> All videos uploaded via this sandbox app are automatically set to PRIVATE (only visible to you). 
+              This is a TikTok restriction for unapproved apps. To make videos public, your app needs to complete TikTok's audit process.
+            </p>
+          </div>
+
+          <h4 style={{
+            fontSize: '14px',
+            fontWeight: 600,
+            color: '#E5E7EB',
+            marginBottom: '12px',
+            margin: '0 0 12px 0'
+          }}>
+            Upload Requirements
+          </h4>
+          <ul style={{
+            color: '#9CA3AF',
+            fontSize: '14px',
+            lineHeight: '1.6',
+            paddingLeft: '20px',
+            margin: 0
+          }}>
             <li>Video format: MP4, MOV, or other common video formats</li>
             <li>Maximum file size: 4GB</li>
             <li>Recommended resolution: 720p or higher</li>

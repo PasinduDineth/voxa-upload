@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import facebookApi from '../services/facebookApi';
-import PageHeader from './Layout/PageHeader';
-import './TikTokUploader.css'; // Reusing the same CSS
 
 function FacebookUploader() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -164,362 +162,536 @@ function FacebookUploader() {
   const activeAccount = accounts.find(acc => acc.open_id === activePageId);
 
   return (
-    <div className="uploader-container">
-      <PageHeader 
-        icon="📘" 
-        title="Facebook Uploader" 
-        description="Manage your Facebook pages and upload videos"
-      />
-      {view === 'accounts' && (
-        <div className="upload-card">
-          <div className="header">
-            <h2>Page Management</h2>
-            <div style={{ display: 'flex', gap: 10 }}>
-              <button onClick={goToUploadView} className="btn-secondary">Go to Upload</button>
-            </div>
-          </div>
-          
-          <div className="upload-form">
-            {uploadStatus && (
-              <div style={{
-                padding: '15px',
-                marginBottom: '20px',
-                background: 'linear-gradient(135deg, #1877f2 0%, #0c63d4 100%)',
-                color: 'white',
-                borderRadius: '12px',
-                fontWeight: 600,
-                textAlign: 'center',
-                boxShadow: '0 4px 15px rgba(24, 119, 242, 0.2)'
-              }}>
-                {uploadStatus}
-              </div>
-            )}
+    <div style={{
+      minHeight: '100vh',
+      background: '#020617',
+      padding: '40px',
+      fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+    }}>
+      {/* Page Header */}
+      <div style={{ marginBottom: '32px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+          <span style={{ fontSize: '32px' }}>📘</span>
+          <h1 style={{ fontSize: '28px', fontWeight: 600, color: '#E5E7EB', margin: 0 }}>
+            Facebook Uploader
+          </h1>
+        </div>
+        <p style={{ fontSize: '14px', color: '#9CA3AF', margin: 0 }}>
+          Manage your Facebook pages and upload videos
+        </p>
+      </div>
 
-            {error && (
-              <div style={{
-                padding: '15px',
-                marginBottom: '20px',
-                background: 'linear-gradient(135deg, #ff4444 0%, #cc0000 100%)',
-                color: 'white',
-                borderRadius: '12px',
-                fontWeight: 600,
-                whiteSpace: 'pre-line',
-                textAlign: 'left',
-                boxShadow: '0 4px 15px rgba(255, 68, 68, 0.2)'
-              }}>
-                {error}
-              </div>
-            )}
-
-          {accounts.length === 0 ? (
-            <div className="no-accounts">
-              <p style={{ fontSize: '16px', color: '#666', marginBottom: '20px' }}>
-                No Facebook Pages connected yet
-              </p>
-              <button onClick={goToAddTokenView} className="primary-button">
-                Add Facebook Pages
+      {/* Main Card */}
+      <div style={{
+        background: '#0F172A',
+        border: '1px solid #1F2937',
+        borderRadius: '12px',
+        overflow: 'hidden',
+        maxWidth: '900px'
+      }}>
+        {/* Card Header */}
+        <div style={{
+          padding: '20px 24px',
+          borderBottom: '1px solid #1F2937',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between'
+        }}>
+          <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#E5E7EB', margin: 0 }}>
+            {view === 'accounts' && 'Page Management'}
+            {view === 'add-token' && 'Add Facebook Pages'}
+            {view === 'upload' && 'Upload to Facebook'}
+          </h2>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            {view !== 'accounts' && (
+              <button
+                onClick={goToAccountsView}
+                style={{
+                  padding: '10px 20px',
+                  background: '#374151',
+                  color: '#E5E7EB',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = '#4B5563'}
+                onMouseLeave={e => e.currentTarget.style.background = '#374151'}
+              >
+                ← Back to Pages
               </button>
+            )}
+            {view === 'accounts' && (
+              <button
+                onClick={goToUploadView}
+                style={{
+                  padding: '10px 20px',
+                  background: '#6366F1',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = '#5558E3'}
+                onMouseLeave={e => e.currentTarget.style.background = '#6366F1'}
+              >
+                Go to Upload
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Card Content */}
+        <div style={{ padding: '24px' }}>
+          {/* Status Messages */}
+          {uploadStatus && (
+            <div style={{
+              padding: '16px',
+              marginBottom: '20px',
+              background: '#10B981',
+              color: '#FFFFFF',
+              borderRadius: '8px',
+              fontSize: '14px',
+              fontWeight: 500
+            }}>
+              {uploadStatus}
             </div>
-          ) : (
+          )}
+          {error && (
+            <div style={{
+              padding: '16px',
+              marginBottom: '20px',
+              background: '#EF4444',
+              color: '#FFFFFF',
+              borderRadius: '8px',
+              fontSize: '14px',
+              fontWeight: 500,
+              whiteSpace: 'pre-line'
+            }}>
+              {error}
+            </div>
+          )}
+
+          {/* Accounts View */}
+          {view === 'accounts' && (
             <>
-              <div className="accounts-list">
-                {accounts.map((account) => (
-                  <div 
-                    key={account.open_id} 
-                    className={`account-card ${activePageId === account.open_id ? 'active' : ''}`}
+              {accounts.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+                  <div style={{ fontSize: '48px', marginBottom: '16px' }}>📘</div>
+                  <p style={{ fontSize: '16px', color: '#9CA3AF', marginBottom: '24px' }}>
+                    No Facebook Pages connected yet
+                  </p>
+                  <button
+                    onClick={goToAddTokenView}
+                    style={{
+                      padding: '12px 24px',
+                      background: '#6366F1',
+                      color: '#FFFFFF',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      fontWeight: 500,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = '#5558E3'}
+                    onMouseLeave={e => e.currentTarget.style.background = '#6366F1'}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px', flex: 1 }}>
-                      {account.avatar_url && (
-                        <img 
-                          src={account.avatar_url} 
-                          alt={account.display_name}
+                    Add Facebook Pages
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div style={{ display: 'grid', gap: '12px', marginBottom: '20px' }}>
+                    {accounts.map(account => {
+                      const isActive = activePageId === account.open_id;
+                      const expiry = formatExpiry(account.expires_at);
+                      return (
+                        <div
+                          key={account.open_id}
                           style={{
-                            width: '50px',
-                            height: '50px',
-                            borderRadius: '50%',
-                            objectFit: 'cover',
-                            border: '3px solid #1877f2'
+                            background: '#1E293B',
+                            border: isActive ? '1px solid #6366F1' : '1px solid #374151',
+                            borderLeft: isActive ? '4px solid #6366F1' : '4px solid transparent',
+                            borderRadius: '10px',
+                            padding: '16px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s'
                           }}
-                        />
-                      )}
-                      <div>
-                        <h3 style={{ margin: '0 0 5px 0', color: '#1877f2' }}>
-                          {account.display_name}
-                        </h3>
-                        <p style={{ margin: 0, fontSize: '13px', color: '#666' }}>
-                          Page ID: {account.open_id}
-                        </p>
-                        {(() => {
-                          const expiry = formatExpiry(account.expires_at);
-                          return expiry ? (
-                            <p style={{ margin: '3px 0 0 0', fontSize: '12px', color: expiry.color, fontWeight: 600 }}>
-                              {expiry.text}
-                            </p>
-                          ) : null;
-                        })()}
-                      </div>
-                    </div>
-                    <div style={{ display: 'flex', gap: '10px' }}>
-                      {activePageId !== account.open_id ? (
-                        <button 
                           onClick={async () => {
                             if (await facebookApi.useAccount(account.open_id)) {
                               setActivePageId(account.open_id);
                               setIsAuthenticated(true);
                             }
                           }}
-                          style={{
-                            padding: '8px 16px',
-                            background: '#1877f2',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '8px',
-                            cursor: 'pointer',
-                            fontWeight: 600
+                          onMouseEnter={e => {
+                            if (!isActive) {
+                              e.currentTarget.style.background = '#2D3B52';
+                              e.currentTarget.style.borderColor = '#4B5563';
+                            }
+                          }}
+                          onMouseLeave={e => {
+                            if (!isActive) {
+                              e.currentTarget.style.background = '#1E293B';
+                              e.currentTarget.style.borderColor = '#374151';
+                            }
                           }}
                         >
-                          Use This Page
-                        </button>
-                      ) : (
-                        <span style={{
-                          padding: '8px 16px',
-                          background: '#e7f3ff',
-                          color: '#1877f2',
-                          borderRadius: '8px',
-                          fontWeight: 600
-                        }}>
-                          ✓ Active
-                        </span>
-                      )}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>
+                            {account.avatar_url && (
+                              <img
+                                src={account.avatar_url}
+                                alt={account.display_name}
+                                style={{
+                                  width: '48px',
+                                  height: '48px',
+                                  borderRadius: '50%',
+                                  objectFit: 'cover',
+                                  border: '3px solid #1877f2'
+                                }}
+                              />
+                            )}
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontSize: '14px', fontWeight: 500, color: '#E5E7EB', marginBottom: '4px' }}>
+                                {account.display_name}
+                              </div>
+                              <div style={{ fontSize: '12px', color: '#6B7280' }}>
+                                Page ID: {account.open_id}
+                              </div>
+                              {expiry && (
+                                <div style={{ fontSize: '12px', color: expiry.color, marginTop: '4px', fontWeight: 500 }}>
+                                  {expiry.text}
+                                </div>
+                              )}
+                            </div>
+                            {isActive && (
+                              <div style={{
+                                padding: '4px 12px',
+                                background: '#1877f2',
+                                color: '#FFFFFF',
+                                borderRadius: '6px',
+                                fontSize: '12px',
+                                fontWeight: 500
+                              }}>
+                                ✓ Active
+                              </div>
+                            )}
+                          </div>
+                          <button
+                            onClick={e => {
+                              e.stopPropagation();
+                              handleRemoveAccount(account.open_id);
+                            }}
+                            style={{
+                              padding: '8px 16px',
+                              background: '#EF4444',
+                              color: '#FFFFFF',
+                              border: 'none',
+                              borderRadius: '6px',
+                              fontSize: '13px',
+                              fontWeight: 500,
+                              cursor: 'pointer',
+                              marginLeft: '12px',
+                              transition: 'all 0.2s'
+                            }}
+                            onMouseEnter={e => e.currentTarget.style.background = '#DC2626'}
+                            onMouseLeave={e => e.currentTarget.style.background = '#EF4444'}
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <button
+                      onClick={goToAddTokenView}
+                      style={{
+                        flex: 1,
+                        padding: '12px',
+                        background: '#374151',
+                        color: '#E5E7EB',
+                        border: 'none',
+                        borderRadius: '8px',
+                        fontSize: '14px',
+                        fontWeight: 500,
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.background = '#4B5563'}
+                      onMouseLeave={e => e.currentTarget.style.background = '#374151'}
+                    >
+                      Add More Pages
+                    </button>
+                    {isAuthenticated && (
                       <button
-                        onClick={() => handleRemoveAccount(account.open_id)}
+                        onClick={goToUploadView}
                         style={{
-                          padding: '8px 16px',
-                          background: '#ff4444',
-                          color: 'white',
+                          flex: 1,
+                          padding: '12px',
+                          background: '#6366F1',
+                          color: '#FFFFFF',
                           border: 'none',
                           borderRadius: '8px',
+                          fontSize: '14px',
+                          fontWeight: 500,
                           cursor: 'pointer',
-                          fontWeight: 600
+                          transition: 'all 0.2s'
                         }}
+                        onMouseEnter={e => e.currentTarget.style.background = '#5558E3'}
+                        onMouseLeave={e => e.currentTarget.style.background = '#6366F1'}
                       >
-                        Remove
+                        Go to Upload
                       </button>
-                    </div>
+                    )}
                   </div>
-                ))}
-              </div>
-
-              <div style={{ marginTop: '20px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                <button onClick={goToAddTokenView} className="secondary-button">
-                  Add More Pages
-                </button>
-                {isAuthenticated && (
-                  <button onClick={goToUploadView} className="primary-button">
-                    Go to Upload
-                  </button>
-                )}
-              </div>
+                </>
+              )}
             </>
           )}
-          </div>
-        </div>
-      )}
 
-      {view === 'add-token' && (
-        <div className="upload-card">
-          <div className="header">
-            <h2>Add Facebook Pages</h2>
-            <button onClick={goToAccountsView} className="btn-secondary">
-              ← Back to Pages
-            </button>
-          </div>
-          
-          <div className="upload-form">
-            {uploadStatus && (
+          {/* Add Token View */}
+          {view === 'add-token' && (
+            <div style={{ maxWidth: '600px', margin: '0 auto' }}>
               <div style={{
-                padding: '15px',
-                marginBottom: '20px',
-                background: 'linear-gradient(135deg, #1877f2 0%, #0c63d4 100%)',
-                color: 'white',
-                borderRadius: '12px',
-                fontWeight: 600,
-                textAlign: 'center'
-              }}>
-                {uploadStatus}
-              </div>
-            )}
-
-            {error && (
-              <div style={{
-                padding: '15px',
-                marginBottom: '20px',
-                background: 'linear-gradient(135deg, #ff4444 0%, #cc0000 100%)',
-                color: 'white',
-                borderRadius: '12px',
-                fontWeight: 600
-              }}>
-                {error}
-              </div>
-            )}
-
-            <div style={{
-              padding: '20px',
-              background: '#e7f3ff',
-              borderRadius: '12px',
-              marginBottom: '20px',
-              border: '2px solid #1877f2'
-            }}>
-              <h3 style={{ margin: '0 0 15px 0', color: '#1877f2' }}>
-                📝 How to get your Page Access Token:
-              </h3>
-              <ol style={{ margin: 0, paddingLeft: '20px', color: '#333' }}>
-                <li style={{ marginBottom: '10px' }}>
-                  Go to <a href="https://developers.facebook.com/tools/explorer/" target="_blank" rel="noopener noreferrer" style={{ color: '#1877f2', fontWeight: 600 }}>Facebook Graph API Explorer</a>
-                </li>
-                <li style={{ marginBottom: '10px' }}>
-                  Select your Facebook App from the dropdown
-                </li>
-                <li style={{ marginBottom: '10px' }}>
-                  Click "Generate Access Token" and select all your pages
-                </li>
-                <li style={{ marginBottom: '10px' }}>
-                  Grant the required permissions (pages_manage_posts, pages_read_engagement)
-                </li>
-                <li>Copy the generated token and paste it below</li>
-              </ol>
-            </div>
-
-            <div className="form-group">
-              <label>Facebook Page Access Token *</label>
-              <textarea
-                value={accessToken}
-                onChange={(e) => setAccessToken(e.target.value)}
-                placeholder="Paste your Facebook Page Access Token here..."
-                rows={4}
-                style={{ fontFamily: 'monospace', fontSize: '12px' }}
-              />
-              <p style={{ marginTop: '8px', fontSize: '13px', color: '#666' }}>
-                This token will be used to fetch and connect all your Facebook Pages
-              </p>
-            </div>
-
-            <button
-              onClick={handleAddPages}
-              disabled={!accessToken.trim()}
-              className="btn-primary"
-            >
-              Add Facebook Pages
-            </button>
-          </div>
-        </div>
-      )}
-
-      {view === 'upload' && (
-        <div className="upload-card">
-          <div className="header">
-            <h2>Upload to Facebook</h2>
-            <button onClick={goToAccountsView} className="btn-secondary">
-              ← Back to Pages
-            </button>
-          </div>
-
-          <div className="upload-form">
-            {activeAccount && (
-              <div style={{
-                padding: '15px',
-                background: 'linear-gradient(135deg, #e7f3ff 0%, #cce5ff 100%)',
+                padding: '20px',
+                background: '#e7f3ff',
                 borderRadius: '12px',
                 marginBottom: '20px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '15px'
+                border: '2px solid #1877f2'
               }}>
-                {activeAccount.avatar_url && (
-                  <img 
-                    src={activeAccount.avatar_url} 
-                    alt={activeAccount.display_name}
-                    style={{
-                      width: '50px',
-                      height: '50px',
-                      borderRadius: '50%',
-                      objectFit: 'cover',
-                      border: '3px solid #1877f2'
-                    }}
-                  />
-                )}
-                <div>
-                  <p style={{ margin: '0 0 5px 0', fontWeight: 600, color: '#1877f2' }}>
-                    Posting as:
-                  </p>
-                  <p style={{ margin: 0, fontSize: '16px', color: '#333' }}>
-                    {activeAccount.display_name}
-                  </p>
-                </div>
+                <h3 style={{ margin: '0 0 15px 0', color: '#1877f2' }}>
+                  📝 How to get your Page Access Token:
+                </h3>
+                <ol style={{ margin: 0, paddingLeft: '20px', color: '#333' }}>
+                  <li style={{ marginBottom: '10px' }}>
+                    Go to <a href="https://developers.facebook.com/tools/explorer/" target="_blank" rel="noopener noreferrer" style={{ color: '#1877f2', fontWeight: 600 }}>Facebook Graph API Explorer</a>
+                  </li>
+                  <li style={{ marginBottom: '10px' }}>
+                    Select your Facebook App from the dropdown
+                  </li>
+                  <li style={{ marginBottom: '10px' }}>
+                    Click "Generate Access Token" and select all your pages
+                  </li>
+                  <li style={{ marginBottom: '10px' }}>
+                    Grant the required permissions (pages_manage_posts, pages_read_engagement)
+                  </li>
+                  <li>Copy the generated token and paste it below</li>
+                </ol>
               </div>
-            )}
-
-            {uploadStatus && (
-              <div className="status-message success">
-                {uploadStatus}
-              </div>
-            )}
-
-            {error && (
-              <div className="status-message error">
-                {error}
-              </div>
-            )}
-
-            <div className="form-group">
-              <label>Video File</label>
-              <input
-                type="file"
-                accept="video/*"
-                onChange={handleFileSelect}
-                disabled={uploading}
-              />
-              {selectedFile && (
-                <p style={{ marginTop: '8px', fontSize: '14px', color: '#666' }}>
-                  Selected: {selectedFile.name} ({Math.round(selectedFile.size / 1024 / 1024)}MB)
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500, color: '#1E293B' }}>
+                  Facebook Page Access Token *
+                </label>
+                <textarea
+                  value={accessToken}
+                  onChange={e => setAccessToken(e.target.value)}
+                  placeholder="Paste your Facebook Page Access Token here..."
+                  rows={4}
+                  style={{
+                    width: '100%',
+                    fontFamily: 'monospace',
+                    fontSize: '13px',
+                    padding: '12px',
+                    borderRadius: '8px',
+                    border: '1px solid #1877f2',
+                    background: '#f9fafb',
+                    color: '#1E293B',
+                    outline: 'none'
+                  }}
+                />
+                <p style={{ marginTop: '8px', fontSize: '13px', color: '#666' }}>
+                  This token will be used to fetch and connect all your Facebook Pages
                 </p>
+              </div>
+              <button
+                onClick={handleAddPages}
+                disabled={!accessToken.trim()}
+                style={{
+                  width: '100%',
+                  padding: '14px',
+                  background: !accessToken.trim() ? '#374151' : '#6366F1',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  cursor: !accessToken.trim() ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s',
+                  opacity: !accessToken.trim() ? 0.5 : 1
+                }}
+                onMouseEnter={e => {
+                  if (accessToken.trim()) e.currentTarget.style.background = '#5558E3';
+                }}
+                onMouseLeave={e => {
+                  if (accessToken.trim()) e.currentTarget.style.background = '#6366F1';
+                }}
+              >
+                Add Facebook Pages
+              </button>
+            </div>
+          )}
+
+          {/* Upload View */}
+          {view === 'upload' && (
+            <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+              {activeAccount && (
+                <div style={{
+                  padding: '15px',
+                  background: '#e7f3ff',
+                  borderRadius: '12px',
+                  marginBottom: '20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '15px'
+                }}>
+                  {activeAccount.avatar_url && (
+                    <img
+                      src={activeAccount.avatar_url}
+                      alt={activeAccount.display_name}
+                      style={{
+                        width: '50px',
+                        height: '50px',
+                        borderRadius: '50%',
+                        objectFit: 'cover',
+                        border: '3px solid #1877f2'
+                      }}
+                    />
+                  )}
+                  <div>
+                    <p style={{ margin: '0 0 5px 0', fontWeight: 600, color: '#1877f2' }}>
+                      Posting as:
+                    </p>
+                    <p style={{ margin: 0, fontSize: '16px', color: '#333' }}>
+                      {activeAccount.display_name}
+                    </p>
+                  </div>
+                </div>
               )}
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500, color: '#E5E7EB' }}>
+                  Video File
+                </label>
+                <input
+                  type="file"
+                  accept="video/*"
+                  onChange={handleFileSelect}
+                  disabled={uploading}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    background: '#1E293B',
+                    border: '1px solid #374151',
+                    borderRadius: '8px',
+                    color: '#E5E7EB',
+                    fontSize: '14px',
+                    cursor: uploading ? 'not-allowed' : 'pointer',
+                    outline: 'none'
+                  }}
+                />
+                {selectedFile && (
+                  <div style={{
+                    marginTop: '12px',
+                    padding: '12px',
+                    background: '#1E293B',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    color: '#9CA3AF'
+                  }}>
+                    <p style={{ margin: '0 0 4px 0' }}>📹 {selectedFile.name}</p>
+                    <p style={{ margin: 0 }}>Size: {Math.round(selectedFile.size / 1024 / 1024)}MB</p>
+                  </div>
+                )}
+              </div>
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500, color: '#E5E7EB' }}>
+                  Video Title *
+                </label>
+                <input
+                  type="text"
+                  value={videoTitle}
+                  onChange={e => setVideoTitle(e.target.value)}
+                  placeholder="Enter video title..."
+                  disabled={uploading}
+                  maxLength={100}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    background: '#1E293B',
+                    border: '1px solid #374151',
+                    borderRadius: '8px',
+                    color: '#E5E7EB',
+                    fontSize: '14px',
+                    outline: 'none'
+                  }}
+                />
+              </div>
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500, color: '#E5E7EB' }}>
+                  Description (Optional)
+                </label>
+                <textarea
+                  value={description}
+                  onChange={e => setDescription(e.target.value)}
+                  placeholder="Add a description..."
+                  disabled={uploading}
+                  rows={4}
+                  maxLength={500}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    background: '#1E293B',
+                    border: '1px solid #374151',
+                    borderRadius: '8px',
+                    color: '#E5E7EB',
+                    fontSize: '14px',
+                    fontFamily: 'inherit',
+                    outline: 'none',
+                    resize: 'vertical'
+                  }}
+                />
+              </div>
+              <button
+                onClick={handleUpload}
+                disabled={uploading || !selectedFile || !videoTitle.trim()}
+                style={{
+                  width: '100%',
+                  padding: '14px',
+                  background: (!selectedFile || !videoTitle.trim() || uploading) ? '#374151' : '#6366F1',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  cursor: (!selectedFile || !videoTitle.trim() || uploading) ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s',
+                  opacity: (!selectedFile || !videoTitle.trim() || uploading) ? 0.5 : 1
+                }}
+                onMouseEnter={e => {
+                  if (selectedFile && videoTitle.trim() && !uploading) {
+                    e.currentTarget.style.background = '#5558E3';
+                  }
+                }}
+                onMouseLeave={e => {
+                  if (selectedFile && videoTitle.trim() && !uploading) {
+                    e.currentTarget.style.background = '#6366F1';
+                  }
+                }}
+              >
+                {uploading ? 'Uploading...' : 'Upload to Facebook Page'}
+              </button>
             </div>
-
-            <div className="form-group">
-              <label>Video Title *</label>
-              <input
-                type="text"
-                value={videoTitle}
-                onChange={(e) => setVideoTitle(e.target.value)}
-                placeholder="Enter video title..."
-                disabled={uploading}
-                maxLength={100}
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Description (Optional)</label>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Add a description..."
-                disabled={uploading}
-                rows={4}
-                maxLength={500}
-              />
-            </div>
-
-            <button
-              onClick={handleUpload}
-              disabled={uploading || !selectedFile || !videoTitle.trim()}
-              className="btn-upload"
-            >
-              {uploading ? 'Uploading...' : 'Upload to Facebook Page'}
-            </button>
-          </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

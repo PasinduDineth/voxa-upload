@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import PageHeader from './Layout/PageHeader';
 import tiktokApi from '../services/tiktokApi';
 import youtubeApi from '../services/youtubeApi';
 import facebookApi from '../services/facebookApi';
-import './TikTokUploader.css';
 
 function MultiUploader() {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -525,33 +523,68 @@ function MultiUploader() {
   const totalAccounts = allAccounts.tiktok.length + allAccounts.youtube.length + allAccounts.facebook.length;
 
   return (
-    <div className="uploader-container">
-      <PageHeader
-        icon="🚀"
-        title="Multi-Platform Upload"
-        description="Upload one video to multiple platforms simultaneously"
-      />
-
-      <div className="upload-card">
-        <div className="header">
-          <h2>Select Video & Accounts</h2>
+    <div style={{
+      minHeight: '100vh',
+      background: '#020617',
+      padding: '40px',
+      fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+    }}>
+      {/* Page Header */}
+      <div style={{ marginBottom: '32px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+          <span style={{ fontSize: '32px' }}>🚀</span>
+          <h1 style={{ fontSize: '28px', fontWeight: 600, color: '#E5E7EB', margin: 0 }}>
+            Multi-Platform Upload
+          </h1>
         </div>
+        <p style={{ fontSize: '14px', color: '#9CA3AF', margin: 0 }}>
+          Upload one video to multiple platforms simultaneously
+        </p>
+      </div>
 
-        <div className="upload-form">
+      {/* Main Card */}
+      <div style={{
+        background: '#0F172A',
+        border: '1px solid #1F2937',
+        borderRadius: '12px',
+        overflow: 'hidden',
+        maxWidth: '1200px',
+        margin: '0 auto'
+      }}>
+        <div style={{ padding: '24px' }}>
           {/* Video File Selection */}
-          <div className="form-group">
-            <label htmlFor="video-file">Select Video File *</label>
+          <div style={{ marginBottom: '24px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500, color: '#E5E7EB' }}>
+              Select Video File *
+            </label>
             <input
-              id="video-file"
               type="file"
               accept="video/*"
               onChange={handleFileSelect}
               disabled={uploading}
+              style={{
+                width: '100%',
+                padding: '12px 16px',
+                background: '#1E293B',
+                border: '1px solid #374151',
+                borderRadius: '8px',
+                color: '#E5E7EB',
+                fontSize: '14px',
+                cursor: uploading ? 'not-allowed' : 'pointer',
+                outline: 'none'
+              }}
             />
             {selectedFile && (
-              <div className="file-info">
-                <p>📹 {selectedFile.name}</p>
-                <p>Size: {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB</p>
+              <div style={{
+                marginTop: '12px',
+                padding: '12px',
+                background: '#1E293B',
+                borderRadius: '8px',
+                fontSize: '14px',
+                color: '#9CA3AF'
+              }}>
+                <p style={{ margin: '0 0 4px 0' }}>📹 {selectedFile.name}</p>
+                <p style={{ margin: 0 }}>Size: {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB</p>
               </div>
             )}
           </div>
@@ -563,13 +596,13 @@ function MultiUploader() {
                 No accounts found. Please add accounts from individual platform pages first.
               </p>
               <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                <a href="/tiktok" style={{ color: '#667eea', textDecoration: 'none', fontWeight: 600 }}>
+                <a href="/tiktok" style={{ color: '#6366F1', textDecoration: 'none', fontWeight: 600 }}>
                   Add TikTok Account →
                 </a>
-                <a href="/youtube" style={{ color: '#667eea', textDecoration: 'none', fontWeight: 600 }}>
+                <a href="/youtube" style={{ color: '#6366F1', textDecoration: 'none', fontWeight: 600 }}>
                   Add YouTube Channel →
                 </a>
-                <a href="/facebook" style={{ color: '#667eea', textDecoration: 'none', fontWeight: 600 }}>
+                <a href="/facebook" style={{ color: '#6366F1', textDecoration: 'none', fontWeight: 600 }}>
                   Add Facebook Page →
                 </a>
               </div>
@@ -577,17 +610,19 @@ function MultiUploader() {
           ) : (
             <>
               <div style={{ marginTop: '20px' }}>
-                <h3 style={{ marginBottom: '15px', color: '#1f2937' }}>
+                <h3 style={{ marginBottom: '15px', color: '#E5E7EB', fontSize: '18px', fontWeight: 600 }}>
                   Select Accounts to Upload To
                   {selectedAccounts.length > 0 && (
-                    <span style={{ fontSize: '0.85em', color: '#667eea', marginLeft: '10px' }}>
+                    <span style={{ fontSize: '0.85em', color: '#6366F1', marginLeft: '10px' }}>
                       ({selectedAccounts.length} selected)
                     </span>
                   )}
                 </h3>
-                
+                {/* TikTok */}
                 {renderAccountSelector('tiktok', allAccounts.tiktok, 'TikTok Accounts', '🎵')}
+                {/* YouTube */}
                 {renderAccountSelector('youtube', allAccounts.youtube, 'YouTube Channels', '▶️')}
+                {/* Facebook */}
                 {renderAccountSelector('facebook', allAccounts.facebook, 'Facebook Pages', '📘')}
               </div>
 
@@ -599,11 +634,33 @@ function MultiUploader() {
                 <button
                   onClick={handleUploadAll}
                   disabled={!selectedFile || uploading || selectedAccounts.length === 0}
-                  className="btn-upload"
-                  style={{ marginTop: '20px', width: '100%' }}
+                  style={{
+                    marginTop: '20px',
+                    width: '100%',
+                    padding: '14px',
+                    background: (!selectedFile || uploading || selectedAccounts.length === 0) ? '#374151' : '#6366F1',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    cursor: (!selectedFile || uploading || selectedAccounts.length === 0) ? 'not-allowed' : 'pointer',
+                    transition: 'all 0.2s',
+                    opacity: (!selectedFile || uploading || selectedAccounts.length === 0) ? 0.5 : 1
+                  }}
+                  onMouseEnter={e => {
+                    if (selectedFile && !uploading && selectedAccounts.length > 0) {
+                      e.currentTarget.style.background = '#5558E3';
+                    }
+                  }}
+                  onMouseLeave={e => {
+                    if (selectedFile && !uploading && selectedAccounts.length > 0) {
+                      e.currentTarget.style.background = '#6366F1';
+                    }
+                  }}
                 >
-                  {uploading 
-                    ? `Uploading... (${uploadProgress.filter(p => p.status === 'success' || p.status === 'error').length}/${selectedAccounts.length})` 
+                  {uploading
+                    ? `Uploading... (${uploadProgress.filter(p => p.status === 'success' || p.status === 'error').length}/${selectedAccounts.length})`
                     : `Upload to ${selectedAccounts.length} Account${selectedAccounts.length > 1 ? 's' : ''}`}
                 </button>
               )}
@@ -612,7 +669,15 @@ function MultiUploader() {
 
           {/* Error Message */}
           {error && (
-            <div className="status-message error" style={{ marginTop: '20px' }}>
+            <div style={{
+              marginTop: '20px',
+              padding: '16px',
+              background: '#EF4444',
+              color: '#FFFFFF',
+              borderRadius: '8px',
+              fontSize: '14px',
+              fontWeight: 500
+            }}>
               {error}
             </div>
           )}

@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import youtubeApi from '../services/youtubeApi';
-import PageHeader from './Layout/PageHeader';
-import './TikTokUploader.css';
 
 function YouTubeUploader() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -212,143 +210,440 @@ function YouTubeUploader() {
 
   if (view === 'channels') {
     return (
-      <div className="uploader-container">
-        <PageHeader 
-          icon="▶️" 
-          title="YouTube Uploader" 
-          description="Manage your YouTube channels and upload videos"
-        />
-        <div className="upload-card">
-          <div className="header">
-            <h2>Channel Management</h2>
-            <div style={{ display: 'flex', gap: 10 }}>
-              <button onClick={goToUploadView} className="btn-secondary">Go to Upload</button>
-              <button onClick={handleLogout} className="btn-logout">Logout</button>
+      <div style={{
+        minHeight: '100vh',
+        background: '#020617',
+        padding: '40px',
+        fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+      }}>
+        {/* Page Header */}
+        <div style={{ marginBottom: '32px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+            <span style={{ fontSize: '32px' }}>▶️</span>
+            <h1 style={{ fontSize: '28px', fontWeight: 600, color: '#E5E7EB', margin: 0 }}>
+              YouTube Uploader
+            </h1>
+          </div>
+          <p style={{ fontSize: '14px', color: '#9CA3AF', margin: 0 }}>
+            Manage your YouTube channels and upload videos
+          </p>
+        </div>
+
+        {/* Main Card */}
+        <div style={{
+          background: '#0F172A',
+          border: '1px solid #1F2937',
+          borderRadius: '12px',
+          overflow: 'hidden',
+          maxWidth: '1200px'
+        }}>
+          {/* Card Header */}
+          <div style={{
+            padding: '20px 24px',
+            borderBottom: '1px solid #1F2937',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}>
+            <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#E5E7EB', margin: 0 }}>
+              Channel Management
+            </h2>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                onClick={goToUploadView}
+                style={{
+                  padding: '10px 20px',
+                  background: '#6366F1',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = '#5558E3'}
+                onMouseLeave={(e) => e.currentTarget.style.background = '#6366F1'}
+              >
+                Go to Upload
+              </button>
+              <button
+                onClick={handleLogout}
+                style={{
+                  padding: '10px 20px',
+                  background: '#374151',
+                  color: '#E5E7EB',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = '#4B5563'}
+                onMouseLeave={(e) => e.currentTarget.style.background = '#374151'}
+              >
+                Logout
+              </button>
             </div>
           </div>
 
-          <div className="upload-form">
+          {/* Card Content */}
+          <div style={{ padding: '24px' }}>
+            {uploadStatus && (
+              <div style={{
+                padding: '16px',
+                marginBottom: '20px',
+                background: '#10B981',
+                color: '#FFFFFF',
+                borderRadius: '8px',
+                fontSize: '14px',
+                fontWeight: 500
+              }}>
+                {uploadStatus}
+              </div>
+            )}
+
+            {error && (
+              <div style={{
+                padding: '16px',
+                marginBottom: '20px',
+                background: '#EF4444',
+                color: '#FFFFFF',
+                borderRadius: '8px',
+                fontSize: '14px',
+                fontWeight: 500,
+                whiteSpace: 'pre-line'
+              }}>
+                {error}
+              </div>
+            )}
+
             {channels.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-                <p style={{ color: '#666', marginBottom: 20 }}>No channels connected yet.</p>
-                <button onClick={() => handleLogin(false)} className="btn-primary">
+              <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+                <div style={{ fontSize: '48px', marginBottom: '16px' }}>▶️</div>
+                <p style={{ fontSize: '16px', color: '#9CA3AF', marginBottom: '24px' }}>
+                  No channels connected yet
+                </p>
+                <button
+                  onClick={() => handleLogin(false)}
+                  style={{
+                    padding: '12px 24px',
+                    background: '#6366F1',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = '#5558E3'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = '#6366F1'}
+                >
                   Add Your First Channel
                 </button>
               </div>
             ) : (
               <div>
-                <label style={{ display: 'block', marginBottom: 15, fontWeight: 600 }}>Your Connected Channels</label>
-                <div className="accounts-grid">
-                  {channels.map(ch => (
-                    <div 
-                      key={ch.channel_id} 
-                      className={`account-card ${activeChannelId === ch.channel_id ? 'active' : ''}`}
-                      onClick={() => {
-                        const select = { target: { value: ch.channel_id } };
-                        handleChannelSwitch(select);
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        {ch.thumbnail_url ? (
-                          <img 
-                            src={ch.thumbnail_url} 
-                            alt={ch.channel_title}
-                            style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover' }}
-                          />
-                        ) : (
-                          <div style={{ width: 48, height: 48, borderRadius: '50%', background: '#FF0000', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 600 }}>
-                            {(ch.channel_title || 'Y')[0].toUpperCase()}
-                          </div>
-                        )}
-                        <div style={{ flex: 1 }}>
-                          <div style={{ fontWeight: 600, color: '#333' }}>{ch.channel_title || 'YouTube Channel'}</div>
-                          <div style={{ fontSize: '0.85em', color: '#999' }}>{ch.channel_id.substring(0, 20)}...</div>
-                          {(() => {
-                            const expiry = formatExpiry(ch.expires_at);
-                            return expiry ? (
-                              <div style={{ fontSize: '0.75em', color: expiry.color, marginTop: 3 }}>
-                                {expiry.text}
-                              </div>
-                            ) : null;
-                          })()}
-                        </div>
-                        {activeChannelId === ch.channel_id && (
-                          <div style={{ background: '#FF0000', color: 'white', padding: '4px 10px', borderRadius: 12, fontSize: '0.8em', fontWeight: 600 }}>
-                            Active
-                          </div>
-                        )}
-                      </div>
-                      <button
-                        onClick={async (e) => {
-                          e.stopPropagation();
-                          if (window.confirm(`Remove ${ch.channel_title || 'this channel'}?`)) {
-                            await youtubeApi.removeChannel(ch.channel_id);
-                            await loadChannelsFromDB();
-                            if (activeChannelId === ch.channel_id) {
-                              const remaining = youtubeApi.getChannels();
-                              if (remaining.length > 0) {
-                                youtubeApi.useChannel(remaining[0].channel_id);
-                                setActiveChannelId(remaining[0].channel_id);
-                              } else {
-                                setActiveChannelId(null);
-                                setIsAuthenticated(false);
-                              }
-                            }
+                <label style={{ display: 'block', marginBottom: '16px', fontSize: '14px', fontWeight: 500, color: '#E5E7EB' }}>
+                  Your Connected Channels
+                </label>
+                <div style={{
+                  display: 'grid',
+                  gap: '12px'
+                }}>
+                  {channels.map(ch => {
+                    const isActive = activeChannelId === ch.channel_id;
+                    const expiry = formatExpiry(ch.expires_at);
+                    
+                    return (
+                      <div
+                        key={ch.channel_id}
+                        onClick={() => {
+                          const select = { target: { value: ch.channel_id } };
+                          handleChannelSwitch(select);
+                        }}
+                        style={{
+                          background: '#1E293B',
+                          border: isActive ? '1px solid #6366F1' : '1px solid #374151',
+                          borderLeft: isActive ? '4px solid #6366F1' : '4px solid transparent',
+                          borderRadius: '10px',
+                          padding: '16px',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isActive) {
+                            e.currentTarget.style.background = '#2D3B52';
+                            e.currentTarget.style.borderColor = '#4B5563';
                           }
                         }}
-                        className="btn-remove"
-                        disabled={uploading}
+                        onMouseLeave={(e) => {
+                          if (!isActive) {
+                            e.currentTarget.style.background = '#1E293B';
+                            e.currentTarget.style.borderColor = '#374151';
+                          }
+                        }}
                       >
-                        Remove
-                      </button>
-                    </div>
-                  ))}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>
+                          {ch.thumbnail_url ? (
+                            <img
+                              src={ch.thumbnail_url}
+                              alt={ch.channel_title}
+                              style={{
+                                width: '48px',
+                                height: '48px',
+                                borderRadius: '50%',
+                                objectFit: 'cover'
+                              }}
+                            />
+                          ) : (
+                            <div style={{
+                              width: '48px',
+                              height: '48px',
+                              borderRadius: '50%',
+                              background: '#6366F1',
+                              color: '#FFFFFF',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '20px',
+                              fontWeight: 600
+                            }}>
+                              {(ch.channel_title || 'Y')[0].toUpperCase()}
+                            </div>
+                          )}
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: '14px', fontWeight: 500, color: '#E5E7EB', marginBottom: '4px' }}>
+                              {ch.channel_title || 'YouTube Channel'}
+                            </div>
+                            <div style={{ fontSize: '12px', color: '#6B7280' }}>
+                              {ch.channel_id.substring(0, 20)}...
+                            </div>
+                            {expiry && (
+                              <div style={{ fontSize: '12px', color: expiry.color, marginTop: '4px', fontWeight: 500 }}>
+                                {expiry.text}
+                              </div>
+                            )}
+                          </div>
+                          {isActive && (
+                            <div style={{
+                              padding: '4px 12px',
+                              background: '#6366F1',
+                              color: '#FFFFFF',
+                              borderRadius: '6px',
+                              fontSize: '12px',
+                              fontWeight: 500
+                            }}>
+                              Active
+                            </div>
+                          )}
+                        </div>
+                        <button
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            if (window.confirm(`Remove ${ch.channel_title || 'this channel'}?`)) {
+                              await youtubeApi.removeChannel(ch.channel_id);
+                              await loadChannelsFromDB();
+                              if (activeChannelId === ch.channel_id) {
+                                const remaining = youtubeApi.getChannels();
+                                if (remaining.length > 0) {
+                                  youtubeApi.useChannel(remaining[0].channel_id);
+                                  setActiveChannelId(remaining[0].channel_id);
+                                } else {
+                                  setActiveChannelId(null);
+                                  setIsAuthenticated(false);
+                                }
+                              }
+                            }
+                          }}
+                          style={{
+                            padding: '8px 16px',
+                            background: '#EF4444',
+                            color: '#FFFFFF',
+                            border: 'none',
+                            borderRadius: '6px',
+                            fontSize: '13px',
+                            fontWeight: 500,
+                            cursor: 'pointer',
+                            marginLeft: '12px',
+                            transition: 'all 0.2s'
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.background = '#DC2626'}
+                          onMouseLeave={(e) => e.currentTarget.style.background = '#EF4444'}
+                          disabled={uploading}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    );
+                  })}
                 </div>
-                <div style={{ marginTop: 20, display: 'flex', gap: 10 }}>
-                  <button onClick={handleAddAnotherChannel} className="btn-primary" style={{ flex: 1 }} disabled={uploading}>
+                <div style={{ marginTop: '20px' }}>
+                  <button
+                    onClick={handleAddAnotherChannel}
+                    disabled={uploading}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      background: '#374151',
+                      color: '#E5E7EB',
+                      border: 'none',
+                      borderRadius: '8px',
+                      fontSize: '14px',
+                      fontWeight: 500,
+                      cursor: uploading ? 'not-allowed' : 'pointer',
+                      transition: 'all 0.2s',
+                      opacity: uploading ? 0.5 : 1
+                    }}
+                    onMouseEnter={(e) => !uploading && (e.currentTarget.style.background = '#4B5563')}
+                    onMouseLeave={(e) => !uploading && (e.currentTarget.style.background = '#374151')}
+                  >
                     + Add Another Channel
                   </button>
                 </div>
               </div>
             )}
           </div>
-
-          {error && (
-            <div className="status-message error">{error}</div>
-          )}
-          {uploadStatus && (
-            <div className="status-message success">{uploadStatus}</div>
-          )}
         </div>
       </div>
     );
   }
 
   return (
-    <div className="uploader-container">
-      <PageHeader 
-        icon="▶️" 
-        title="YouTube Uploader" 
-        description="Upload and manage your YouTube videos"
-      />
-      <div className="upload-card">
-        <div className="header">
-          <h2>Upload Video</h2>
-          <div style={{ display: 'flex', gap: 10 }}>
-            <button onClick={goToChannelsView} className="btn-secondary">Manage Channels</button>
-            <button onClick={handleLogout} className="btn-logout">Logout</button>
+    <div style={{
+      minHeight: '100vh',
+      background: '#020617',
+      padding: '40px',
+      fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+    }}>
+      {/* Page Header */}
+      <div style={{ marginBottom: '32px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+          <span style={{ fontSize: '32px' }}>▶️</span>
+          <h1 style={{ fontSize: '28px', fontWeight: 600, color: '#E5E7EB', margin: 0 }}>
+            YouTube Uploader
+          </h1>
+        </div>
+        <p style={{ fontSize: '14px', color: '#9CA3AF', margin: 0 }}>
+          Upload and manage your YouTube videos
+        </p>
+      </div>
+
+      {/* Main Card */}
+      <div style={{
+        background: '#0F172A',
+        border: '1px solid #1F2937',
+        borderRadius: '12px',
+        overflow: 'hidden',
+        maxWidth: '800px'
+      }}>
+        {/* Card Header */}
+        <div style={{
+          padding: '20px 24px',
+          borderBottom: '1px solid #1F2937',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between'
+        }}>
+          <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#E5E7EB', margin: 0 }}>
+            Upload Video
+          </h2>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button
+              onClick={goToChannelsView}
+              style={{
+                padding: '10px 20px',
+                background: '#374151',
+                color: '#E5E7EB',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '14px',
+                fontWeight: 500,
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.background = '#4B5563'}
+              onMouseLeave={(e) => e.currentTarget.style.background = '#374151'}
+            >
+              Manage Channels
+            </button>
+            <button
+              onClick={handleLogout}
+              style={{
+                padding: '10px 20px',
+                background: '#374151',
+                color: '#E5E7EB',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '14px',
+                fontWeight: 500,
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.background = '#4B5563'}
+              onMouseLeave={(e) => e.currentTarget.style.background = '#374151'}
+            >
+              Logout
+            </button>
           </div>
         </div>
 
-        <div className="upload-form">
+        {/* Card Content */}
+        <div style={{ padding: '24px' }}>
+          {uploadStatus && (
+            <div style={{
+              padding: '16px',
+              marginBottom: '20px',
+              background: '#10B981',
+              color: '#FFFFFF',
+              borderRadius: '8px',
+              fontSize: '14px',
+              fontWeight: 500
+            }}>
+              {uploadStatus}
+            </div>
+          )}
+
+          {error && (
+            <div style={{
+              padding: '16px',
+              marginBottom: '20px',
+              background: '#EF4444',
+              color: '#FFFFFF',
+              borderRadius: '8px',
+              fontSize: '14px',
+              fontWeight: 500
+            }}>
+              {error}
+            </div>
+          )}
+
+          {/* Channel Select */}
           {channels.length > 0 && (
-            <div className="form-group">
-              <label htmlFor="channel-select">Channel</label>
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500, color: '#E5E7EB' }}>
+                Channel
+              </label>
               <select
-                id="channel-select"
                 value={activeChannelId || ''}
                 onChange={handleChannelSwitch}
                 disabled={uploading}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  background: '#1E293B',
+                  border: '1px solid #374151',
+                  borderRadius: '8px',
+                  color: '#E5E7EB',
+                  fontSize: '14px',
+                  cursor: uploading ? 'not-allowed' : 'pointer',
+                  outline: 'none'
+                }}
               >
                 {channels.map(ch => (
                   <option key={ch.channel_id} value={ch.channel_id}>
@@ -359,101 +654,196 @@ function YouTubeUploader() {
             </div>
           )}
 
-          <div className="form-group">
-            <label htmlFor="video-file">Select Video</label>
+          {/* Video File */}
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500, color: '#E5E7EB' }}>
+              Select Video
+            </label>
             <input
-              id="video-file"
               type="file"
               accept="video/*"
               onChange={handleFileSelect}
               disabled={uploading}
+              style={{
+                width: '100%',
+                padding: '12px 16px',
+                background: '#1E293B',
+                border: '1px solid #374151',
+                borderRadius: '8px',
+                color: '#E5E7EB',
+                fontSize: '14px',
+                cursor: uploading ? 'not-allowed' : 'pointer'
+              }}
             />
             {selectedFile && (
-              <div className="file-info">
-                <p>📹 {selectedFile.name}</p>
-                <p>Size: {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB</p>
+              <div style={{
+                marginTop: '12px',
+                padding: '12px',
+                background: '#1E293B',
+                borderRadius: '8px',
+                fontSize: '14px',
+                color: '#9CA3AF'
+              }}>
+                <p style={{ margin: '0 0 4px 0' }}>📹 {selectedFile.name}</p>
+                <p style={{ margin: 0 }}>Size: {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB</p>
               </div>
             )}
           </div>
 
-          <div className="form-group">
-            <label htmlFor="video-title">Video Title</label>
+          {/* Video Title */}
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500, color: '#E5E7EB' }}>
+              Video Title
+            </label>
             <input
-              id="video-title"
               type="text"
               value={videoTitle}
               onChange={(e) => setVideoTitle(e.target.value)}
               placeholder="Enter video title"
               maxLength={100}
               disabled={uploading}
+              style={{
+                width: '100%',
+                padding: '12px 16px',
+                background: '#1E293B',
+                border: '1px solid #374151',
+                borderRadius: '8px',
+                color: '#E5E7EB',
+                fontSize: '14px',
+                outline: 'none'
+              }}
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="video-description">Video Description (Optional)</label>
+          {/* Video Description */}
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500, color: '#E5E7EB' }}>
+              Video Description (Optional)
+            </label>
             <textarea
-              id="video-description"
               value={videoDescription}
               onChange={(e) => setVideoDescription(e.target.value)}
               placeholder="Enter video description"
               maxLength={5000}
               rows={4}
               disabled={uploading}
-              style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', fontFamily: 'inherit' }}
+              style={{
+                width: '100%',
+                padding: '12px 16px',
+                background: '#1E293B',
+                border: '1px solid #374151',
+                borderRadius: '8px',
+                color: '#E5E7EB',
+                fontSize: '14px',
+                fontFamily: 'inherit',
+                outline: 'none',
+                resize: 'vertical'
+              }}
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="video-tags">Tags (comma separated)</label>
+          {/* Tags */}
+          <div style={{ marginBottom: '20px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500, color: '#E5E7EB' }}>
+              Tags (comma separated)
+            </label>
             <input
-              id="video-tags"
               type="text"
               value={tags}
               onChange={(e) => setTags(e.target.value)}
               placeholder="e.g., travel, vlog, music"
               disabled={uploading}
+              style={{
+                width: '100%',
+                padding: '12px 16px',
+                background: '#1E293B',
+                border: '1px solid #374151',
+                borderRadius: '8px',
+                color: '#E5E7EB',
+                fontSize: '14px',
+                outline: 'none'
+              }}
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="default-language">Default Language</label>
-            <select
-              id="default-language"
-              value={defaultLanguage}
-              onChange={(e) => setDefaultLanguage(e.target.value)}
-              disabled={uploading}
-            >
-              <option value="en">English</option>
-              <option value="fr">French</option>
-              <option value="ja">Japanese</option>
-              <option value="de">German</option>
-              <option value="es">Spanish</option>
-            </select>
+          {/* Language Selects */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500, color: '#E5E7EB' }}>
+                Default Language
+              </label>
+              <select
+                value={defaultLanguage}
+                onChange={(e) => setDefaultLanguage(e.target.value)}
+                disabled={uploading}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  background: '#1E293B',
+                  border: '1px solid #374151',
+                  borderRadius: '8px',
+                  color: '#E5E7EB',
+                  fontSize: '14px',
+                  cursor: uploading ? 'not-allowed' : 'pointer',
+                  outline: 'none'
+                }}
+              >
+                <option value="en">English</option>
+                <option value="fr">French</option>
+                <option value="ja">Japanese</option>
+                <option value="de">German</option>
+                <option value="es">Spanish</option>
+              </select>
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500, color: '#E5E7EB' }}>
+                Default Audio Language
+              </label>
+              <select
+                value={defaultAudioLanguage}
+                onChange={(e) => setDefaultAudioLanguage(e.target.value)}
+                disabled={uploading}
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  background: '#1E293B',
+                  border: '1px solid #374151',
+                  borderRadius: '8px',
+                  color: '#E5E7EB',
+                  fontSize: '14px',
+                  cursor: uploading ? 'not-allowed' : 'pointer',
+                  outline: 'none'
+                }}
+              >
+                <option value="en">English</option>
+                <option value="fr">French</option>
+                <option value="ja">Japanese</option>
+                <option value="de">German</option>
+                <option value="es">Spanish</option>
+              </select>
+            </div>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="default-audio-language">Default Audio Language</label>
+          {/* Privacy Status */}
+          <div style={{ marginBottom: '24px' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500, color: '#E5E7EB' }}>
+              Privacy Status
+            </label>
             <select
-              id="default-audio-language"
-              value={defaultAudioLanguage}
-              onChange={(e) => setDefaultAudioLanguage(e.target.value)}
-              disabled={uploading}
-            >
-              <option value="en">English</option>
-              <option value="fr">French</option>
-              <option value="ja">Japanese</option>
-              <option value="de">German</option>
-              <option value="es">Spanish</option>
-            </select>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="privacy-status">Privacy Status</label>
-            <select
-              id="privacy-status"
               value={privacyStatus}
               onChange={(e) => setPrivacyStatus(e.target.value)}
               disabled={uploading}
+              style={{
+                width: '100%',
+                padding: '12px 16px',
+                background: '#1E293B',
+                border: '1px solid #374151',
+                borderRadius: '8px',
+                color: '#E5E7EB',
+                fontSize: '14px',
+                cursor: uploading ? 'not-allowed' : 'pointer',
+                outline: 'none'
+              }}
             >
               <option value="public">Public</option>
               <option value="unlisted">Unlisted</option>
@@ -461,35 +851,55 @@ function YouTubeUploader() {
             </select>
           </div>
 
+          {/* Upload Button */}
           <button
             onClick={handleUpload}
             disabled={!selectedFile || !videoTitle.trim() || uploading}
-            className="btn-upload"
+            style={{
+              width: '100%',
+              padding: '14px',
+              background: (!selectedFile || !videoTitle.trim() || uploading) ? '#374151' : '#6366F1',
+              color: '#FFFFFF',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '14px',
+              fontWeight: 500,
+              cursor: (!selectedFile || !videoTitle.trim() || uploading) ? 'not-allowed' : 'pointer',
+              transition: 'all 0.2s',
+              opacity: (!selectedFile || !videoTitle.trim() || uploading) ? 0.5 : 1
+            }}
+            onMouseEnter={(e) => {
+              if (selectedFile && videoTitle.trim() && !uploading) {
+                e.currentTarget.style.background = '#5558E3';
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (selectedFile && videoTitle.trim() && !uploading) {
+                e.currentTarget.style.background = '#6366F1';
+              }
+            }}
           >
             {uploading ? 'Uploading...' : 'Upload to YouTube'}
           </button>
-        </div>
 
-        {uploadStatus && (
-          <div className="status-message success">
-            {uploadStatus}
+          {/* Info Section */}
+          <div style={{
+            marginTop: '24px',
+            padding: '16px',
+            background: '#1E293B',
+            borderRadius: '8px',
+            border: '1px solid #374151'
+          }}>
+            <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#E5E7EB', margin: '0 0 12px 0' }}>
+              📱 YouTube Upload Information:
+            </h3>
+            <ul style={{ margin: 0, paddingLeft: '20px', color: '#9CA3AF', fontSize: '13px', lineHeight: '1.8' }}>
+              <li>Videos can be uploaded as Private, Unlisted, or Public</li>
+              <li>Maximum file size: 256GB</li>
+              <li>Maximum duration: 12 hours</li>
+              <li>Supported formats: MOV, MPEG4, MP4, AVI, WMV, MPEGPS, FLV, 3GPP, WebM</li>
+            </ul>
           </div>
-        )}
-
-        {error && (
-          <div className="status-message error">
-            {error}
-          </div>
-        )}
-
-        <div className="info-section">
-          <h3>📱 YouTube Upload Information:</h3>
-          <ul style={{ textAlign: 'left', lineHeight: '1.8' }}>
-            <li>Videos can be uploaded as Private, Unlisted, or Public</li>
-            <li>Maximum file size: 256GB</li>
-            <li>Maximum duration: 12 hours</li>
-            <li>Supported formats: MOV, MPEG4, MP4, AVI, WMV, MPEGPS, FLV, 3GPP, WebM</li>
-          </ul>
         </div>
       </div>
     </div>
