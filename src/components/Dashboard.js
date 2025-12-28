@@ -65,32 +65,6 @@ function Dashboard() {
           </div>
         ))}
       </div>
-
-      <div className="features-section">
-        <h3 className="section-title">Features</h3>
-        <div className="features-grid">
-          <div className="feature-card">
-            <div className="feature-icon">🚀</div>
-            <h4>Fast Uploads</h4>
-            <p>Quick and efficient video uploads to multiple platforms</p>
-          </div>
-          <div className="feature-card">
-            <div className="feature-icon">🔒</div>
-            <h4>Secure</h4>
-            <p>OAuth 2.0 authentication for all platforms</p>
-          </div>
-          <div className="feature-card">
-            <div className="feature-icon">📊</div>
-            <h4>Multi-Account</h4>
-            <p>Manage multiple accounts per platform</p>
-          </div>
-          <div className="feature-card">
-            <div className="feature-icon">⚡</div>
-            <h4>Easy to Use</h4>
-            <p>Intuitive interface for seamless uploads</p>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
