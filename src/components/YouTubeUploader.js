@@ -212,27 +212,28 @@ function YouTubeUploader() {
     return (
       <div style={{
         minHeight: '100vh',
-        background: '#020617',
+        background: '#0b1c2d',
         padding: '40px',
-        fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+        fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+        color: '#e5e7eb'
       }}>
         {/* Page Header */}
         <div style={{ marginBottom: '32px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
             <span style={{ fontSize: '32px' }}>▶️</span>
-            <h1 style={{ fontSize: '28px', fontWeight: 600, color: '#E5E7EB', margin: 0 }}>
+            <h1 style={{ fontSize: '28px', fontWeight: 600, color: '#e5e7eb', margin: 0 }}>
               YouTube Uploader
             </h1>
           </div>
-          <p style={{ fontSize: '14px', color: '#9CA3AF', margin: 0 }}>
+          <p style={{ fontSize: '14px', color: '#6b7280', margin: 0 }}>
             Manage your YouTube channels and upload videos
           </p>
         </div>
 
         {/* Main Card */}
         <div style={{
-          background: '#0F172A',
-          border: '1px solid #1F2937',
+          background: '#111827',
+          border: '1px solid #374151',
           borderRadius: '12px',
           overflow: 'hidden',
           maxWidth: '1200px'
@@ -240,12 +241,12 @@ function YouTubeUploader() {
           {/* Card Header */}
           <div style={{
             padding: '20px 24px',
-            borderBottom: '1px solid #1F2937',
+            borderBottom: '1px solid #374151',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between'
           }}>
-            <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#E5E7EB', margin: 0 }}>
+            <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#e5e7eb', margin: 0 }}>
               Channel Management
             </h2>
             <div style={{ display: 'flex', gap: '12px' }}>
@@ -253,7 +254,7 @@ function YouTubeUploader() {
                 onClick={goToUploadView}
                 style={{
                   padding: '10px 20px',
-                  background: '#6366F1',
+                  background: '#4fd1c5',
                   color: '#FFFFFF',
                   border: 'none',
                   borderRadius: '8px',
@@ -262,8 +263,8 @@ function YouTubeUploader() {
                   cursor: 'pointer',
                   transition: 'all 0.2s'
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.background = '#5558E3'}
-                onMouseLeave={(e) => e.currentTarget.style.background = '#6366F1'}
+                onMouseEnter={(e) => e.currentTarget.style.background = '#38b2ac'}
+                onMouseLeave={(e) => e.currentTarget.style.background = '#4fd1c5'}
               >
                 Go to Upload
               </button>
@@ -272,7 +273,7 @@ function YouTubeUploader() {
                 style={{
                   padding: '10px 20px',
                   background: '#374151',
-                  color: '#E5E7EB',
+                  color: '#e5e7eb',
                   border: 'none',
                   borderRadius: '8px',
                   fontSize: '14px',
@@ -329,7 +330,7 @@ function YouTubeUploader() {
                   onClick={() => handleLogin(false)}
                   style={{
                     padding: '12px 24px',
-                    background: '#6366F1',
+                    background: '#4fd1c5',
                     color: '#FFFFFF',
                     border: 'none',
                     borderRadius: '8px',
@@ -338,15 +339,15 @@ function YouTubeUploader() {
                     cursor: 'pointer',
                     transition: 'all 0.2s'
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = '#5558E3'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = '#6366F1'}
+                  onMouseEnter={(e) => e.currentTarget.style.background = '#38b2ac'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = '#4fd1c5'}
                 >
                   Add Your First Channel
                 </button>
               </div>
             ) : (
               <div>
-                <label style={{ display: 'block', marginBottom: '16px', fontSize: '14px', fontWeight: 500, color: '#E5E7EB' }}>
+                <label style={{ display: 'block', marginBottom: '16px', fontSize: '14px', fontWeight: 500, color: '#e5e7eb' }}>
                   Your Connected Channels
                 </label>
                 <div style={{
@@ -366,8 +367,8 @@ function YouTubeUploader() {
                         }}
                         style={{
                           background: '#1E293B',
-                          border: isActive ? '1px solid #6366F1' : '1px solid #374151',
-                          borderLeft: isActive ? '4px solid #6366F1' : '4px solid transparent',
+                          border: isActive ? '1px solid #4fd1c5' : '1px solid #374151',
+                          borderLeft: isActive ? '4px solid #4fd1c5' : '4px solid transparent',
                           borderRadius: '10px',
                           padding: '16px',
                           cursor: 'pointer',
@@ -418,7 +419,7 @@ function YouTubeUploader() {
                             </div>
                           )}
                           <div style={{ flex: 1 }}>
-                            <div style={{ fontSize: '14px', fontWeight: 500, color: '#E5E7EB', marginBottom: '4px' }}>
+                            <div style={{ fontSize: '14px', fontWeight: 500, color: '#e5e7eb', marginBottom: '4px' }}>
                               {ch.channel_title || 'YouTube Channel'}
                             </div>
                             <div style={{ fontSize: '12px', color: '#6B7280' }}>
@@ -433,7 +434,7 @@ function YouTubeUploader() {
                           {isActive && (
                             <div style={{
                               padding: '4px 12px',
-                              background: '#6366F1',
+                              background: '#4fd1c5',
                               color: '#FFFFFF',
                               borderRadius: '6px',
                               fontSize: '12px',
@@ -491,7 +492,7 @@ function YouTubeUploader() {
                       width: '100%',
                       padding: '12px',
                       background: '#374151',
-                      color: '#E5E7EB',
+                      color: '#e5e7eb',
                       border: 'none',
                       borderRadius: '8px',
                       fontSize: '14px',
@@ -517,27 +518,28 @@ function YouTubeUploader() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: '#020617',
+      background: '#0b1c2d',
       padding: '40px',
-      fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+      fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      color: '#e5e7eb'
     }}>
       {/* Page Header */}
       <div style={{ marginBottom: '32px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
           <span style={{ fontSize: '32px' }}>▶️</span>
-          <h1 style={{ fontSize: '28px', fontWeight: 600, color: '#E5E7EB', margin: 0 }}>
+          <h1 style={{ fontSize: '28px', fontWeight: 600, color: '#e5e7eb', margin: 0 }}>
             YouTube Uploader
           </h1>
         </div>
-        <p style={{ fontSize: '14px', color: '#9CA3AF', margin: 0 }}>
+        <p style={{ fontSize: '14px', color: '#6b7280', margin: 0 }}>
           Upload and manage your YouTube videos
         </p>
       </div>
 
       {/* Main Card */}
       <div style={{
-        background: '#0F172A',
-        border: '1px solid #1F2937',
+        background: '#111827',
+        border: '1px solid #374151',
         borderRadius: '12px',
         overflow: 'hidden',
         maxWidth: '800px'
@@ -545,12 +547,12 @@ function YouTubeUploader() {
         {/* Card Header */}
         <div style={{
           padding: '20px 24px',
-          borderBottom: '1px solid #1F2937',
+          borderBottom: '1px solid #374151',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between'
         }}>
-          <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#E5E7EB', margin: 0 }}>
+          <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#e5e7eb', margin: 0 }}>
             Upload Video
           </h2>
           <div style={{ display: 'flex', gap: '12px' }}>
@@ -559,7 +561,7 @@ function YouTubeUploader() {
               style={{
                 padding: '10px 20px',
                 background: '#374151',
-                color: '#E5E7EB',
+                color: '#e5e7eb',
                 border: 'none',
                 borderRadius: '8px',
                 fontSize: '14px',
@@ -577,7 +579,7 @@ function YouTubeUploader() {
               style={{
                 padding: '10px 20px',
                 background: '#374151',
-                color: '#E5E7EB',
+                color: '#e5e7eb',
                 border: 'none',
                 borderRadius: '8px',
                 fontSize: '14px',
@@ -626,7 +628,7 @@ function YouTubeUploader() {
           {/* Channel Select */}
           {channels.length > 0 && (
             <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500, color: '#E5E7EB' }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500, color: '#e5e7eb' }}>
                 Channel
               </label>
               <select
@@ -639,7 +641,7 @@ function YouTubeUploader() {
                   background: '#1E293B',
                   border: '1px solid #374151',
                   borderRadius: '8px',
-                  color: '#E5E7EB',
+                  color: '#e5e7eb',
                   fontSize: '14px',
                   cursor: uploading ? 'not-allowed' : 'pointer',
                   outline: 'none'
@@ -656,7 +658,7 @@ function YouTubeUploader() {
 
           {/* Video File */}
           <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500, color: '#E5E7EB' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500, color: '#e5e7eb' }}>
               Select Video
             </label>
             <input
@@ -670,7 +672,7 @@ function YouTubeUploader() {
                 background: '#1E293B',
                 border: '1px solid #374151',
                 borderRadius: '8px',
-                color: '#E5E7EB',
+                color: '#e5e7eb',
                 fontSize: '14px',
                 cursor: uploading ? 'not-allowed' : 'pointer'
               }}
@@ -692,7 +694,7 @@ function YouTubeUploader() {
 
           {/* Video Title */}
           <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500, color: '#E5E7EB' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500, color: '#e5e7eb' }}>
               Video Title
             </label>
             <input
@@ -708,7 +710,7 @@ function YouTubeUploader() {
                 background: '#1E293B',
                 border: '1px solid #374151',
                 borderRadius: '8px',
-                color: '#E5E7EB',
+                color: '#e5e7eb',
                 fontSize: '14px',
                 outline: 'none'
               }}
@@ -717,7 +719,7 @@ function YouTubeUploader() {
 
           {/* Video Description */}
           <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500, color: '#E5E7EB' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500, color: '#e5e7eb' }}>
               Video Description (Optional)
             </label>
             <textarea
@@ -733,7 +735,7 @@ function YouTubeUploader() {
                 background: '#1E293B',
                 border: '1px solid #374151',
                 borderRadius: '8px',
-                color: '#E5E7EB',
+                color: '#e5e7eb',
                 fontSize: '14px',
                 fontFamily: 'inherit',
                 outline: 'none',
@@ -744,7 +746,7 @@ function YouTubeUploader() {
 
           {/* Tags */}
           <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500, color: '#E5E7EB' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500, color: '#e5e7eb' }}>
               Tags (comma separated)
             </label>
             <input
@@ -759,7 +761,7 @@ function YouTubeUploader() {
                 background: '#1E293B',
                 border: '1px solid #374151',
                 borderRadius: '8px',
-                color: '#E5E7EB',
+                color: '#e5e7eb',
                 fontSize: '14px',
                 outline: 'none'
               }}
@@ -769,7 +771,7 @@ function YouTubeUploader() {
           {/* Language Selects */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
             <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500, color: '#E5E7EB' }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500, color: '#e5e7eb' }}>
                 Default Language
               </label>
               <select
@@ -782,7 +784,7 @@ function YouTubeUploader() {
                   background: '#1E293B',
                   border: '1px solid #374151',
                   borderRadius: '8px',
-                  color: '#E5E7EB',
+                  color: '#e5e7eb',
                   fontSize: '14px',
                   cursor: uploading ? 'not-allowed' : 'pointer',
                   outline: 'none'
@@ -796,7 +798,7 @@ function YouTubeUploader() {
               </select>
             </div>
             <div>
-              <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500, color: '#E5E7EB' }}>
+              <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500, color: '#e5e7eb' }}>
                 Default Audio Language
               </label>
               <select
@@ -809,7 +811,7 @@ function YouTubeUploader() {
                   background: '#1E293B',
                   border: '1px solid #374151',
                   borderRadius: '8px',
-                  color: '#E5E7EB',
+                  color: '#e5e7eb',
                   fontSize: '14px',
                   cursor: uploading ? 'not-allowed' : 'pointer',
                   outline: 'none'
@@ -826,7 +828,7 @@ function YouTubeUploader() {
 
           {/* Privacy Status */}
           <div style={{ marginBottom: '24px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500, color: '#E5E7EB' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500, color: '#e5e7eb' }}>
               Privacy Status
             </label>
             <select
@@ -839,7 +841,7 @@ function YouTubeUploader() {
                 background: '#1E293B',
                 border: '1px solid #374151',
                 borderRadius: '8px',
-                color: '#E5E7EB',
+                color: '#e5e7eb',
                 fontSize: '14px',
                 cursor: uploading ? 'not-allowed' : 'pointer',
                 outline: 'none'
@@ -858,7 +860,7 @@ function YouTubeUploader() {
             style={{
               width: '100%',
               padding: '14px',
-              background: (!selectedFile || !videoTitle.trim() || uploading) ? '#374151' : '#6366F1',
+              background: (!selectedFile || !videoTitle.trim() || uploading) ? '#374151' : '#4fd1c5',
               color: '#FFFFFF',
               border: 'none',
               borderRadius: '8px',
@@ -870,12 +872,12 @@ function YouTubeUploader() {
             }}
             onMouseEnter={(e) => {
               if (selectedFile && videoTitle.trim() && !uploading) {
-                e.currentTarget.style.background = '#5558E3';
+                e.currentTarget.style.background = '#38b2ac';
               }
             }}
             onMouseLeave={(e) => {
               if (selectedFile && videoTitle.trim() && !uploading) {
-                e.currentTarget.style.background = '#6366F1';
+                e.currentTarget.style.background = '#4fd1c5';
               }
             }}
           >
@@ -890,7 +892,7 @@ function YouTubeUploader() {
             borderRadius: '8px',
             border: '1px solid #374151'
           }}>
-            <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#E5E7EB', margin: '0 0 12px 0' }}>
+            <h3 style={{ fontSize: '14px', fontWeight: 600, color: '#e5e7eb', margin: '0 0 12px 0' }}>
               📱 YouTube Upload Information:
             </h3>
             <ul style={{ margin: 0, paddingLeft: '20px', color: '#9CA3AF', fontSize: '13px', lineHeight: '1.8' }}>

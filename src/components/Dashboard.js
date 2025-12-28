@@ -28,27 +28,17 @@ function Dashboard() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: '#020617',
+      background: '#0b1c2d',
       padding: '40px',
-      fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+      fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      color: '#e5e7eb'
     }}>
       {/* Hero Section */}
-      <div style={{
-        marginBottom: '40px'
-      }}>
-        <h1 style={{
-          fontSize: '28px',
-          fontWeight: 600,
-          color: '#E5E7EB',
-          margin: '0 0 12px 0'
-        }}>
+      <div style={{ marginBottom: '40px' }}>
+        <h1 style={{ fontSize: '28px', fontWeight: 600, color: '#e5e7eb', margin: '0 0 12px 0' }}>
           Multi-Platform Video Uploader
         </h1>
-        <p style={{
-          fontSize: '14px',
-          color: '#9CA3AF',
-          margin: 0
-        }}>
+        <p style={{ fontSize: '14px', color: '#6b7280', margin: 0 }}>
           Upload and manage your videos across TikTok, YouTube, and Facebook from one place
         </p>
       </div>
@@ -65,21 +55,22 @@ function Dashboard() {
             key={platform.id}
             onClick={() => navigate(`/${platform.id}`)}
             style={{
-              background: '#0F172A',
-              border: '1px solid #1F2937',
+              background: '#111827',
+              border: '1px solid #4fd1c5',
               borderRadius: '12px',
               padding: '24px',
               cursor: 'pointer',
               transition: 'all 0.2s',
-              position: 'relative'
+              position: 'relative',
+              color: '#e5e7eb'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = '#6366F1';
+              e.currentTarget.style.borderColor = '#4fd1c5';
               e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(99, 102, 241, 0.15)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(79,209,197,0.15)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = '#1F2937';
+              e.currentTarget.style.borderColor = '#4fd1c5';
               e.currentTarget.style.transform = 'translateY(0)';
               e.currentTarget.style.boxShadow = 'none';
             }}
@@ -96,7 +87,7 @@ function Dashboard() {
             <h2 style={{
               fontSize: '20px',
               fontWeight: 600,
-              color: '#E5E7EB',
+              color: '#e5e7eb',
               margin: '0 0 8px 0'
             }}>
               {platform.name}
@@ -105,7 +96,7 @@ function Dashboard() {
             {/* Description */}
             <p style={{
               fontSize: '14px',
-              color: '#9CA3AF',
+              color: '#6b7280',
               margin: '0 0 20px 0',
               lineHeight: '1.5'
             }}>
@@ -119,7 +110,7 @@ function Dashboard() {
               gap: '8px',
               fontSize: '14px',
               fontWeight: 500,
-              color: '#6366F1'
+              color: '#4fd1c5'
             }}>
               <span>Open Uploader</span>
               <span>→</span>
@@ -132,22 +123,23 @@ function Dashboard() {
       <div
         onClick={() => navigate('/uploads')}
         style={{
-          background: '#0F172A',
-          border: '1px solid #1F2937',
+          background: '#111827',
+          border: '1px solid #4fd1c5',
           borderRadius: '12px',
           padding: '24px',
           cursor: 'pointer',
           transition: 'all 0.2s',
           marginTop: '20px',
-          maxWidth: '1200px'
+          maxWidth: '1200px',
+          color: '#e5e7eb'
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.borderColor = '#6366F1';
+          e.currentTarget.style.borderColor = '#4fd1c5';
           e.currentTarget.style.transform = 'translateY(-2px)';
-          e.currentTarget.style.boxShadow = '0 4px 12px rgba(99, 102, 241, 0.15)';
+          e.currentTarget.style.boxShadow = '0 4px 12px rgba(79,209,197,0.15)';
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.borderColor = '#1F2937';
+          e.currentTarget.style.borderColor = '#4fd1c5';
           e.currentTarget.style.transform = 'translateY(0)';
           e.currentTarget.style.boxShadow = 'none';
         }}
@@ -158,14 +150,14 @@ function Dashboard() {
             <h3 style={{
               fontSize: '18px',
               fontWeight: 600,
-              color: '#E5E7EB',
+              color: '#e5e7eb',
               margin: '0 0 4px 0'
             }}>
               Multi-Platform Upload
             </h3>
             <p style={{
               fontSize: '14px',
-              color: '#9CA3AF',
+              color: '#6b7280',
               margin: 0
             }}>
               Upload one video to multiple platforms simultaneously
@@ -177,7 +169,7 @@ function Dashboard() {
             gap: '8px',
             fontSize: '14px',
             fontWeight: 500,
-            color: '#6366F1'
+            color: '#4fd1c5'
           }}>
             <span>Start Upload</span>
             <span>→</span>

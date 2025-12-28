@@ -7,14 +7,16 @@ function DashboardLayout() {
     <div style={{
       display: 'flex',
       minHeight: '100vh',
-      background: '#050816',
-      fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+      background: '#0b1c2d',
+      fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      color: '#e5e7eb'
     }}>
       <Sidebar />
       <div style={{
         flex: 1,
         minHeight: '100vh',
-        background: '#020617'
+        background: '#111827',
+        color: '#e5e7eb'
       }}>
         <Outlet />
       </div>

@@ -308,9 +308,9 @@ function MultiUploader() {
                   cursor: uploading ? 'not-allowed' : 'pointer',
                   opacity: uploading ? 0.6 : 1,
                   padding: '12px',
-                  border: isSelected ? '2px solid #667eea' : '2px solid #e5e7eb',
+                  border: isSelected ? '2px solid #4fd1c5' : '2px solid #e5e7eb',
                   borderRadius: '12px',
-                  background: isSelected ? '#f0f4ff' : 'white',
+                  background: isSelected ? '#111827' : '#0f172a',
                   transition: 'all 0.2s ease'
                 }}
               >
@@ -341,7 +341,7 @@ function MultiUploader() {
                     )}
                   </div>
                   {isSelected && (
-                    <div style={{ color: '#667eea', fontSize: '1.2em' }}>✓</div>
+                    <div style={{ color: '#4fd1c5', fontSize: '1.2em' }}>✓</div>
                   )}
                 </div>
               </div>
@@ -357,7 +357,7 @@ function MultiUploader() {
 
     return (
       <div style={{ marginTop: '30px' }}>
-        <h3 style={{ marginBottom: '20px', color: '#1f2937' }}>Upload Details</h3>
+        <h3 style={{ marginBottom: '20px', color: '#e5e7eb' }}>Upload Details</h3>
         {selectedAccounts.map((acc) => {
           const data = formData[acc.key] || {};
           const accountName = acc.account.display_name || acc.account.channel_title || acc.accountId;
@@ -368,9 +368,9 @@ function MultiUploader() {
               style={{
                 marginBottom: '25px',
                 padding: '20px',
-                border: '2px solid #e5e7eb',
+                border: '2px solid #374151',
                 borderRadius: '12px',
-                background: '#f9fafb'
+                background: '#111827'
               }}
             >
               <h4 style={{ margin: '0 0 15px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -378,7 +378,7 @@ function MultiUploader() {
                 {acc.platform === 'youtube' && '▶️'}
                 {acc.platform === 'facebook' && '📘'}
                 <span>{accountName}</span>
-                <span style={{ fontSize: '0.8em', color: '#666', fontWeight: 'normal' }}>
+                <span style={{ fontSize: '0.8em', color: '#6b7280', fontWeight: 'normal' }}>
                   ({acc.platform})
                 </span>
               </h4>
@@ -393,6 +393,17 @@ function MultiUploader() {
                     maxLength={150}
                     rows={3}
                     disabled={uploading}
+                    style={{
+                      width: '100%',
+                      padding: '12px',
+                      background: '#1e293b',
+                      border: '1px solid #374151',
+                      borderRadius: '8px',
+                      color: '#e5e7eb',
+                      fontSize: '14px',
+                      resize: 'none',
+                      outline: 'none'
+                    }}
                   />
                 </div>
               )}
@@ -408,6 +419,16 @@ function MultiUploader() {
                       placeholder="Enter video title"
                       maxLength={100}
                       disabled={uploading}
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        background: '#1e293b',
+                        border: '1px solid #374151',
+                        borderRadius: '8px',
+                        color: '#e5e7eb',
+                        fontSize: '14px',
+                        outline: 'none'
+                      }}
                     />
                   </div>
                   <div className="form-group">
@@ -418,6 +439,17 @@ function MultiUploader() {
                       placeholder="Enter video description"
                       rows={3}
                       disabled={uploading}
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        background: '#1e293b',
+                        border: '1px solid #374151',
+                        borderRadius: '8px',
+                        color: '#e5e7eb',
+                        fontSize: '14px',
+                        resize: 'none',
+                        outline: 'none'
+                      }}
                     />
                   </div>
                   <div className="form-group">
@@ -428,6 +460,16 @@ function MultiUploader() {
                       onChange={(e) => updateFormData(acc.key, 'tags', e.target.value)}
                       placeholder="tag1, tag2, tag3"
                       disabled={uploading}
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        background: '#1e293b',
+                        border: '1px solid #374151',
+                        borderRadius: '8px',
+                        color: '#e5e7eb',
+                        fontSize: '14px',
+                        outline: 'none'
+                      }}
                     />
                   </div>
                   <div className="form-group">
@@ -436,6 +478,16 @@ function MultiUploader() {
                       value={data.privacyStatus || 'public'}
                       onChange={(e) => updateFormData(acc.key, 'privacyStatus', e.target.value)}
                       disabled={uploading}
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        background: '#1e293b',
+                        border: '1px solid #374151',
+                        borderRadius: '8px',
+                        color: '#e5e7eb',
+                        fontSize: '14px',
+                        outline: 'none'
+                      }}
                     >
                       <option value="public">Public</option>
                       <option value="private">Private</option>
@@ -456,6 +508,16 @@ function MultiUploader() {
                       placeholder="Enter video title"
                       maxLength={100}
                       disabled={uploading}
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        background: '#1e293b',
+                        border: '1px solid #374151',
+                        borderRadius: '8px',
+                        color: '#e5e7eb',
+                        fontSize: '14px',
+                        outline: 'none'
+                      }}
                     />
                   </div>
                   <div className="form-group">
@@ -466,6 +528,17 @@ function MultiUploader() {
                       placeholder="Enter video description"
                       rows={3}
                       disabled={uploading}
+                      style={{
+                        width: '100%',
+                        padding: '12px',
+                        background: '#1e293b',
+                        border: '1px solid #374151',
+                        borderRadius: '8px',
+                        color: '#e5e7eb',
+                        fontSize: '14px',
+                        resize: 'none',
+                        outline: 'none'
+                      }}
                     />
                   </div>
                 </>
@@ -482,7 +555,7 @@ function MultiUploader() {
 
     return (
       <div style={{ marginTop: '30px' }}>
-        <h3 style={{ marginBottom: '15px' }}>Upload Progress</h3>
+        <h3 style={{ marginBottom: '15px', color: '#e5e7eb' }}>Upload Progress</h3>
         {uploadProgress.map((progress) => {
           const accountName = progress.account.display_name || progress.account.channel_title || progress.account.open_id || progress.account.channel_id;
           
@@ -525,27 +598,28 @@ function MultiUploader() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: '#020617',
+      background: '#0b1c2d',
       padding: '40px',
-      fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+      fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      color: '#e5e7eb'
     }}>
       {/* Page Header */}
       <div style={{ marginBottom: '32px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
           <span style={{ fontSize: '32px' }}>🚀</span>
-          <h1 style={{ fontSize: '28px', fontWeight: 600, color: '#E5E7EB', margin: 0 }}>
+          <h1 style={{ fontSize: '28px', fontWeight: 600, color: '#e5e7eb', margin: 0 }}>
             Multi-Platform Upload
           </h1>
         </div>
-        <p style={{ fontSize: '14px', color: '#9CA3AF', margin: 0 }}>
+        <p style={{ fontSize: '14px', color: '#6b7280', margin: 0 }}>
           Upload one video to multiple platforms simultaneously
         </p>
       </div>
 
       {/* Main Card */}
       <div style={{
-        background: '#0F172A',
-        border: '1px solid #1F2937',
+        background: '#111827',
+        border: '1px solid #374151',
         borderRadius: '12px',
         overflow: 'hidden',
         maxWidth: '1200px',
@@ -554,7 +628,7 @@ function MultiUploader() {
         <div style={{ padding: '24px' }}>
           {/* Video File Selection */}
           <div style={{ marginBottom: '24px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500, color: '#E5E7EB' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500, color: '#e5e7eb' }}>
               Select Video File *
             </label>
             <input
@@ -565,10 +639,10 @@ function MultiUploader() {
               style={{
                 width: '100%',
                 padding: '12px 16px',
-                background: '#1E293B',
+                background: '#1e293b',
                 border: '1px solid #374151',
                 borderRadius: '8px',
-                color: '#E5E7EB',
+                color: '#e5e7eb',
                 fontSize: '14px',
                 cursor: uploading ? 'not-allowed' : 'pointer',
                 outline: 'none'
@@ -578,10 +652,10 @@ function MultiUploader() {
               <div style={{
                 marginTop: '12px',
                 padding: '12px',
-                background: '#1E293B',
+                background: '#1e293b',
                 borderRadius: '8px',
                 fontSize: '14px',
-                color: '#9CA3AF'
+                color: '#9ca3af'
               }}>
                 <p style={{ margin: '0 0 4px 0' }}>📹 {selectedFile.name}</p>
                 <p style={{ margin: 0 }}>Size: {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB</p>
@@ -596,13 +670,13 @@ function MultiUploader() {
                 No accounts found. Please add accounts from individual platform pages first.
               </p>
               <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                <a href="/tiktok" style={{ color: '#6366F1', textDecoration: 'none', fontWeight: 600 }}>
+                <a href="/tiktok" style={{ color: '#6366f1', textDecoration: 'none', fontWeight: 600 }}>
                   Add TikTok Account →
                 </a>
-                <a href="/youtube" style={{ color: '#6366F1', textDecoration: 'none', fontWeight: 600 }}>
+                <a href="/youtube" style={{ color: '#6366f1', textDecoration: 'none', fontWeight: 600 }}>
                   Add YouTube Channel →
                 </a>
-                <a href="/facebook" style={{ color: '#6366F1', textDecoration: 'none', fontWeight: 600 }}>
+                <a href="/facebook" style={{ color: '#6366f1', textDecoration: 'none', fontWeight: 600 }}>
                   Add Facebook Page →
                 </a>
               </div>
@@ -610,10 +684,10 @@ function MultiUploader() {
           ) : (
             <>
               <div style={{ marginTop: '20px' }}>
-                <h3 style={{ marginBottom: '15px', color: '#E5E7EB', fontSize: '18px', fontWeight: 600 }}>
+                <h3 style={{ marginBottom: '15px', color: '#e5e7eb', fontSize: '18px', fontWeight: 600 }}>
                   Select Accounts to Upload To
                   {selectedAccounts.length > 0 && (
-                    <span style={{ fontSize: '0.85em', color: '#6366F1', marginLeft: '10px' }}>
+                    <span style={{ fontSize: '0.85em', color: '#6366f1', marginLeft: '10px' }}>
                       ({selectedAccounts.length} selected)
                     </span>
                   )}
@@ -638,7 +712,7 @@ function MultiUploader() {
                     marginTop: '20px',
                     width: '100%',
                     padding: '14px',
-                    background: (!selectedFile || uploading || selectedAccounts.length === 0) ? '#374151' : '#6366F1',
+                    background: (!selectedFile || uploading || selectedAccounts.length === 0) ? '#374151' : '#6366f1',
                     color: '#FFFFFF',
                     border: 'none',
                     borderRadius: '8px',
@@ -650,12 +724,12 @@ function MultiUploader() {
                   }}
                   onMouseEnter={e => {
                     if (selectedFile && !uploading && selectedAccounts.length > 0) {
-                      e.currentTarget.style.background = '#5558E3';
+                      e.currentTarget.style.background = '#5558e3';
                     }
                   }}
                   onMouseLeave={e => {
                     if (selectedFile && !uploading && selectedAccounts.length > 0) {
-                      e.currentTarget.style.background = '#6366F1';
+                      e.currentTarget.style.background = '#6366f1';
                     }
                   }}
                 >
@@ -672,7 +746,7 @@ function MultiUploader() {
             <div style={{
               marginTop: '20px',
               padding: '16px',
-              background: '#EF4444',
+              background: '#ef4444',
               color: '#FFFFFF',
               borderRadius: '8px',
               fontSize: '14px',

@@ -164,27 +164,28 @@ function FacebookUploader() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: '#020617',
+      background: '#0b1c2d',
       padding: '40px',
-      fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+      fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      color: '#e5e7eb'
     }}>
       {/* Page Header */}
       <div style={{ marginBottom: '32px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
           <span style={{ fontSize: '32px' }}>📘</span>
-          <h1 style={{ fontSize: '28px', fontWeight: 600, color: '#E5E7EB', margin: 0 }}>
+          <h1 style={{ fontSize: '28px', fontWeight: 600, color: '#e5e7eb', margin: 0 }}>
             Facebook Uploader
           </h1>
         </div>
-        <p style={{ fontSize: '14px', color: '#9CA3AF', margin: 0 }}>
+        <p style={{ fontSize: '14px', color: '#6b7280', margin: 0 }}>
           Manage your Facebook pages and upload videos
         </p>
       </div>
 
       {/* Main Card */}
       <div style={{
-        background: '#0F172A',
-        border: '1px solid #1F2937',
+        background: '#111827',
+        border: '1px solid #4fd1c5',
         borderRadius: '12px',
         overflow: 'hidden',
         maxWidth: '900px'
@@ -192,12 +193,12 @@ function FacebookUploader() {
         {/* Card Header */}
         <div style={{
           padding: '20px 24px',
-          borderBottom: '1px solid #1F2937',
+          borderBottom: '1px solid #4fd1c5',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between'
         }}>
-          <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#E5E7EB', margin: 0 }}>
+          <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#e5e7eb', margin: 0 }}>
             {view === 'accounts' && 'Page Management'}
             {view === 'add-token' && 'Add Facebook Pages'}
             {view === 'upload' && 'Upload to Facebook'}
@@ -209,7 +210,7 @@ function FacebookUploader() {
                 style={{
                   padding: '10px 20px',
                   background: '#374151',
-                  color: '#E5E7EB',
+                  color: '#e5e7eb',
                   border: 'none',
                   borderRadius: '8px',
                   fontSize: '14px',
@@ -360,7 +361,7 @@ function FacebookUploader() {
                               />
                             )}
                             <div style={{ flex: 1 }}>
-                              <div style={{ fontSize: '14px', fontWeight: 500, color: '#E5E7EB', marginBottom: '4px' }}>
+                              <div style={{ fontSize: '14px', fontWeight: 500, color: '#e5e7eb', marginBottom: '4px' }}>
                                 {account.display_name}
                               </div>
                               <div style={{ fontSize: '12px', color: '#6B7280' }}>
@@ -418,7 +419,7 @@ function FacebookUploader() {
                         flex: 1,
                         padding: '12px',
                         background: '#374151',
-                        color: '#E5E7EB',
+                        color: '#e5e7eb',
                         border: 'none',
                         borderRadius: '8px',
                         fontSize: '14px',
@@ -577,7 +578,7 @@ function FacebookUploader() {
                 </div>
               )}
               <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500, color: '#E5E7EB' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500, color: '#e5e7eb' }}>
                   Video File
                 </label>
                 <input
@@ -591,7 +592,7 @@ function FacebookUploader() {
                     background: '#1E293B',
                     border: '1px solid #374151',
                     borderRadius: '8px',
-                    color: '#E5E7EB',
+                    color: '#e5e7eb',
                     fontSize: '14px',
                     cursor: uploading ? 'not-allowed' : 'pointer',
                     outline: 'none'
@@ -612,7 +613,7 @@ function FacebookUploader() {
                 )}
               </div>
               <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500, color: '#E5E7EB' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500, color: '#e5e7eb' }}>
                   Video Title *
                 </label>
                 <input
@@ -628,14 +629,14 @@ function FacebookUploader() {
                     background: '#1E293B',
                     border: '1px solid #374151',
                     borderRadius: '8px',
-                    color: '#E5E7EB',
+                    color: '#e5e7eb',
                     fontSize: '14px',
                     outline: 'none'
                   }}
                 />
               </div>
               <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500, color: '#E5E7EB' }}>
+                <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500, color: '#e5e7eb' }}>
                   Description (Optional)
                 </label>
                 <textarea
@@ -651,7 +652,7 @@ function FacebookUploader() {
                     background: '#1E293B',
                     border: '1px solid #374151',
                     borderRadius: '8px',
-                    color: '#E5E7EB',
+                    color: '#e5e7eb',
                     fontSize: '14px',
                     fontFamily: 'inherit',
                     outline: 'none',
