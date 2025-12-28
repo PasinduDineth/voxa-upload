@@ -310,7 +310,7 @@ function MultiUploader() {
                   padding: '12px',
                   border: isSelected ? '2px solid #4fd1c5' : '2px solid #e5e7eb',
                   borderRadius: '12px',
-                  background: isSelected ? '#111827' : '#0f172a',
+                  background: isSelected ? '#e5e7eb' : '#fff',
                   transition: 'all 0.2s ease'
                 }}
               >
@@ -368,9 +368,9 @@ function MultiUploader() {
               style={{
                 marginBottom: '25px',
                 padding: '20px',
-                border: '2px solid #374151',
+                border: '2px solid #4fd1c5',
                 borderRadius: '12px',
-                background: '#111827'
+                background: '#fff'
               }}
             >
               <h4 style={{ margin: '0 0 15px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -598,10 +598,10 @@ function MultiUploader() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: '#0b1c2d',
+      background: '#e5e7eb',
       padding: '40px',
       fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-      color: '#e5e7eb'
+      color: '#111827'
     }}>
       {/* Page Header */}
       <div style={{ marginBottom: '32px' }}>
@@ -618,8 +618,8 @@ function MultiUploader() {
 
       {/* Main Card */}
       <div style={{
-        background: '#111827',
-        border: '1px solid #374151',
+        background: '#fff',
+        border: '1px solid #4fd1c5',
         borderRadius: '12px',
         overflow: 'hidden',
         maxWidth: '1200px',

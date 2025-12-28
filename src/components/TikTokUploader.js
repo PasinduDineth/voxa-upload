@@ -256,10 +256,10 @@ function TikTokUploader() {
     return (
       <div style={{ 
         minHeight: '100vh',
-        background: '#0b1c2d',
+        background: '#e5e7eb',
         padding: '40px',
         fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-        color: '#e5e7eb'
+        color: '#111827'
       }}>
         {/* Page Header */}
         <div style={{ marginBottom: '32px' }}>
@@ -277,7 +277,7 @@ function TikTokUploader() {
         <div style={{ maxWidth: '1280px', margin: '0 auto' }}>
           {/* Accounts Management Card */}
           <div style={{ 
-            background: '#111827',
+            background: '#fff',
             border: '1px solid #4fd1c5',
             borderRadius: '20px',
             padding: '32px',
@@ -357,9 +357,9 @@ function TikTokUploader() {
               <div style={{ 
                 textAlign: 'center', 
                 padding: '60px 20px',
-                background: '#0b1c2d',
+                background: '#fff',
                 borderRadius: '16px',
-                border: '2px dashed #1F2937'
+                border: '2px dashed #4fd1c5'
               }}>
                 <div style={{ 
                   fontSize: '48px', 
@@ -413,7 +413,7 @@ function TikTokUploader() {
                         handleAccountSwitch(select);
                       }}
                       style={{
-                        background: activeOpenId === acc.open_id ? '#111827' : '#0b1c2d',
+                        background: activeOpenId === acc.open_id ? '#e5e7eb' : '#fff',
                         border: activeOpenId === acc.open_id ? '1px solid #6366F1' : '1px solid #4fd1c5',
                         borderLeft: activeOpenId === acc.open_id ? '4px solid #6366F1' : '4px solid transparent',
                         borderRadius: '12px',
@@ -455,8 +455,8 @@ function TikTokUploader() {
                             width: '48px', 
                             height: '48px', 
                             borderRadius: '50%', 
-                            background: '#6366F1', 
-                            color: 'white', 
+                            background: '#4fd1c5', 
+                            color: '#111827', 
                             display: 'flex', 
                             alignItems: 'center', 
                             justifyContent: 'center', 
@@ -500,8 +500,8 @@ function TikTokUploader() {
                         </div>
                         {activeOpenId === acc.open_id && (
                           <div style={{ 
-                            background: '#022C22', 
-                            color: '#22C55E', 
+                            background: '#4fd1c5', 
+                            color: '#111827', 
                             padding: '4px 12px', 
                             borderRadius: '9999px', 
                             fontSize: '12px', 
@@ -617,10 +617,10 @@ function TikTokUploader() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: '#0b1c2d',
+      background: '#e5e7eb',
       padding: '40px',
       fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-      color: '#e5e7eb'
+      color: '#111827'
     }}>
       {/* Page Header */}
       <div style={{ marginBottom: '32px' }}>
@@ -637,7 +637,7 @@ function TikTokUploader() {
 
       {/* Main Upload Card */}
       <div style={{ 
-        background: '#111827',
+        background: '#fff',
         border: '1px solid #4fd1c5',
         borderRadius: '20px',
         padding: '32px'
@@ -962,10 +962,10 @@ function TikTokUploader() {
       <div style={{
         marginTop: '32px',
         padding: '24px',
-        background: '#0F172A',
-        border: '1px solid #1F2937',
-        borderRadius: '16px'
-      }}>
+          background: '#fff',
+          border: '1px solid #4fd1c5',
+          borderRadius: '16px'
+        }}>
         <h3 style={{
           fontSize: '16px',
           fontWeight: 600,

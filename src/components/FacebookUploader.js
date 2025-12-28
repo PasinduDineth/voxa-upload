@@ -164,16 +164,16 @@ function FacebookUploader() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: '#0b1c2d',
+      background: '#e5e7eb',
       padding: '40px',
       fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-      color: '#e5e7eb'
+      color: '#111827'
     }}>
       {/* Page Header */}
       <div style={{ marginBottom: '32px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
           <span style={{ fontSize: '32px' }}>📘</span>
-          <h1 style={{ fontSize: '28px', fontWeight: 600, color: '#e5e7eb', margin: 0 }}>
+          <h1 style={{ fontSize: '28px', fontWeight: 600, color: '#111827', margin: 0 }}>
             Facebook Uploader
           </h1>
         </div>
@@ -184,7 +184,7 @@ function FacebookUploader() {
 
       {/* Main Card */}
       <div style={{
-        background: '#111827',
+        background: '#fff',
         border: '1px solid #4fd1c5',
         borderRadius: '12px',
         overflow: 'hidden',
@@ -198,7 +198,7 @@ function FacebookUploader() {
           alignItems: 'center',
           justifyContent: 'space-between'
         }}>
-          <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#e5e7eb', margin: 0 }}>
+          <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#111827', margin: 0 }}>
             {view === 'accounts' && 'Page Management'}
             {view === 'add-token' && 'Add Facebook Pages'}
             {view === 'upload' && 'Upload to Facebook'}
