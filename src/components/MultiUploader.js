@@ -268,6 +268,23 @@ function MultiUploader() {
   const renderAccountSelector = (platform, accounts, label, icon) => {
     if (accounts.length === 0) return null;
 
+    const formatExpiry = (expiresAt) => {
+      if (!expiresAt) return null;
+      const date = new Date(expiresAt);
+      const now = new Date();
+      const diffMs = date - now;
+      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+      const diffMins = Math.floor(diffMs / (1000 * 60));
+      
+      if (diffMs < 0) return '⚠️ Expired';
+      if (diffDays > 30) return `✅ ${diffDays} days`;
+      if (diffDays > 0) return `⏳ ${diffDays}d ${diffHours % 24}h`;
+      if (diffHours > 0) return `⏳ ${diffHours}h ${diffMins % 60}m`;
+      if (diffMins > 0) return `⚠️ ${diffMins}m`;
+      return '⚠️ Soon';
+    };
+
     return (
       <div className="platform-section" style={{ marginBottom: '20px' }}>
         <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
@@ -282,6 +299,7 @@ function MultiUploader() {
             const accountId = account.open_id || account.channel_id;
             const accountKey = `${platform}_${accountId}`;
             const isSelected = selectedAccounts.some(acc => acc.key === accountKey);
+            const expiryDisplay = formatExpiry(account.expires_at);
             
             return (
               <div
@@ -318,6 +336,11 @@ function MultiUploader() {
                     <div style={{ fontSize: '0.75em', color: '#666', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {accountId.substring(0, 20)}...
                     </div>
+                    {expiryDisplay && (
+                      <div style={{ fontSize: '0.7em', color: expiryDisplay.includes('⚠️') ? '#ef4444' : '#10b981', marginTop: '2px' }}>
+                        {expiryDisplay}
+                      </div>
+                    )}
                   </div>
                   {isSelected && (
                     <div style={{ color: '#667eea', fontSize: '1.2em' }}>✓</div>

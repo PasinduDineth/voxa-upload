@@ -232,6 +232,14 @@ function FacebookUploader() {
                         <p style={{ margin: 0, fontSize: '13px', color: '#666' }}>
                           Page ID: {account.open_id}
                         </p>
+                        {(() => {
+                          const expiry = formatExpiry(account.expires_at);
+                          return expiry ? (
+                            <p style={{ margin: '3px 0 0 0', fontSize: '12px', color: expiry.color, fontWeight: 600 }}>
+                              {expiry.text}
+                            </p>
+                          ) : null;
+                        })()}
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: '10px' }}>

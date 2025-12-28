@@ -246,6 +246,14 @@ function YouTubeUploader() {
                         <div style={{ flex: 1 }}>
                           <div style={{ fontWeight: 600, color: '#333' }}>{ch.channel_title || 'YouTube Channel'}</div>
                           <div style={{ fontSize: '0.85em', color: '#999' }}>{ch.channel_id.substring(0, 20)}...</div>
+                          {(() => {
+                            const expiry = formatExpiry(ch.expires_at);
+                            return expiry ? (
+                              <div style={{ fontSize: '0.75em', color: expiry.color, marginTop: 3 }}>
+                                {expiry.text}
+                              </div>
+                            ) : null;
+                          })()}
                         </div>
                         {activeChannelId === ch.channel_id && (
                           <div style={{ background: '#FF0000', color: 'white', padding: '4px 10px', borderRadius: 12, fontSize: '0.8em', fontWeight: 600 }}>
