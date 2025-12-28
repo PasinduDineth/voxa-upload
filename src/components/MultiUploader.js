@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { FaFacebookF, FaTiktok, FaVideo, FaYoutube } from 'react-icons/fa6';
+import { FiAlertTriangle, FiCheckCircle, FiClock, FiXCircle } from 'react-icons/fi';
 import tiktokApi from '../services/tiktokApi';
 import youtubeApi from '../services/youtubeApi';
 import facebookApi from '../services/facebookApi';
@@ -18,6 +20,12 @@ function MultiUploader() {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState([]);
   const [error, setError] = useState('');
+
+  const platformMeta = {
+    tiktok: { Icon: FaTiktok, color: '#25F4EE', label: 'TikTok' },
+    youtube: { Icon: FaYoutube, color: '#FF0000', label: 'YouTube' },
+    facebook: { Icon: FaFacebookF, color: '#1877F2', label: 'Facebook' }
+  };
 
   useEffect(() => {
     loadAllAccounts();
@@ -209,7 +217,7 @@ function MultiUploader() {
           const status = statusResult.data.status;
           
           if (status === 'PUBLISH_COMPLETE' || status === 'SEND_TO_USER_INBOX') {
-            return { success: true, message: '✅ Uploaded to TikTok successfully!' };
+            return { success: true, message: 'Uploaded to TikTok successfully.' };
           } else if (status === 'FAILED') {
             return { success: false, message: 'TikTok upload failed: ' + (statusResult.data.fail_reason || 'Unknown') };
           }
@@ -240,7 +248,7 @@ function MultiUploader() {
       );
 
       if (result.success) {
-        return { success: true, message: '✅ Uploaded to YouTube successfully!' };
+        return { success: true, message: 'Uploaded to YouTube successfully.' };
       } else {
         return { success: false, message: 'YouTube upload failed: ' + JSON.stringify(result.error) };
       }
@@ -254,7 +262,7 @@ function MultiUploader() {
       const result = await facebookApi.uploadVideo(file, data.title, data.description);
 
       if (result.success) {
-        return { success: true, message: '✅ Uploaded to Facebook successfully!' };
+        return { success: true, message: 'Uploaded to Facebook successfully.' };
       } else {
         return { success: false, message: 'Facebook upload failed: ' + JSON.stringify(result.error) };
       }
@@ -263,7 +271,7 @@ function MultiUploader() {
     }
   };
 
-  const renderAccountSelector = (platform, accounts, label, icon) => {
+  const renderAccountSelector = (platform, accounts, label) => {
     if (accounts.length === 0) return null;
 
     const formatExpiry = (expiresAt) => {
@@ -275,13 +283,16 @@ function MultiUploader() {
       const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
       const diffMins = Math.floor(diffMs / (1000 * 60));
       
-      if (diffMs < 0) return '⚠️ Expired';
-      if (diffDays > 30) return `✅ ${diffDays} days`;
-      if (diffDays > 0) return `⏳ ${diffDays}d ${diffHours % 24}h`;
-      if (diffHours > 0) return `⏳ ${diffHours}h ${diffMins % 60}m`;
-      if (diffMins > 0) return `⚠️ ${diffMins}m`;
-      return '⚠️ Soon';
+      if (diffMs < 0) return { status: 'alert', label: 'Expired' };
+      if (diffDays > 30) return { status: 'good', label: `${diffDays} days` };
+      if (diffDays > 0) return { status: 'pending', label: `${diffDays}d ${diffHours % 24}h` };
+      if (diffHours > 0) return { status: 'pending', label: `${diffHours}h ${diffMins % 60}m` };
+      if (diffMins > 0) return { status: 'alert', label: `${diffMins}m` };
+      return { status: 'alert', label: 'Soon' };
     };
+
+    const Icon = platformMeta[platform]?.Icon;
+    const iconColor = platformMeta[platform]?.color;
 
     return (
       <div style={{ marginBottom: '20px' }}>
@@ -292,7 +303,11 @@ function MultiUploader() {
           marginBottom: '10px'
         }}>
           <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0, fontSize: '14px', color: '#111827', fontWeight: 600 }}>
-            <span>{icon}</span>
+            {Icon && (
+              <span style={{ color: iconColor, display: 'inline-flex' }}>
+                <Icon />
+              </span>
+            )}
             <span>{label}</span>
           </h3>
           <span style={{ fontSize: '12px', color: '#6b7280' }}>{accounts.length} available</span>
@@ -303,6 +318,17 @@ function MultiUploader() {
             const accountKey = `${platform}_${accountId}`;
             const isSelected = selectedAccounts.some(acc => acc.key === accountKey);
             const expiryDisplay = formatExpiry(account.expires_at);
+            const expiryStatusColor = expiryDisplay?.status === 'good'
+              ? '#16a34a'
+              : expiryDisplay?.status === 'pending'
+                ? '#f59e0b'
+                : '#dc2626';
+            const expiryIcon = expiryDisplay?.status === 'good'
+              ? FiCheckCircle
+              : expiryDisplay?.status === 'pending'
+                ? FiClock
+                : FiAlertTriangle;
+            const ExpiryIcon = expiryIcon;
 
             return (
               <div
@@ -373,8 +399,13 @@ function MultiUploader() {
                       ID: {accountId.substring(0, 18)}...
                     </div>
                     {expiryDisplay && (
-                      <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '2px' }}>
-                        {expiryDisplay}
+                      <div style={{ fontSize: '12px', color: expiryStatusColor, marginTop: '2px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        {ExpiryIcon && (
+                          <span style={{ display: 'inline-flex' }}>
+                            <ExpiryIcon />
+                          </span>
+                        )}
+                        {expiryDisplay.label}
                       </div>
                     )}
                   </div>
@@ -405,6 +436,7 @@ function MultiUploader() {
         {selectedAccounts.map((acc) => {
           const data = formData[acc.key] || {};
           const accountName = acc.account.display_name || acc.account.channel_title || acc.accountId;
+          const PlatformIcon = platformMeta[acc.platform]?.Icon;
 
           return (
             <div
@@ -417,9 +449,11 @@ function MultiUploader() {
               }}
             >
               <h4 style={{ margin: '0 0 15px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                {acc.platform === 'tiktok' && '🎵'}
-                {acc.platform === 'youtube' && '▶️'}
-                {acc.platform === 'facebook' && '📘'}
+                {PlatformIcon && (
+                  <span style={{ color: platformMeta[acc.platform].color, display: 'inline-flex' }}>
+                    <PlatformIcon />
+                  </span>
+                )}
                 <span>{accountName}</span>
                 <span style={{ fontSize: '12px', color: '#6b7280', fontWeight: 'normal' }}>
                   ({acc.platform})
@@ -587,6 +621,19 @@ function MultiUploader() {
         <h3 style={{ marginBottom: '12px', color: '#111827', fontSize: '18px', fontWeight: 600 }}>Upload Progress</h3>
         {uploadProgress.map((progress) => {
           const accountName = progress.account.display_name || progress.account.channel_title || progress.account.open_id || progress.account.channel_id;
+          const PlatformIcon = platformMeta[progress.platform]?.Icon;
+          const platformColor = platformMeta[progress.platform]?.color;
+          const statusIcon = progress.status === 'uploading'
+            ? FiClock
+            : progress.status === 'success'
+              ? FiCheckCircle
+              : FiXCircle;
+          const StatusIcon = statusIcon;
+          const statusColor = progress.status === 'success'
+            ? '#16a34a'
+            : progress.status === 'uploading'
+              ? '#f59e0b'
+              : '#dc2626';
           
           return (
             <div
@@ -599,17 +646,17 @@ function MultiUploader() {
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '5px' }}>
-                <span style={{ fontSize: '1.2em' }}>
-                  {progress.platform === 'tiktok' && '🎵'}
-                  {progress.platform === 'youtube' && '▶️'}
-                  {progress.platform === 'facebook' && '📘'}
-                </span>
+                {PlatformIcon && (
+                  <span style={{ fontSize: '1.2em', color: platformColor, display: 'inline-flex' }}>
+                    <PlatformIcon />
+                  </span>
+                )}
                 <strong>{accountName}</strong>
-                <span style={{ marginLeft: 'auto' }}>
-                  {progress.status === 'uploading' && '⏳'}
-                  {progress.status === 'success' && '✅'}
-                  {progress.status === 'error' && '❌'}
-                </span>
+                {StatusIcon && (
+                  <span style={{ marginLeft: 'auto', color: statusColor, display: 'inline-flex' }}>
+                    <StatusIcon />
+                  </span>
+                )}
               </div>
               <div style={{ fontSize: '13px', color: '#6b7280' }}>
                 {progress.message}
@@ -682,7 +729,12 @@ function MultiUploader() {
                 fontSize: '13px',
                 color: '#6b7280'
               }}>
-                <p style={{ margin: '0 0 4px 0' }}>📹 {selectedFile.name}</p>
+                <p style={{ margin: '0 0 4px 0', display: 'flex', alignItems: 'center', gap: '8px', color: '#111827' }}>
+                  <span style={{ display: 'inline-flex', color: '#0b1c2d' }}>
+                    <FaVideo />
+                  </span>
+                  {selectedFile.name}
+                </p>
                 <p style={{ margin: 0 }}>Size: {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB</p>
               </div>
             )}
@@ -718,11 +770,11 @@ function MultiUploader() {
                   )}
                 </h3>
                 {/* TikTok */}
-                {renderAccountSelector('tiktok', allAccounts.tiktok, 'TikTok Accounts', '🎵')}
+                {renderAccountSelector('tiktok', allAccounts.tiktok, 'TikTok Accounts')}
                 {/* YouTube */}
-                {renderAccountSelector('youtube', allAccounts.youtube, 'YouTube Channels', '▶️')}
+                {renderAccountSelector('youtube', allAccounts.youtube, 'YouTube Channels')}
                 {/* Facebook */}
-                {renderAccountSelector('facebook', allAccounts.facebook, 'Facebook Pages', '📘')}
+                {renderAccountSelector('facebook', allAccounts.facebook, 'Facebook Pages')}
               </div>
 
             </>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FaFacebookF, FaTiktok, FaYoutube } from 'react-icons/fa6';
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -8,19 +9,22 @@ function Dashboard() {
     {
       id: 'tiktok',
       name: 'TikTok',
-      icon: '🎵',
+      Icon: FaTiktok,
+      color: '#25F4EE',
       description: 'Upload and manage your TikTok videos'
     },
     {
       id: 'youtube',
       name: 'YouTube',
-      icon: '▶️',
+      Icon: FaYoutube,
+      color: '#FF0000',
       description: 'Manage your YouTube channel and uploads'
     },
     {
       id: 'facebook',
       name: 'Facebook',
-      icon: '📘',
+      Icon: FaFacebookF,
+      color: '#1877F2',
       description: 'Share videos to Facebook pages'
     }
   ];
@@ -66,7 +70,9 @@ function Dashboard() {
               fontWeight: 600,
               color: '#111827'
             }}>
-              <span>{platform.icon}</span>
+              <span style={{ color: platform.color }}>
+                <platform.Icon />
+              </span>
               <span>{platform.name}</span>
             </div>
 

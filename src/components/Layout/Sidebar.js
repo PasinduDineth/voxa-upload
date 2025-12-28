@@ -1,13 +1,15 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
+import { FaFacebookF, FaTiktok, FaYoutube } from 'react-icons/fa6';
+import { MdCloudUpload, MdDashboard } from 'react-icons/md';
 
 function Sidebar() {
   const navItems = [
-    { path: '/', icon: '🏠', label: 'Dashboard', exact: true },
-    { path: '/uploads', icon: '🚀', label: 'Multi Upload' },
-    { path: '/tiktok', icon: '🎵', label: 'TikTok' },
-    { path: '/youtube', icon: '▶️', label: 'YouTube' },
-    { path: '/facebook', icon: '📘', label: 'Facebook' },
+    { path: '/', Icon: MdDashboard, label: 'Dashboard', exact: true, color: '#0ea5e9' },
+    { path: '/uploads', Icon: MdCloudUpload, label: 'Multi Upload', color: '#14b8a6' },
+    { path: '/tiktok', Icon: FaTiktok, label: 'TikTok', color: '#25F4EE' },
+    { path: '/youtube', Icon: FaYoutube, label: 'YouTube', color: '#FF0000' },
+    { path: '/facebook', Icon: FaFacebookF, label: 'Facebook', color: '#1877F2' },
   ];
 
   return (
@@ -83,7 +85,9 @@ function Sidebar() {
           >
             {({ isActive }) => (
               <>
-                <span style={{ fontSize: '18px', color: isActive ? '#4fd1c5' : '#6b7280' }}>{item.icon}</span>
+                <span style={{ fontSize: '18px', color: item.color }}>
+                  <item.Icon />
+                </span>
                 <span>{item.label}</span>
               </>
             )}

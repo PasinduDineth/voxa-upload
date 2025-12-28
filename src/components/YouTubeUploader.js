@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { FaVideo } from 'react-icons/fa6';
 import youtubeApi from '../services/youtubeApi';
 
 function YouTubeUploader() {
@@ -657,7 +658,12 @@ function YouTubeUploader() {
                 fontSize: '13px',
                 color: '#6b7280'
               }}>
-                <p style={{ margin: '0 0 4px 0', color: '#111827', fontWeight: 600 }}>📹 {selectedFile.name}</p>
+                <p style={{ margin: '0 0 4px 0', color: '#111827', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ display: 'inline-flex', color: '#0b1c2d' }}>
+                    <FaVideo />
+                  </span>
+                  {selectedFile.name}
+                </p>
                 <p style={{ margin: 0 }}>Size: {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB</p>
               </div>
             )}

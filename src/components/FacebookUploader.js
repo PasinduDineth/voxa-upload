@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { FaFacebookF, FaVideo } from 'react-icons/fa6';
 import facebookApi from '../services/facebookApi';
 
 function FacebookUploader() {
@@ -284,7 +285,9 @@ function FacebookUploader() {
             <>
               {accounts.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '24px', border: '1px solid #111827', background: '#e5e7eb' }}>
-                  <div style={{ fontSize: '32px', marginBottom: '12px' }}>📘</div>
+                  <div style={{ fontSize: '32px', marginBottom: '12px', color: '#1877F2', display: 'inline-flex' }}>
+                    <FaFacebookF />
+                  </div>
                   <p style={{ fontSize: '13px', color: '#6b7280', marginBottom: '16px' }}>
                     No Facebook Pages connected yet
                   </p>
@@ -636,7 +639,12 @@ function FacebookUploader() {
                     fontSize: '13px',
                     color: '#6b7280'
                   }}>
-                    <p style={{ margin: '0 0 4px 0' }}>📹 {selectedFile.name}</p>
+                    <p style={{ margin: '0 0 4px 0', display: 'flex', alignItems: 'center', gap: '8px', color: '#111827' }}>
+                      <span style={{ display: 'inline-flex', color: '#0b1c2d' }}>
+                        <FaVideo />
+                      </span>
+                      {selectedFile.name}
+                    </p>
                     <p style={{ margin: 0 }}>Size: {Math.round(selectedFile.size / 1024 / 1024)}MB</p>
                   </div>
                 )}
