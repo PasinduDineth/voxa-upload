@@ -167,7 +167,7 @@ class YouTubeAPI {
   }
 
   async uploadVideo(videoFile, videoTitle, videoDescription, tags = '', defaultLanguage = 'en', defaultAudioLanguage = 'en', privacyStatus = 'public') {
-    if (!this.accessToken || !this.channelId) {
+    if (!this.channelId) {
       return { success: false, error: 'Not authenticated' };
     }
 
@@ -191,38 +191,31 @@ class YouTubeAPI {
         }
       };
 
-      // Step 1: Initialize resumable upload
-      const initResponse = await axios.post(
-        'https://www.googleapis.com/upload/youtube/v3/videos',
-        JSON.stringify(videoData),
-        {
-          params: {
-            part: 'snippet,status',
-            uploadType: 'resumable'
-          },
-          headers: {
-            'Authorization': `Bearer ${this.accessToken}`,
-            'Content-Type': 'application/json',
-            'X-Upload-Content-Type': videoFile.type || 'video/*',
-            'X-Upload-Content-Length': videoFile.size
-          }
-        }
-      );
+      // Step 1: Get upload URL from backend (handles token refresh)
+      const initResponse = await axios.post('/api/youtube-upload', {
+        channel_id: this.channelId,
+        video_data: videoData,
+        video_size: videoFile.size,
+        video_type: videoFile.type || 'video/*'
+      });
 
-      const uploadUrl = initResponse.headers.location;
-
-      if (!uploadUrl) {
-        throw new Error('Failed to get upload URL from YouTube');
+      if (!initResponse.data.success) {
+        throw new Error(initResponse.data.error || 'Failed to initialize upload');
       }
 
-      // Step 2: Upload the video file
+      const uploadUrl = initResponse.data.data.upload_url;
+
+      if (!uploadUrl) {
+        throw new Error('Failed to get upload URL from server');
+      }
+
+      // Step 2: Upload the video file directly to YouTube
       const uploadResponse = await axios.put(
         uploadUrl,
         videoFile,
         {
           headers: {
-            'Content-Type': videoFile.type || 'video/*',
-            'Content-Length': videoFile.size
+            'Content-Type': videoFile.type || 'video/*'
           },
           maxContentLength: Infinity,
           maxBodyLength: Infinity,
