@@ -27,71 +27,48 @@ function Dashboard() {
 
   return (
     <div style={{
-      minHeight: '100vh',
-      background: '#0b1c2d',
-      padding: '40px',
-      fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-      color: '#e5e7eb'
+      maxWidth: '1280px',
+      margin: '0 auto',
+      color: '#111827'
     }}>
-      {/* Hero Section */}
-      <div style={{ marginBottom: '40px' }}>
-        <h1 style={{ fontSize: '28px', fontWeight: 600, color: '#e5e7eb', margin: '0 0 12px 0' }}>
-          Multi-Platform Video Uploader
-        </h1>
-        <p style={{ fontSize: '14px', color: '#6b7280', margin: 0 }}>
-          Upload and manage your videos across TikTok, YouTube, and Facebook from one place
-        </p>
-      </div>
-
       {/* Platform Cards */}
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-        gap: '20px',
-        maxWidth: '1200px'
+        gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+        gap: '20px'
       }}>
         {platforms.map((platform) => (
           <div
             key={platform.id}
-            onClick={() => navigate(`/${platform.id}`)}
             style={{
-              background: '#111827',
-              border: '1px solid #4fd1c5',
-              borderRadius: '12px',
+              background: '#ffffff',
+              border: '1px solid #111827',
               padding: '24px',
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-              position: 'relative',
-              color: '#e5e7eb'
+              transition: 'box-shadow 0.2s, border-color 0.2s',
+              position: 'relative'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = '#4fd1c5';
-              e.currentTarget.style.transform = 'translateY(-2px)';
-              e.currentTarget.style.boxShadow = '0 4px 12px rgba(79,209,197,0.15)';
+              e.currentTarget.style.borderColor = '#0b1c2d';
+              e.currentTarget.style.boxShadow = '0 4px 10px rgba(17, 24, 39, 0.08)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = '#4fd1c5';
-              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.borderColor = '#111827';
               e.currentTarget.style.boxShadow = 'none';
             }}
           >
             {/* Icon */}
             <div style={{
-              fontSize: '48px',
-              marginBottom: '16px'
-            }}>
-              {platform.icon}
-            </div>
-
-            {/* Title */}
-            <h2 style={{
-              fontSize: '20px',
+              fontSize: '24px',
+              marginBottom: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
               fontWeight: 600,
-              color: '#e5e7eb',
-              margin: '0 0 8px 0'
+              color: '#111827'
             }}>
-              {platform.name}
-            </h2>
+              <span>{platform.icon}</span>
+              <span>{platform.name}</span>
+            </div>
 
             {/* Description */}
             <p style={{
@@ -103,78 +80,42 @@ function Dashboard() {
               {platform.description}
             </p>
 
-            {/* Action Button */}
             <div style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              fontSize: '14px',
-              fontWeight: 500,
-              color: '#4fd1c5'
+              fontSize: '13px',
+              color: '#6b7280',
+              marginBottom: '20px'
             }}>
-              <span>Open Uploader</span>
-              <span>→</span>
+              Videos: 0
             </div>
+
+            {/* Action Button */}
+            <button
+              type="button"
+              onClick={() => navigate(`/${platform.id}`)}
+              style={{
+                width: '100%',
+                padding: '10px 16px',
+                background: '#4fd1c5',
+                color: '#0b1c2d',
+                border: '1px solid #111827',
+                fontSize: '14px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                transition: 'background 0.2s, color 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#0b1c2d';
+                e.currentTarget.style.color = '#e5e7eb';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = '#4fd1c5';
+                e.currentTarget.style.color = '#0b1c2d';
+              }}
+            >
+              Open Uploader →
+            </button>
           </div>
         ))}
-      </div>
-
-      {/* Multi Upload Card */}
-      <div
-        onClick={() => navigate('/uploads')}
-        style={{
-          background: '#111827',
-          border: '1px solid #4fd1c5',
-          borderRadius: '12px',
-          padding: '24px',
-          cursor: 'pointer',
-          transition: 'all 0.2s',
-          marginTop: '20px',
-          maxWidth: '1200px',
-          color: '#e5e7eb'
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.borderColor = '#4fd1c5';
-          e.currentTarget.style.transform = 'translateY(-2px)';
-          e.currentTarget.style.boxShadow = '0 4px 12px rgba(79,209,197,0.15)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.borderColor = '#4fd1c5';
-          e.currentTarget.style.transform = 'translateY(0)';
-          e.currentTarget.style.boxShadow = 'none';
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <div style={{ fontSize: '36px' }}>🚀</div>
-          <div style={{ flex: 1 }}>
-            <h3 style={{
-              fontSize: '18px',
-              fontWeight: 600,
-              color: '#e5e7eb',
-              margin: '0 0 4px 0'
-            }}>
-              Multi-Platform Upload
-            </h3>
-            <p style={{
-              fontSize: '14px',
-              color: '#6b7280',
-              margin: 0
-            }}>
-              Upload one video to multiple platforms simultaneously
-            </p>
-          </div>
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px',
-            fontSize: '14px',
-            fontWeight: 500,
-            color: '#4fd1c5'
-          }}>
-            <span>Start Upload</span>
-            <span>→</span>
-          </div>
-        </div>
       </div>
     </div>
   );

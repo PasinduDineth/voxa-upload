@@ -104,76 +104,73 @@ function OAuthCallback() {
       justifyContent: 'center',
       alignItems: 'center',
       minHeight: '100vh',
-      backgroundColor: '#f5f5f5'
+      backgroundColor: '#e5e7eb',
+      fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      color: '#111827'
     }}>
       <div style={{
-        backgroundColor: 'white',
-        padding: '40px',
-        borderRadius: '8px',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
+        backgroundColor: '#ffffff',
+        padding: '32px',
+        border: '1px solid #111827',
         textAlign: 'center',
         maxWidth: '500px'
       }}>
         {status === 'processing' && (
           <>
             <div style={{
-              width: '50px',
-              height: '50px',
-              border: '4px solid #f3f3f3',
-              borderTop: '4px solid #3498db',
-              borderRadius: '50%',
-              animation: 'spin 1s linear infinite',
-              margin: '0 auto 20px'
-            }}></div>
-            <h2 style={{ color: '#333', marginBottom: '10px' }}>Processing...</h2>
-            <p style={{ color: '#666' }}>{message}</p>
+              width: '48px',
+              height: '48px',
+              border: '2px solid #111827',
+              background: '#e5e7eb',
+              margin: '0 auto 16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontWeight: 600,
+              color: '#111827'
+            }}>⏳</div>
+            <h2 style={{ color: '#111827', marginBottom: '10px', fontSize: '18px' }}>Processing...</h2>
+            <p style={{ color: '#6b7280', fontSize: '13px' }}>{message}</p>
           </>
         )}
         
         {status === 'success' && (
           <>
             <div style={{
-              width: '50px',
-              height: '50px',
-              backgroundColor: '#4CAF50',
-              borderRadius: '50%',
-              margin: '0 auto 20px',
+              width: '48px',
+              height: '48px',
+              backgroundColor: '#0b1c2d',
+              margin: '0 auto 16px',
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
-              color: 'white',
-              fontSize: '30px'
+              color: '#4fd1c5',
+              fontSize: '24px',
+              fontWeight: 600
             }}>✓</div>
-            <h2 style={{ color: '#4CAF50', marginBottom: '10px' }}>Success!</h2>
-            <p style={{ color: '#666' }}>{message}</p>
+            <h2 style={{ color: '#111827', marginBottom: '10px', fontSize: '18px' }}>Success!</h2>
+            <p style={{ color: '#6b7280', fontSize: '13px' }}>{message}</p>
           </>
         )}
         
         {status === 'error' && (
           <>
             <div style={{
-              width: '50px',
-              height: '50px',
-              backgroundColor: '#f44336',
-              borderRadius: '50%',
-              margin: '0 auto 20px',
+              width: '48px',
+              height: '48px',
+              backgroundColor: '#111827',
+              margin: '0 auto 16px',
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
-              color: 'white',
-              fontSize: '30px'
+              color: '#e5e7eb',
+              fontSize: '24px',
+              fontWeight: 600
             }}>✕</div>
-            <h2 style={{ color: '#f44336', marginBottom: '10px' }}>Error</h2>
-            <p style={{ color: '#666' }}>{message}</p>
+            <h2 style={{ color: '#111827', marginBottom: '10px', fontSize: '18px' }}>Error</h2>
+            <p style={{ color: '#6b7280', fontSize: '13px' }}>{message}</p>
           </>
         )}
-        
-        <style>{`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-        `}</style>
       </div>
     </div>
   );

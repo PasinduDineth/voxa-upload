@@ -1,16 +1,21 @@
 body {
   margin: 0;
   padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: #f5f7fa;
+  background: #e5e7eb;
+  color: #111827;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
+  border-radius: 0;
 }
 
 code {
@@ -25,16 +30,15 @@ code {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: #e5e7eb;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 5px;
+  background: #6b7280;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #111827;
 }
 
 /* Global button reset */
@@ -42,31 +46,33 @@ button {
   font-family: inherit;
 }
 
+input,
+textarea,
+select,
+button {
+  border-radius: 0;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: #4fd1c5;
+  outline: none;
+}
+
+a {
+  color: #4fd1c5;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
 /* Focus styles for accessibility */
 *:focus-visible {
-  outline: 2px solid #667eea;
+  outline: 2px solid #4fd1c5;
   outline-offset: 2px;
-}
-
-/* Animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 /* Utility classes */

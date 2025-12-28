@@ -284,66 +284,110 @@ function MultiUploader() {
     };
 
     return (
-      <div className="platform-section" style={{ marginBottom: '20px' }}>
-        <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-          <span>{icon}</span>
-          <span>{label}</span>
-          <span style={{ fontSize: '0.85em', color: '#666', fontWeight: 'normal' }}>
-            ({accounts.length} available)
-          </span>
-        </h3>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '12px' }}>
+      <div style={{ marginBottom: '20px' }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: '10px'
+        }}>
+          <h3 style={{ display: 'flex', alignItems: 'center', gap: '8px', margin: 0, fontSize: '14px', color: '#111827', fontWeight: 600 }}>
+            <span>{icon}</span>
+            <span>{label}</span>
+          </h3>
+          <span style={{ fontSize: '12px', color: '#6b7280' }}>{accounts.length} available</span>
+        </div>
+        <div style={{ display: 'grid', gap: '8px' }}>
           {accounts.map((account) => {
             const accountId = account.open_id || account.channel_id;
             const accountKey = `${platform}_${accountId}`;
             const isSelected = selectedAccounts.some(acc => acc.key === accountKey);
             const expiryDisplay = formatExpiry(account.expires_at);
-            
+
             return (
               <div
                 key={accountId}
                 onClick={() => !uploading && handleAccountToggle(platform, accountId)}
-                className={`account-card ${isSelected ? 'active' : ''}`}
                 style={{
                   cursor: uploading ? 'not-allowed' : 'pointer',
                   opacity: uploading ? 0.6 : 1,
-                  padding: '12px',
-                  border: isSelected ? '2px solid #4fd1c5' : '2px solid #e5e7eb',
-                  borderRadius: '12px',
-                  background: isSelected ? '#e5e7eb' : '#fff',
-                  transition: 'all 0.2s ease'
+                  padding: '10px 12px',
+                  border: '1px solid #111827',
+                  background: isSelected ? '#ffffff' : '#e5e7eb',
+                  transition: 'background 0.2s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '12px'
+                }}
+                onMouseEnter={(e) => {
+                  if (!uploading) {
+                    e.currentTarget.style.background = '#d1d5db';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!uploading) {
+                    e.currentTarget.style.background = isSelected ? '#ffffff' : '#e5e7eb';
+                  }
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  {account.avatar_url && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1 }}>
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() => !uploading && handleAccountToggle(platform, accountId)}
+                    onClick={(e) => e.stopPropagation()}
+                    disabled={uploading}
+                    style={{ width: '16px', height: '16px' }}
+                  />
+                  {account.avatar_url ? (
                     <img
                       src={account.avatar_url}
                       alt={account.display_name || account.channel_title}
                       style={{
-                        width: '40px',
-                        height: '40px',
-                        borderRadius: '50%',
+                        width: '32px',
+                        height: '32px',
                         objectFit: 'cover'
                       }}
                     />
+                  ) : (
+                    <div style={{
+                      width: '32px',
+                      height: '32px',
+                      background: '#0b1c2d',
+                      color: '#4fd1c5',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '12px',
+                      fontWeight: 600
+                    }}>
+                      {(account.display_name || account.channel_title || 'A')[0].toUpperCase()}
+                    </div>
                   )}
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 600, fontSize: '0.9em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <div style={{ fontWeight: 600, fontSize: '13px', color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {account.display_name || account.channel_title || 'Account'}
                     </div>
-                    <div style={{ fontSize: '0.75em', color: '#666', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {accountId.substring(0, 20)}...
+                    <div style={{ fontSize: '12px', color: '#6b7280', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      ID: {accountId.substring(0, 18)}...
                     </div>
                     {expiryDisplay && (
-                      <div style={{ fontSize: '0.7em', color: expiryDisplay.includes('⚠️') ? '#ef4444' : '#10b981', marginTop: '2px' }}>
+                      <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '2px' }}>
                         {expiryDisplay}
                       </div>
                     )}
                   </div>
-                  {isSelected && (
-                    <div style={{ color: '#4fd1c5', fontSize: '1.2em' }}>✓</div>
-                  )}
                 </div>
+                <span style={{
+                  fontSize: '11px',
+                  color: isSelected ? '#111827' : '#6b7280',
+                  border: '1px solid #111827',
+                  padding: '2px 6px',
+                  fontWeight: 600
+                }}>
+                  {platform.toUpperCase()}
+                </span>
               </div>
             );
           })}
@@ -356,8 +400,8 @@ function MultiUploader() {
     if (selectedAccounts.length === 0) return null;
 
     return (
-      <div style={{ marginTop: '30px' }}>
-        <h3 style={{ marginBottom: '20px', color: '#e5e7eb' }}>Upload Details</h3>
+      <div>
+        <h3 style={{ marginBottom: '16px', color: '#111827', fontSize: '18px', fontWeight: 600 }}>Upload Details</h3>
         {selectedAccounts.map((acc) => {
           const data = formData[acc.key] || {};
           const accountName = acc.account.display_name || acc.account.channel_title || acc.accountId;
@@ -366,11 +410,10 @@ function MultiUploader() {
             <div
               key={acc.key}
               style={{
-                marginBottom: '25px',
+                marginBottom: '20px',
                 padding: '20px',
-                border: '2px solid #4fd1c5',
-                borderRadius: '12px',
-                background: '#fff'
+                border: '1px solid #111827',
+                background: '#ffffff'
               }}
             >
               <h4 style={{ margin: '0 0 15px 0', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -378,14 +421,14 @@ function MultiUploader() {
                 {acc.platform === 'youtube' && '▶️'}
                 {acc.platform === 'facebook' && '📘'}
                 <span>{accountName}</span>
-                <span style={{ fontSize: '0.8em', color: '#6b7280', fontWeight: 'normal' }}>
+                <span style={{ fontSize: '12px', color: '#6b7280', fontWeight: 'normal' }}>
                   ({acc.platform})
                 </span>
               </h4>
 
               {acc.platform === 'tiktok' && (
-                <div className="form-group">
-                  <label>Caption *</label>
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', fontSize: '12px', color: '#6b7280', marginBottom: '6px' }}>Caption *</label>
                   <textarea
                     value={data.caption || ''}
                     onChange={(e) => updateFormData(acc.key, 'caption', e.target.value)}
@@ -396,13 +439,11 @@ function MultiUploader() {
                     style={{
                       width: '100%',
                       padding: '12px',
-                      background: '#1e293b',
-                      border: '1px solid #374151',
-                      borderRadius: '8px',
-                      color: '#e5e7eb',
+                      background: '#e5e7eb',
+                      border: '1px solid #111827',
+                      color: '#111827',
                       fontSize: '14px',
-                      resize: 'none',
-                      outline: 'none'
+                      resize: 'none'
                     }}
                   />
                 </div>
@@ -410,8 +451,8 @@ function MultiUploader() {
 
               {acc.platform === 'youtube' && (
                 <>
-                  <div className="form-group">
-                    <label>Title *</label>
+                  <div style={{ marginBottom: '16px' }}>
+                    <label style={{ display: 'block', fontSize: '12px', color: '#6b7280', marginBottom: '6px' }}>Title *</label>
                     <input
                       type="text"
                       value={data.title || ''}
@@ -422,17 +463,15 @@ function MultiUploader() {
                       style={{
                         width: '100%',
                         padding: '12px',
-                        background: '#1e293b',
-                        border: '1px solid #374151',
-                        borderRadius: '8px',
-                        color: '#e5e7eb',
-                        fontSize: '14px',
-                        outline: 'none'
+                        background: '#e5e7eb',
+                        border: '1px solid #111827',
+                        color: '#111827',
+                        fontSize: '14px'
                       }}
                     />
                   </div>
-                  <div className="form-group">
-                    <label>Description</label>
+                  <div style={{ marginBottom: '16px' }}>
+                    <label style={{ display: 'block', fontSize: '12px', color: '#6b7280', marginBottom: '6px' }}>Description</label>
                     <textarea
                       value={data.description || ''}
                       onChange={(e) => updateFormData(acc.key, 'description', e.target.value)}
@@ -442,18 +481,16 @@ function MultiUploader() {
                       style={{
                         width: '100%',
                         padding: '12px',
-                        background: '#1e293b',
-                        border: '1px solid #374151',
-                        borderRadius: '8px',
-                        color: '#e5e7eb',
+                        background: '#e5e7eb',
+                        border: '1px solid #111827',
+                        color: '#111827',
                         fontSize: '14px',
-                        resize: 'none',
-                        outline: 'none'
+                        resize: 'none'
                       }}
                     />
                   </div>
-                  <div className="form-group">
-                    <label>Tags (comma separated)</label>
+                  <div style={{ marginBottom: '16px' }}>
+                    <label style={{ display: 'block', fontSize: '12px', color: '#6b7280', marginBottom: '6px' }}>Tags (comma separated)</label>
                     <input
                       type="text"
                       value={data.tags || ''}
@@ -463,17 +500,15 @@ function MultiUploader() {
                       style={{
                         width: '100%',
                         padding: '12px',
-                        background: '#1e293b',
-                        border: '1px solid #374151',
-                        borderRadius: '8px',
-                        color: '#e5e7eb',
-                        fontSize: '14px',
-                        outline: 'none'
+                        background: '#e5e7eb',
+                        border: '1px solid #111827',
+                        color: '#111827',
+                        fontSize: '14px'
                       }}
                     />
                   </div>
-                  <div className="form-group">
-                    <label>Privacy</label>
+                  <div style={{ marginBottom: '16px' }}>
+                    <label style={{ display: 'block', fontSize: '12px', color: '#6b7280', marginBottom: '6px' }}>Privacy</label>
                     <select
                       value={data.privacyStatus || 'public'}
                       onChange={(e) => updateFormData(acc.key, 'privacyStatus', e.target.value)}
@@ -481,12 +516,10 @@ function MultiUploader() {
                       style={{
                         width: '100%',
                         padding: '12px',
-                        background: '#1e293b',
-                        border: '1px solid #374151',
-                        borderRadius: '8px',
-                        color: '#e5e7eb',
-                        fontSize: '14px',
-                        outline: 'none'
+                        background: '#e5e7eb',
+                        border: '1px solid #111827',
+                        color: '#111827',
+                        fontSize: '14px'
                       }}
                     >
                       <option value="public">Public</option>
@@ -499,8 +532,8 @@ function MultiUploader() {
 
               {acc.platform === 'facebook' && (
                 <>
-                  <div className="form-group">
-                    <label>Title *</label>
+                  <div style={{ marginBottom: '16px' }}>
+                    <label style={{ display: 'block', fontSize: '12px', color: '#6b7280', marginBottom: '6px' }}>Title *</label>
                     <input
                       type="text"
                       value={data.title || ''}
@@ -511,17 +544,15 @@ function MultiUploader() {
                       style={{
                         width: '100%',
                         padding: '12px',
-                        background: '#1e293b',
-                        border: '1px solid #374151',
-                        borderRadius: '8px',
-                        color: '#e5e7eb',
-                        fontSize: '14px',
-                        outline: 'none'
+                        background: '#e5e7eb',
+                        border: '1px solid #111827',
+                        color: '#111827',
+                        fontSize: '14px'
                       }}
                     />
                   </div>
-                  <div className="form-group">
-                    <label>Description</label>
+                  <div style={{ marginBottom: '16px' }}>
+                    <label style={{ display: 'block', fontSize: '12px', color: '#6b7280', marginBottom: '6px' }}>Description</label>
                     <textarea
                       value={data.description || ''}
                       onChange={(e) => updateFormData(acc.key, 'description', e.target.value)}
@@ -531,13 +562,11 @@ function MultiUploader() {
                       style={{
                         width: '100%',
                         padding: '12px',
-                        background: '#1e293b',
-                        border: '1px solid #374151',
-                        borderRadius: '8px',
-                        color: '#e5e7eb',
+                        background: '#e5e7eb',
+                        border: '1px solid #111827',
+                        color: '#111827',
                         fontSize: '14px',
-                        resize: 'none',
-                        outline: 'none'
+                        resize: 'none'
                       }}
                     />
                   </div>
@@ -554,8 +583,8 @@ function MultiUploader() {
     if (uploadProgress.length === 0) return null;
 
     return (
-      <div style={{ marginTop: '30px' }}>
-        <h3 style={{ marginBottom: '15px', color: '#e5e7eb' }}>Upload Progress</h3>
+      <div style={{ marginTop: '24px' }}>
+        <h3 style={{ marginBottom: '12px', color: '#111827', fontSize: '18px', fontWeight: 600 }}>Upload Progress</h3>
         {uploadProgress.map((progress) => {
           const accountName = progress.account.display_name || progress.account.channel_title || progress.account.open_id || progress.account.channel_id;
           
@@ -563,11 +592,10 @@ function MultiUploader() {
             <div
               key={progress.key}
               style={{
-                marginBottom: '12px',
-                padding: '15px',
-                borderRadius: '8px',
-                background: progress.status === 'success' ? '#d4edda' : progress.status === 'error' ? '#f8d7da' : '#fff3cd',
-                border: `1px solid ${progress.status === 'success' ? '#c3e6cb' : progress.status === 'error' ? '#f5c6cb' : '#ffeaa7'}`,
+                marginBottom: '10px',
+                padding: '12px',
+                background: '#ffffff',
+                border: '1px solid #111827'
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '5px' }}>
@@ -583,7 +611,7 @@ function MultiUploader() {
                   {progress.status === 'error' && '❌'}
                 </span>
               </div>
-              <div style={{ fontSize: '0.9em', color: '#555' }}>
+              <div style={{ fontSize: '13px', color: '#6b7280' }}>
                 {progress.message}
               </div>
             </div>
@@ -597,65 +625,62 @@ function MultiUploader() {
 
   return (
     <div style={{
-      minHeight: '100vh',
-      background: '#e5e7eb',
-      padding: '40px',
-      fontFamily: '"Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+      maxWidth: '1280px',
+      margin: '0 auto',
       color: '#111827'
     }}>
-      {/* Page Header */}
-      <div style={{ marginBottom: '32px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-          <span style={{ fontSize: '32px' }}>🚀</span>
-          <h1 style={{ fontSize: '28px', fontWeight: 600, color: '#e5e7eb', margin: 0 }}>
-            Multi-Platform Upload
-          </h1>
-        </div>
-        <p style={{ fontSize: '14px', color: '#6b7280', margin: 0 }}>
-          Upload one video to multiple platforms simultaneously
-        </p>
-      </div>
-
       {/* Main Card */}
       <div style={{
-        background: '#fff',
-        border: '1px solid #4fd1c5',
-        borderRadius: '12px',
-        overflow: 'hidden',
-        maxWidth: '1200px',
+        background: '#ffffff',
+        border: '1px solid #111827',
+        padding: '24px',
+        maxWidth: '1280px',
         margin: '0 auto'
       }}>
-        <div style={{ padding: '24px' }}>
+        <div style={{ display: 'flex', gap: '32px' }}>
+          <div style={{ flex: '0 0 42%' }}>
           {/* Video File Selection */}
           <div style={{ marginBottom: '24px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 500, color: '#e5e7eb' }}>
+            <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 600, color: '#111827' }}>
               Select Video File *
             </label>
-            <input
-              type="file"
-              accept="video/*"
-              onChange={handleFileSelect}
-              disabled={uploading}
-              style={{
-                width: '100%',
-                padding: '12px 16px',
-                background: '#1e293b',
-                border: '1px solid #374151',
-                borderRadius: '8px',
-                color: '#e5e7eb',
-                fontSize: '14px',
-                cursor: uploading ? 'not-allowed' : 'pointer',
-                outline: 'none'
-              }}
-            />
+            <label style={{
+              display: 'block',
+              border: '1px dotted #6b7280',
+              background: '#ffffff',
+              padding: '18px 24px',
+              cursor: uploading ? 'not-allowed' : 'pointer',
+              position: 'relative'
+            }}>
+              <input
+                type="file"
+                accept="video/*"
+                onChange={handleFileSelect}
+                disabled={uploading}
+                style={{
+                  position: 'absolute',
+                  opacity: 0,
+                  inset: 0,
+                  width: '100%',
+                  height: '100%',
+                  cursor: uploading ? 'not-allowed' : 'pointer'
+                }}
+              />
+              <div style={{ fontSize: '14px', color: '#111827', marginBottom: '6px' }}>
+                Drop your video here or click to browse
+              </div>
+              <div style={{ fontSize: '12px', color: '#6b7280' }}>
+                Supported formats: MP4, MOV, AVI · Max size varies by platform
+              </div>
+            </label>
             {selectedFile && (
               <div style={{
                 marginTop: '12px',
                 padding: '12px',
-                background: '#1e293b',
-                borderRadius: '8px',
-                fontSize: '14px',
-                color: '#9ca3af'
+                background: '#e5e7eb',
+                border: '1px solid #111827',
+                fontSize: '13px',
+                color: '#6b7280'
               }}>
                 <p style={{ margin: '0 0 4px 0' }}>📹 {selectedFile.name}</p>
                 <p style={{ margin: 0 }}>Size: {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB</p>
@@ -665,18 +690,18 @@ function MultiUploader() {
 
           {/* Account Selection */}
           {totalAccounts === 0 ? (
-            <div style={{ padding: '40px', textAlign: 'center', color: '#666' }}>
-              <p style={{ fontSize: '1.1em', marginBottom: '20px' }}>
+            <div style={{ padding: '24px', textAlign: 'center', color: '#6b7280', border: '1px solid #111827' }}>
+              <p style={{ fontSize: '14px', marginBottom: '16px' }}>
                 No accounts found. Please add accounts from individual platform pages first.
               </p>
               <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                <a href="/tiktok" style={{ color: '#6366f1', textDecoration: 'none', fontWeight: 600 }}>
+                <a href="/tiktok" style={{ color: '#4fd1c5', fontWeight: 600 }}>
                   Add TikTok Account →
                 </a>
-                <a href="/youtube" style={{ color: '#6366f1', textDecoration: 'none', fontWeight: 600 }}>
+                <a href="/youtube" style={{ color: '#4fd1c5', fontWeight: 600 }}>
                   Add YouTube Channel →
                 </a>
-                <a href="/facebook" style={{ color: '#6366f1', textDecoration: 'none', fontWeight: 600 }}>
+                <a href="/facebook" style={{ color: '#4fd1c5', fontWeight: 600 }}>
                   Add Facebook Page →
                 </a>
               </div>
@@ -684,10 +709,10 @@ function MultiUploader() {
           ) : (
             <>
               <div style={{ marginTop: '20px' }}>
-                <h3 style={{ marginBottom: '15px', color: '#e5e7eb', fontSize: '18px', fontWeight: 600 }}>
+                <h3 style={{ marginBottom: '12px', color: '#111827', fontSize: '18px', fontWeight: 600 }}>
                   Select Accounts to Upload To
                   {selectedAccounts.length > 0 && (
-                    <span style={{ fontSize: '0.85em', color: '#6366f1', marginLeft: '10px' }}>
+                    <span style={{ fontSize: '12px', color: '#6b7280', marginLeft: '10px' }}>
                       ({selectedAccounts.length} selected)
                     </span>
                   )}
@@ -700,66 +725,80 @@ function MultiUploader() {
                 {renderAccountSelector('facebook', allAccounts.facebook, 'Facebook Pages', '📘')}
               </div>
 
-              {/* Form Fields for Selected Accounts */}
-              {renderFormFields()}
-
-              {/* Upload Button */}
-              {selectedAccounts.length > 0 && (
-                <button
-                  onClick={handleUploadAll}
-                  disabled={!selectedFile || uploading || selectedAccounts.length === 0}
-                  style={{
-                    marginTop: '20px',
-                    width: '100%',
-                    padding: '14px',
-                    background: (!selectedFile || uploading || selectedAccounts.length === 0) ? '#374151' : '#6366f1',
-                    color: '#FFFFFF',
-                    border: 'none',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    fontWeight: 500,
-                    cursor: (!selectedFile || uploading || selectedAccounts.length === 0) ? 'not-allowed' : 'pointer',
-                    transition: 'all 0.2s',
-                    opacity: (!selectedFile || uploading || selectedAccounts.length === 0) ? 0.5 : 1
-                  }}
-                  onMouseEnter={e => {
-                    if (selectedFile && !uploading && selectedAccounts.length > 0) {
-                      e.currentTarget.style.background = '#5558e3';
-                    }
-                  }}
-                  onMouseLeave={e => {
-                    if (selectedFile && !uploading && selectedAccounts.length > 0) {
-                      e.currentTarget.style.background = '#6366f1';
-                    }
-                  }}
-                >
-                  {uploading
-                    ? `Uploading... (${uploadProgress.filter(p => p.status === 'success' || p.status === 'error').length}/${selectedAccounts.length})`
-                    : `Upload to ${selectedAccounts.length} Account${selectedAccounts.length > 1 ? 's' : ''}`}
-                </button>
-              )}
             </>
           )}
-
-          {/* Error Message */}
-          {error && (
+        </div>
+        <div style={{ flex: '1 1 58%' }}>
+          {selectedAccounts.length > 0 ? (
+            <>
+              {renderFormFields()}
+              <button
+                onClick={handleUploadAll}
+                disabled={!selectedFile || uploading || selectedAccounts.length === 0}
+                style={{
+                  marginTop: '8px',
+                  width: '100%',
+                  padding: '12px',
+                  background: (!selectedFile || uploading || selectedAccounts.length === 0) ? '#e5e7eb' : '#4fd1c5',
+                  color: (!selectedFile || uploading || selectedAccounts.length === 0) ? '#6b7280' : '#0b1c2d',
+                  border: '1px solid #111827',
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  cursor: (!selectedFile || uploading || selectedAccounts.length === 0) ? 'not-allowed' : 'pointer',
+                  transition: 'background 0.2s, color 0.2s',
+                  opacity: (!selectedFile || uploading || selectedAccounts.length === 0) ? 0.8 : 1
+                }}
+                onMouseEnter={e => {
+                  if (selectedFile && !uploading && selectedAccounts.length > 0) {
+                    e.currentTarget.style.background = '#0b1c2d';
+                    e.currentTarget.style.color = '#e5e7eb';
+                  }
+                }}
+                onMouseLeave={e => {
+                  if (selectedFile && !uploading && selectedAccounts.length > 0) {
+                    e.currentTarget.style.background = '#4fd1c5';
+                    e.currentTarget.style.color = '#0b1c2d';
+                  }
+                }}
+              >
+                {uploading
+                  ? `Uploading... (${uploadProgress.filter(p => p.status === 'success' || p.status === 'error').length}/${selectedAccounts.length})`
+                  : `Upload to ${selectedAccounts.length} Account${selectedAccounts.length > 1 ? 's' : ''}`}
+              </button>
+            </>
+          ) : (
             <div style={{
-              marginTop: '20px',
-              padding: '16px',
-              background: '#ef4444',
-              color: '#FFFFFF',
-              borderRadius: '8px',
-              fontSize: '14px',
-              fontWeight: 500
+              border: '1px solid #111827',
+              padding: '24px',
+              background: '#ffffff',
+              color: '#6b7280',
+              fontSize: '13px'
             }}>
-              {error}
+              Select at least one account on the left to configure upload details.
             </div>
           )}
-
-          {/* Upload Progress */}
-          {renderUploadProgress()}
         </div>
       </div>
+      </div>
+
+      {/* Error Message */}
+      {error && (
+        <div style={{
+          marginTop: '20px',
+          padding: '16px',
+          background: '#ffffff',
+          color: '#111827',
+          border: '1px solid #111827',
+          borderLeft: '3px solid #111827',
+          fontSize: '14px',
+          fontWeight: 500
+        }}>
+          {error}
+        </div>
+      )}
+
+      {/* Upload Progress */}
+      {renderUploadProgress()}
     </div>
   );
 }
