@@ -21,6 +21,7 @@ module.exports = async function handler(req, res) {
           display_name,
           avatar_url,
           scope,
+          expires_at,
           created_at
         FROM accounts
         WHERE type = 'TIKTOK'

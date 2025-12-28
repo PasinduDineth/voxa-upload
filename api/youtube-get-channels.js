@@ -13,6 +13,7 @@ module.exports = async function handler(req, res) {
         display_name as channel_title,
         avatar_url as thumbnail_url,
         scope,
+        expires_at,
         created_at
       FROM accounts
       WHERE type = 'YOUTUBE'

@@ -101,6 +101,7 @@ module.exports = async function handler(req, res) {
           access_token,
           display_name,
           avatar_url,
+          expires_at,
           created_at
         FROM accounts
         WHERE type = 'FACEBOOK'
