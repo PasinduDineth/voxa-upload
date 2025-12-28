@@ -19,23 +19,36 @@ module.exports = async function handler(req, res) {
   try {
     // Get the access token for this channel from accounts table
     const channelResult = await sql`
-      SELECT access_token, refresh_token, expires_at
+      SELECT access_token, refresh_token, expires_at, display_name
       FROM accounts
       WHERE open_id = ${channel_id}
       AND type = 'YOUTUBE'
     `;
 
+    console.log('Channel lookup for:', channel_id, 'found:', channelResult.rows.length, 'rows');
+
     if (channelResult.rows.length === 0) {
       return res.status(404).json({ 
         success: false, 
-        error: 'Channel not found' 
+        error: 'Channel not found. Please re-authenticate your YouTube channel.',
+        channel_id: channel_id
       });
     }
 
-    let { access_token, refresh_token, expires_at } = channelResult.rows[0];
+    let { access_token, refresh_token, expires_at, display_name } = channelResult.rows[0];
+    
+    console.log('Channel:', display_name, 'Token expires:', expires_at, 'Has refresh token:', !!refresh_token);
 
-    // Check if token is expired
-    if (expires_at && new Date(expires_at) <= new Date()) {
+    console.log('Channel:', display_name, 'Token expires:', expires_at, 'Has refresh token:', !!refresh_token);
+
+    // Check if token is expired or will expire soon (within 5 minutes)
+    const expiryDate = expires_at ? new Date(expires_at) : null;
+    const fiveMinutesFromNow = new Date(Date.now() + 5 * 60 * 1000);
+    const needsRefresh = !expiryDate || expiryDate <= fiveMinutesFromNow;
+    
+    if (needsRefresh) {
+      console.log('Token needs refresh. Expired:', !expiryDate || expiryDate <= new Date(), 'Expires soon:', expiryDate && expiryDate <= fiveMinutesFromNow);
+      
       // Check if refresh token exists
       if (!refresh_token) {
         return res.status(401).json({ 
@@ -50,6 +63,7 @@ module.exports = async function handler(req, res) {
       const CLIENT_SECRET = process.env.YOUTUBE_CLIENT_SECRET;
 
       try {
+        console.log('Refreshing token...');
         const tokenResponse = await axios.post('https://oauth2.googleapis.com/token', {
           client_id: CLIENT_ID,
           client_secret: CLIENT_SECRET,
@@ -60,6 +74,8 @@ module.exports = async function handler(req, res) {
         access_token = tokenResponse.data.access_token;
         const expires_in = tokenResponse.data.expires_in;
         const new_expires_at = new Date(Date.now() + expires_in * 1000);
+
+        console.log('Token refreshed successfully. New expiry:', new_expires_at);
 
         // Update the token in database
         await sql`
@@ -79,6 +95,8 @@ module.exports = async function handler(req, res) {
           details: refreshError.response?.data
         });
       }
+    } else {
+      console.log('Token is still valid until:', expiryDate);
     }
 
     // Step 1: Initialize resumable upload
