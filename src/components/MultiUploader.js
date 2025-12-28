@@ -779,6 +779,7 @@ function MultiUploader() {
           )}
         </div>
       </div>
+      </div>
 
       {/* Error Message */}
       {error && (
