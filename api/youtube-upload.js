@@ -78,16 +78,18 @@ module.exports = async function handler(req, res) {
           'X-Upload-Content-Length': video_size
         },
         maxRedirects: 0,
-        validateStatus: (status) => status === 200 || status === 201
+        validateStatus: (status) => status >= 200 && status < 400
       }
     );
 
     const uploadUrl = initResponse.headers.location || initResponse.headers['location'];
 
     if (!uploadUrl) {
+      console.error('No upload URL in response headers:', initResponse.headers);
       return res.status(500).json({ 
         success: false, 
-        error: 'Failed to get upload URL from YouTube' 
+        error: 'Failed to get upload URL from YouTube',
+        details: 'No location header in response'
       });
     }
 
@@ -98,10 +100,16 @@ module.exports = async function handler(req, res) {
     });
 
   } catch (error) {
-    console.error('YouTube upload initialization failed:', error.response?.data || error.message);
+    console.error('YouTube upload initialization failed:', {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      headers: error.response?.headers
+    });
     return res.status(500).json({ 
       success: false, 
-      error: error.response?.data?.error?.message || error.message 
+      error: error.response?.data?.error?.message || error.message,
+      details: error.response?.data
     });
   }
 };
